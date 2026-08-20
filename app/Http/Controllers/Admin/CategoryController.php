@@ -1,0 +1,109 @@
+<?php
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+
+class CategoryController extends Controller
+{
+    public function index()
+    {
+        return Inertia::render('Admin/Categories/Index', [
+            'categories' => Category::with(['children.children'])
+                ->withCount('products')
+                ->whereNull('parent_id')
+                ->orderBy('nav_order')
+                ->orderBy('sort_order')
+                ->get(),
+            'allCategories' => Category::orderBy('sort_order')
+                ->get(['id','name','slug','parent_id']),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name'         => 'required|string|max:255',
+            'slug'         => 'required|string|unique:categories,slug',
+            'description'  => 'nullable|string',
+            'parent_id'    => 'nullable|exists:categories,id',
+            'sort_order'   => 'integer|min:0',
+            'nav_order'    => 'integer|min:0',
+            'is_active'    => 'boolean',
+            'show_in_nav'  => 'boolean',
+            'color'        => 'nullable|string|max:20',
+            'icon'         => 'nullable|string|max:10',
+            'image'        => 'nullable|image|max:5120',
+            'banner_image' => 'nullable|image|max:5120',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('categories', 'uploads');
+            $data['image'] = asset('uploads/' . $path);
+        }
+        if ($request->hasFile('banner_image')) {
+            $path = $request->file('banner_image')->store('categories/banners', 'uploads');
+            $data['banner_image'] = asset('uploads/' . $path);
+        }
+
+        if (empty($data['parent_id'])) $data['parent_id'] = null;
+
+        $cat = Category::create($data);
+        return back()->with('success', "Category \"{$cat->name}\" created.");
+    }
+
+    public function update(Request $request, Category $category)
+    {
+        $data = $request->validate([
+            'name'         => 'string|max:255',
+            'slug'         => "string|unique:categories,slug,{$category->id}",
+            'description'  => 'nullable|string',
+            'parent_id'    => 'nullable|exists:categories,id',
+            'sort_order'   => 'integer|min:0',
+            'nav_order'    => 'integer|min:0',
+            'is_active'    => 'boolean',
+            'show_in_nav'  => 'boolean',
+            'color'        => 'nullable|string|max:20',
+            'icon'         => 'nullable|string|max:10',
+            'image'        => 'nullable|image|max:5120',
+            'banner_image' => 'nullable|image|max:5120',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('categories', 'uploads');
+            $data['image'] = asset('uploads/' . $path);
+        }
+        if ($request->hasFile('banner_image')) {
+            $path = $request->file('banner_image')->store('categories/banners', 'uploads');
+            $data['banner_image'] = asset('uploads/' . $path);
+        }
+
+        if (array_key_exists('parent_id', $data) && empty($data['parent_id'])) {
+            $data['parent_id'] = null;
+        }
+
+        $category->update($data);
+        return back()->with('success', "Category \"{$category->name}\" updated.");
+    }
+
+    public function destroy(Category $category)
+    {
+        $category->children()->update(['parent_id' => $category->parent_id]);
+        $category->delete();
+        return back()->with('success', "Category deleted.");
+    }
+
+    public function reorder(Request $request)
+    {
+        foreach ($request->input('items', []) as $item) {
+            Category::where('id', $item['id'])->update([
+                'sort_order' => $item['sort_order'],
+                'parent_id'  => $item['parent_id'] ?? null,
+            ]);
+        }
+        return response()->json(['ok' => true]);
+    }
+}

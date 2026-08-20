@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-manrope: "Manrope", sans-serif;
+    --font-inter:   "Inter", sans-serif;
+}
+
+/* ── Base ── */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: var(--font-inter, "Inter", sans-serif); background: var(--color-body-bg, #f0f2f5); overflow-x: hidden; max-width: 100vw; }
+*, *::before, *::after { box-sizing: border-box; min-width: 0; }
+.font-manrope { font-family: var(--font-manrope, "Manrope", sans-serif); }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── Theme utility classes (use CSS vars so admin color change takes effect globally) ── */
+.bg-primary        { background-color: var(--color-primary); }
+.bg-primary-dark   { background-color: var(--color-primary-dark); }
+.text-primary      { color: var(--color-primary); }
+.text-primary-dark { color: var(--color-primary-dark); }
+.border-primary    { border-color: var(--color-primary); }
+.bg-dark           { background-color: var(--color-dark-bg); }
+.bg-dark2          { background-color: var(--color-dark-bg2); }
+.ring-primary      { --tw-ring-color: var(--color-primary); }
+
+/* ── Shimmer skeleton ── */
+.skeleton-shimmer { position: relative; overflow: hidden; background: #e9edf1; }
+.skeleton-shimmer::after {
+    content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+/* ── Page transition ── */
+.page-fade-in { animation: pageFadeIn .3s ease-out; }
+@keyframes pageFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── Scrollbar hide ── */
+.scroll-soft::-webkit-scrollbar { display: none; }
+.scroll-soft { scrollbar-width: none; }
+
+/* ── WhatsApp pulse ── */
+@keyframes wapulse {
+    0%   { box-shadow: 0 4px 20px rgba(37,211,102,.45), 0 0 0 0 rgba(37,211,102,.4); }
+    70%  { box-shadow: 0 4px 20px rgba(37,211,102,.45), 0 0 0 14px rgba(37,211,102,0); }
+    100% { box-shadow: 0 4px 20px rgba(37,211,102,.45), 0 0 0 0 rgba(37,211,102,0); }
+}
+
+/* ── Image crop modal overlay ── */
+.crop-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+
+/* ── Additional theme utility vars ── */
+:root {
+    --color-primary-soft: color-mix(in srgb, var(--color-primary) 8%, white);
+    --color-primary-alpha: color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+/* ── Dark mode — applied when admin sets theme_dark_mode=dark ── */
+html.dark {
+    --color-body-bg: var(--color-dark-bg2);
+    color-scheme: dark;
+}
+html.dark body { background: var(--color-dark-bg2); color: #e2e8f0; }
+html.dark .bg-white { background: var(--color-dark-bg) !important; }
+html.dark .bg-gray-50 { background: color-mix(in srgb, var(--color-dark-bg) 80%, white) !important; }
+html.dark .bg-gray-100 { background: color-mix(in srgb, var(--color-dark-bg) 70%, white) !important; }
+html.dark .border-gray-100, html.dark .border-gray-200 { border-color: rgba(255,255,255,0.08) !important; }
+html.dark .text-gray-900 { color: #f1f5f9 !important; }
+html.dark .text-gray-700 { color: #cbd5e1 !important; }
+html.dark .text-gray-600 { color: #94a3b8 !important; }
+html.dark .text-gray-500 { color: #64748b !important; }
+html.dark .text-gray-400 { color: #475569 !important; }
+html.dark input, html.dark textarea, html.dark select {
+    background: var(--color-dark-bg) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* ── Auto dark mode — follows system preference ── */
+html.auto { color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+    html.auto { --color-body-bg: var(--color-dark-bg2); }
+    html.auto body { background: var(--color-dark-bg2); color: #e2e8f0; }
+    html.auto .bg-white { background: var(--color-dark-bg) !important; }
+    html.auto .text-gray-900 { color: #f1f5f9 !important; }
+    html.auto .text-gray-700 { color: #cbd5e1 !important; }
+}
+
+/* ── Admin sidebar scrollbar — thin, dark, themed ── */
+.admin-sidebar-nav::-webkit-scrollbar {
+    width: 3px;
+}
+.admin-sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12);
+    border-radius: 99px;
+}
+.admin-sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.25);
+}
+.admin-sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+}

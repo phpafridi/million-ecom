@@ -1,0 +1,64 @@
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name','slug','description','price','compare_price',
+        'category_id','stock','stock_reserved','stock_sold',
+        'is_featured','is_active','sort_order',
+        'avg_rating','review_count',
+    ];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_active'   => 'boolean',
+    ];
+
+    protected $appends = ['images','discount_pct','first_image'];
+
+    // Relations
+    public function category()         { return $this->belongsTo(Category::class); }
+    public function productImages()    { return $this->hasMany(ProductImage::class)->orderBy('sort_order'); }
+    public function orderItems()       { return $this->hasMany(OrderItem::class); }
+    public function variants()         { return $this->hasMany(ProductVariant::class)->orderBy('sort_order'); }
+    public function variantAttributes(){ return $this->hasMany(VariantAttribute::class)->with('values')->orderBy('sort_order'); }
+    public function reviews()          { return $this->hasMany(Review::class); }
+    public function approvedReviews()  { return $this->hasMany(Review::class)->where('is_approved', true)->latest(); }
+
+    // Scopes
+    public function scopeActive($q)    { return $q->where('is_active', true); }
+    public function scopeFeatured($q)  { return $q->where('is_featured', true); }
+    public function scopeOnSale($q)    { return $q->whereColumn('price', '<', 'compare_price'); }
+
+    // Appended attributes
+    public function getImagesAttribute(): array {
+        return $this->productImages->map(fn($img) => [
+            'id'    => $img->id,
+            'url'   => $img->url,
+            'thumb' => $img->url,
+        ])->toArray();
+    }
+
+    public function getFirstImageAttribute(): string {
+        $img = $this->productImages->first();
+        return $img ? $img->url : '/images/placeholder.jpg';
+    }
+
+    public function getDiscountPctAttribute(): int {
+        if (!$this->compare_price || $this->compare_price <= $this->price) return 0;
+        return (int) round((($this->compare_price - $this->price) / $this->compare_price) * 100);
+    }
+
+    // Effective stock (total across variants if has variants)
+    public function getEffectiveStockAttribute(): int {
+        if ($this->variants()->exists()) {
+            return $this->variants()->where('is_active', true)->sum('stock');
+        }
+        return $this->stock;
+    }
+}
