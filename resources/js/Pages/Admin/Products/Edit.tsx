@@ -23,73 +23,126 @@ function Field({ label, hint, error, children }: {
     )
 }
 
-function VariantBuilder({ productId }: { productId?: number }) {
-    const [attributes, setAttributes] = useState([{ name: '', values: [''] }])
-    const [saving, setSaving] = useState(false)
-    const { props: pp } = usePage<{ adminPath?: string }>()
-    const ap = `/${pp.adminPath ?? 'tijar-admin'}`
+interface AttrValue { value: string; color_hex: string }
+interface Attr { name: string; is_required: boolean; display_type: string; values: AttrValue[] }
 
-    function addAttr() { setAttributes(a => [...a, { name: '', values: [''] }]) }
-    function removeAttr(i: number) { setAttributes(a => a.filter((_, idx) => idx !== i)) }
-    function setAttrName(i: number, name: string) { setAttributes(a => a.map((x, idx) => idx === i ? { ...x, name } : x)) }
-    function addValue(i: number) { setAttributes(a => a.map((x, idx) => idx === i ? { ...x, values: [...x.values, ''] } : x)) }
-    function setValue(i: number, j: number, val: string) {
-        setAttributes(a => a.map((x, idx) => idx === i ? { ...x, values: x.values.map((v, jdx) => jdx === j ? val : v) } : x))
-    }
-    function removeValue(i: number, j: number) {
-        setAttributes(a => a.map((x, idx) => idx === i ? { ...x, values: x.values.filter((_, jdx) => jdx !== j) } : x))
-    }
+function VariantBuilder({ productId }: { productId?: number }) {
+    const [attrs, setAttrs] = useState<Attr[]>([{ name: '', is_required: false, display_type: 'button', values: [{ value: '', color_hex: '' }] }])
+    const [saving, setSaving] = useState(false)
+    const { props: pp } = usePage<{ adminPath?: string; product?: any }>()
+    const ap = `/${pp.adminPath ?? 'ml-admin'}`
+
+    // Load existing attributes
+    useState(() => {
+        const existing = pp.product?.variant_attributes
+        if (existing?.length) {
+            setAttrs(existing.map((a: any) => ({
+                name: a.name, is_required: a.is_required ?? false,
+                display_type: a.display_type ?? 'button',
+                values: a.values?.map((v: any) => ({ value: v.value, color_hex: v.color_hex ?? '' })) ?? [{ value: '', color_hex: '' }]
+            })))
+        }
+    })
+
+    const upd = (fn: (a: Attr[]) => Attr[]) => setAttrs(fn)
+    function addAttr() { upd(a => [...a, { name: '', is_required: false, display_type: 'button', values: [{ value: '', color_hex: '' }] }]) }
+    function remAttr(i: number) { upd(a => a.filter((_, idx) => idx !== i)) }
+    function setName(i: number, name: string) { upd(a => a.map((x, idx) => idx === i ? { ...x, name } : x)) }
+    function setRequired(i: number, v: boolean) { upd(a => a.map((x, idx) => idx === i ? { ...x, is_required: v } : x)) }
+    function setDisplay(i: number, v: string) { upd(a => a.map((x, idx) => idx === i ? { ...x, display_type: v } : x)) }
+    function addVal(i: number) { upd(a => a.map((x, idx) => idx === i ? { ...x, values: [...x.values, { value: '', color_hex: '' }] } : x)) }
+    function setVal(i: number, j: number, val: string) { upd(a => a.map((x, idx) => idx === i ? { ...x, values: x.values.map((v, jdx) => jdx === j ? { ...v, value: val } : v) } : x)) }
+    function setColor(i: number, j: number, hex: string) { upd(a => a.map((x, idx) => idx === i ? { ...x, values: x.values.map((v, jdx) => jdx === j ? { ...v, color_hex: hex } : v) } : x)) }
+    function remVal(i: number, j: number) { upd(a => a.map((x, idx) => idx === i ? { ...x, values: x.values.filter((_, jdx) => jdx !== j) } : x)) }
+
     function save() {
         if (!productId) return
         setSaving(true)
-        router.post(`${ap}/products/${productId}/variants`, { attributes }, { onFinish: () => setSaving(false) })
+        router.post(`${ap}/products/${productId}/variants`, { attributes: attrs }, { onFinish: () => setSaving(false) })
     }
+
+    const inp = "h-9 px-3 border border-gray-200 rounded-lg text-[13px] outline-none focus:border-[var(--color-primary)] bg-white"
 
     return (
         <div className="space-y-4">
-            {attributes.map((attr, i) => (
+            {attrs.map((attr, i) => (
                 <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <div className="flex items-center gap-2 mb-3">
-                        <input value={attr.name} onChange={e => setAttrName(i, e.target.value)}
-                            placeholder="Option name (e.g. Size, Color)"
-                            className="flex-1 h-9 px-3 border border-gray-200 rounded-lg text-[13px] outline-none focus:border-[var(--color-primary)] bg-white"/>
-                        {attributes.length > 1 && (
-                            <button type="button" onClick={() => removeAttr(i)}
-                                className="w-9 h-9 rounded-lg border border-gray-200 text-red-400 hover:bg-red-50 bg-white cursor-pointer flex items-center justify-center text-lg">×</button>
+                    {/* Attribute header */}
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <input value={attr.name} onChange={e => setName(i, e.target.value)}
+                            placeholder="Option name (e.g. Size, Color, Material)"
+                            className={inp + " flex-1 min-w-[140px]"}/>
+                        <select value={attr.display_type} onChange={e => setDisplay(i, e.target.value)}
+                            className={inp + " w-32"}>
+                            <option value="button">Buttons</option>
+                            <option value="color">Color Swatches</option>
+                            <option value="dropdown">Dropdown</option>
+                        </select>
+                        <label className="flex items-center gap-2 cursor-pointer bg-white border border-gray-200 rounded-lg px-3 h-9 text-[12.5px] font-semibold text-gray-700 select-none">
+                            <input type="checkbox" checked={attr.is_required} onChange={e => setRequired(i, e.target.checked)} className="w-4 h-4 accent-[var(--color-primary)]"/>
+                            <span>Required</span>
+                            {attr.is_required && <span className="text-red-500 font-black">*</span>}
+                        </label>
+                        {attrs.length > 1 && (
+                            <button type="button" onClick={() => remAttr(i)} className="w-9 h-9 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 bg-white cursor-pointer flex items-center justify-center font-bold text-lg border-solid">×</button>
                         )}
                     </div>
+                    {/* Required hint */}
+                    {attr.is_required && (
+                        <p className="text-[11px] text-red-500 font-semibold mb-2">⚠️ Customers MUST select this option before adding to cart</p>
+                    )}
+                    {/* Values */}
                     <div className="flex flex-wrap gap-2">
                         {attr.values.map((val, j) => (
-                            <div key={j} className="flex items-center gap-1">
-                                <input value={val} onChange={e => setValue(i, j, e.target.value)}
-                                    placeholder={attr.name === 'Color' ? 'Red' : attr.name === 'Size' ? 'M' : 'Value'}
-                                    className="h-8 w-24 px-2 border border-gray-200 rounded-lg text-[12.5px] outline-none focus:border-[var(--color-primary)] bg-white"/>
+                            <div key={j} className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2 py-1.5">
+                                {attr.display_type === 'color' && (
+                                    <input type="color" value={val.color_hex || '#000000'} onChange={e => setColor(i, j, e.target.value)}
+                                        className="w-7 h-7 rounded-full border-none cursor-pointer p-0.5" title="Pick color"/>
+                                )}
+                                <input value={val.value} onChange={e => setVal(i, j, e.target.value)}
+                                    placeholder={attr.display_type === 'color' ? 'Red' : attr.name === 'Size' ? 'M' : 'Value'}
+                                    className="h-7 w-20 px-2 border border-gray-200 rounded text-[12.5px] outline-none focus:border-[var(--color-primary)] bg-white"/>
                                 {attr.values.length > 1 && (
-                                    <button type="button" onClick={() => removeValue(i, j)} className="text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer text-lg">×</button>
+                                    <button type="button" onClick={() => remVal(i, j)} className="text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer text-base leading-none">×</button>
                                 )}
                             </div>
                         ))}
-                        <button type="button" onClick={() => addValue(i)}
-                            className="h-8 px-3 border border-dashed border-gray-300 rounded-lg text-[12px] text-gray-500 hover:border-[var(--color-primary)] cursor-pointer bg-white">
-                            + Add Value
+                        <button type="button" onClick={() => addVal(i)}
+                            className="h-9 px-3 border border-dashed border-gray-300 rounded-lg text-[12px] text-gray-500 hover:border-[var(--color-primary)] cursor-pointer bg-white">
+                            + Add
                         </button>
                     </div>
+                    {/* Preview */}
+                    {attr.values.some(v => v.value) && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                            <p className="text-[11px] text-gray-400 font-semibold mb-2 uppercase tracking-wide">Preview on product page:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {attr.values.filter(v => v.value).map((v, j) => (
+                                    attr.display_type === 'color' ? (
+                                        <div key={j} title={v.value} style={{ width: 32, height: 32, borderRadius: '50%', background: v.color_hex || '#ccc', border: '2px solid #e5e7eb', cursor: 'default' }}/>
+                                    ) : (
+                                        <span key={j} style={{ padding: '5px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 12.5, fontWeight: 600, background: 'white', color: '#374151' }}>{v.value}</span>
+                                    )
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ))}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
                 <button type="button" onClick={addAttr}
                     className="h-9 px-4 border-2 border-dashed border-gray-300 rounded-xl text-[12.5px] font-semibold text-gray-600 hover:border-[var(--color-primary)] cursor-pointer bg-white">
-                    + Add Option (Size / Color etc.)
+                    + Add Attribute (Size / Color / Material…)
                 </button>
                 {productId && (
                     <button type="button" onClick={save} disabled={saving}
-                        className="h-9 px-5 rounded-xl text-[12.5px] font-bold border-none cursor-pointer disabled:opacity-60"
-                        style={{ background:'var(--color-primary)', color:'var(--color-primary-text)' }}>
-                        {saving ? 'Saving…' : 'Save Variants'}
+                        className="h-9 px-6 rounded-xl text-[13px] font-bold border-none cursor-pointer disabled:opacity-60"
+                        style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
+                        {saving ? 'Saving…' : '✓ Save Variants'}
                     </button>
                 )}
             </div>
-            {!productId && <p className="text-[12px] text-amber-600 mt-1">💡 Save the product first, then add variants.</p>}
+            {!productId && <p className="text-[12px] text-amber-600 mt-2">💡 Save the product first, then add variants here.</p>}
         </div>
     )
 }

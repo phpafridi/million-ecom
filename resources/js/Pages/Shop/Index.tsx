@@ -30,7 +30,8 @@ const PRICES = [
     { label: 'Rs 200,000+',      max: 9999999 },
 ]
 
-export default function ShopIndex({ products, categories, filters, settings, auth }: Props) {
+export default function ShopIndex({ products, categories, filters: rawFilters, settings, auth }: Props) {
+    const filters = rawFilters ?? {}
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [sort, setSort] = useState(filters.sort ?? 'default')
     const [loading, setLoading] = useState(false)
@@ -45,7 +46,7 @@ export default function ShopIndex({ products, categories, filters, settings, aut
     }, [])
 
     function apply(params: Record<string, any>) {
-        router.get('/shop', { ...filters, ...params }, { preserveState: true, preserveScroll: true })
+        router.get('/shop', { ...(filters ?? {}), ...params }, { preserveState: true, preserveScroll: true })
     }
 
     const title = filters.q

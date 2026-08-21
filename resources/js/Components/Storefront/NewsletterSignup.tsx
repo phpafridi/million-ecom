@@ -1,98 +1,45 @@
-import { useForm, usePage } from '@inertiajs/react'
-import { IconMail, IconCheck } from '@tabler/icons-react'
+import { useState } from 'react'
+import { useForm } from '@inertiajs/react'
+import { IconCheck } from '@tabler/icons-react'
 
-interface Props {
-    variant?: 'banner' | 'footer' | 'inline'
-}
+interface Props { variant?: 'banner' | 'footer' | 'inline' }
 
 export default function NewsletterSignup({ variant = 'banner' }: Props) {
-    const { props } = usePage<any>()
-    const message = props.flash?.newsletter_message as string | undefined
+    const [done, setDone] = useState(false)
+    const { data, setData, post, processing } = useForm({ email: '', name: '' })
 
-    const { data, setData, post, processing, reset } = useForm({
-        email: '',
-        name: '',
-    })
-
-    const submit = (e: React.FormEvent) => {
+    function submit(e: React.FormEvent) {
         e.preventDefault()
-        post('/newsletter/subscribe', { onSuccess: () => reset() })
+        post('/newsletter/subscribe', { onSuccess: () => setDone(true) })
     }
 
-    if (variant === 'footer') {
-        return (
-            <div>
-                <p className="font-bold text-[14px] text-white mb-2">Stay in the loop</p>
-                <p className="text-white/50 text-[12px] mb-3">Exclusive offers, new arrivals, style tips.</p>
-                {message ? (
-                    <div className="flex items-center gap-2 text-green-400 text-[13px] font-semibold">
-                        <IconCheck size={16} /> {message}
-                    </div>
-                ) : (
-                    <form onSubmit={submit} className="flex gap-2">
-                        <input
-                            type="email"
-                            value={data.email}
-                            onChange={e => setData('email', e.target.value)}
-                            placeholder="Your email address"
-                            required
-                            className="flex-1 h-10 px-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-[13px] focus:outline-none focus:border-white/40"
-                        />
-                        <button type="submit" disabled={processing}
-                            className="h-10 px-4 rounded-xl font-bold text-[12.5px] shrink-0"
-                            style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
-                            {processing ? '...' : 'Subscribe'}
-                        </button>
-                    </form>
-                )}
-            </div>
-        )
-    }
+    if (done) return (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, padding:'16px 24px', background:'rgba(255,255,255,0.08)', borderRadius:100, color:'white', fontWeight:700, fontSize:14 }}>
+            <IconCheck size={18} color="var(--color-primary)"/> You're subscribed! Thank you.
+        </div>
+    )
 
-    // Banner variant (homepage section)
     return (
-        <section className="py-16 px-4" style={{ background: 'var(--color-dark-bg)' }}>
-            <div className="max-w-2xl mx-auto text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
-                    style={{ background: 'var(--color-primary)' }}>
-                    <IconMail size={26} color="white" />
+        <section style={{ background:'var(--color-dark-bg,#0a0a0a)', padding:'clamp(48px,7vw,72px) clamp(20px,5vw,48px)' }}>
+            <div style={{ maxWidth:1400, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', gap:32, flexWrap:'wrap' }}>
+                <div>
+                    <p style={{ fontSize:11, fontWeight:800, color:'var(--color-primary)', textTransform:'uppercase', letterSpacing:'0.15em', margin:'0 0 8px' }}>EXCLUSIVE OFFERS</p>
+                    <h2 style={{ fontFamily:'Manrope,sans-serif', fontWeight:900, fontSize:'clamp(24px,3.5vw,36px)', color:'white', margin:'0 0 8px', lineHeight:1.1 }}>Stay in the Loop</h2>
+                    <p style={{ fontSize:14, color:'rgba(255,255,255,0.45)', margin:0 }}>New arrivals, exclusive deals & style tips. No spam, ever.</p>
                 </div>
-                <h2 className="font-black text-3xl text-white mb-3">
-                    Get Exclusive Offers
-                </h2>
-                <p className="text-white/50 text-[15px] mb-8">
-                    Join thousands of style-conscious shoppers. Be first to know about new arrivals, flash sales, and VIP deals.
-                </p>
-
-                {message ? (
-                    <div className="flex items-center justify-center gap-3 text-green-400 font-bold text-[16px]">
-                        <IconCheck size={22} /> {message}
-                    </div>
-                ) : (
-                    <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                        <input
-                            type="text"
-                            value={data.name}
-                            onChange={e => setData('name', e.target.value)}
-                            placeholder="Your name (optional)"
-                            className="h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-[13.5px] focus:outline-none focus:border-white/40 flex-1"
-                        />
-                        <input
-                            type="email"
-                            value={data.email}
-                            onChange={e => setData('email', e.target.value)}
-                            placeholder="Your email address"
-                            required
-                            className="h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-[13.5px] focus:outline-none focus:border-white/40 flex-1"
-                        />
-                        <button type="submit" disabled={processing}
-                            className="h-12 px-6 rounded-xl font-bold text-[14px] shrink-0 disabled:opacity-60"
-                            style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
-                            {processing ? 'Joining...' : 'Join Now'}
-                        </button>
-                    </form>
-                )}
-                <p className="text-white/30 text-[11.5px] mt-4">No spam. Unsubscribe anytime.</p>
+                <form onSubmit={submit} style={{ display:'flex', gap:0, borderRadius:100, overflow:'hidden', border:'1.5px solid rgba(255,255,255,0.15)', maxWidth:460, width:'100%', flexShrink:0 }}>
+                    <input
+                        type="email" required
+                        value={data.email}
+                        onChange={e => setData('email', e.target.value)}
+                        placeholder="Enter your email address"
+                        style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'none', padding:'14px 20px', color:'white', fontSize:14, outline:'none', minWidth:0 }}
+                    />
+                    <button type="submit" disabled={processing}
+                        style={{ background:'var(--color-primary)', color:'var(--color-primary-text,#0a0a0a)', border:'none', padding:'14px 24px', fontWeight:800, fontSize:13, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0, opacity: processing ? 0.7 : 1 }}>
+                        {processing ? '...' : 'Subscribe →'}
+                    </button>
+                </form>
             </div>
         </section>
     )

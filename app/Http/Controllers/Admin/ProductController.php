@@ -181,18 +181,30 @@ class ProductController extends Controller
     public function storeVariant(Request $request, Product $product)
     {
         $data = $request->validate([
-            'attributes'            => 'required|array',
-            'attributes.*.name'     => 'required|string|max:50',
-            'attributes.*.values'   => 'required|array',
-            'attributes.*.values.*' => 'required|string|max:50',
+            'attributes'                  => 'required|array',
+            'attributes.*.name'           => 'required|string|max:50',
+            'attributes.*.is_required'    => 'nullable|boolean',
+            'attributes.*.display_type'   => 'nullable|string|in:button,color,dropdown',
+            'attributes.*.values'         => 'required|array',
+            'attributes.*.values.*.value' => 'required|string|max:50',
+            'attributes.*.values.*.color_hex' => 'nullable|string|max:7',
         ]);
 
         $product->variantAttributes()->delete();
 
         foreach ($data['attributes'] as $i => $attrData) {
-            $attr = $product->variantAttributes()->create(['name' => $attrData['name'], 'sort_order' => $i]);
-            foreach ($attrData['values'] as $j => $val) {
-                $attr->values()->create(['value' => $val, 'sort_order' => $j]);
+            $attr = $product->variantAttributes()->create([
+                'name'         => $attrData['name'],
+                'is_required'  => !empty($attrData['is_required']),
+                'display_type' => $attrData['display_type'] ?? 'button',
+                'sort_order'   => $i,
+            ]);
+            foreach ($attrData['values'] as $j => $valData) {
+                $attr->values()->create([
+                    'value'      => is_array($valData) ? $valData['value'] : $valData,
+                    'color_hex'  => is_array($valData) ? ($valData['color_hex'] ?? null) : null,
+                    'sort_order' => $j,
+                ]);
             }
         }
 

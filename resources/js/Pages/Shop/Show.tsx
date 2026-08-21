@@ -130,7 +130,16 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
     }
 
     function addToCart() {
-        if (hasVariants && !selectedVariant) { alert('Please select all options'); return }
+        const requiredAttrs = (product.variant_attributes ?? []).filter((a: any) => a.is_required)
+        const missing = requiredAttrs.filter((a: any) => !selectedValues[a.id])
+        if (missing.length > 0) {
+            alert('Please select: ' + missing.map((a: any) => a.name).join(', '))
+            return
+        }
+        if (hasVariants && Object.keys(selectedValues).length > 0 && !selectedVariant) {
+            alert('This combination is not available. Please try different options.')
+            return
+        }
         if (adding) return
         setAdding(true)
         router.post('/cart/add', {
@@ -392,7 +401,11 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {/* Variants */}
                         {hasVariants && product.variant_attributes?.map(attr => (
                             <div key={attr.id}>
-                                <div className="text-[12px] font-black text-gray-700 uppercase tracking-wide mb-2.5">{attr.name}:</div>
+                                <div className="text-[12px] font-black text-gray-700 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+                                    {attr.name}
+                                    {(attr as any).is_required && <span className="text-red-500">*</span>}
+                                    {(attr as any).is_required && !selectedValues[attr.id] && <span className="text-[10px] font-semibold text-red-400 normal-case tracking-normal">(required)</span>}
+                                </div>
                                 <div className="flex gap-2 flex-wrap">
                                     {attr.values.map(val => {
                                         const isSelected = selectedValues[attr.id] === val.id

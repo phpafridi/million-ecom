@@ -95,7 +95,7 @@ function BannerForm({ banner, onClose }: { banner?: Banner; onClose: () => void 
 
                         {/* Tabs */}
                         <div className="flex gap-1 p-1 bg-gray-100 rounded-xl mb-4">
-                            {[{key:'image',label:'🖼️ Upload Image'},{key:'video',label:'🎬 Video URL'}].map(t => (
+                            {[{key:'image',label:'🖼️ Upload Image'},{key:'video_file',label:'📁 Upload Video'},{key:'video',label:'🔗 Video URL'}].map(t => (
                                 <button key={t.key} type="button"
                                     onClick={() => setData('media_type', t.key)}
                                     className="flex-1 py-2 rounded-lg text-[13px] font-bold cursor-pointer border-none transition-all"
@@ -116,6 +116,25 @@ function BannerForm({ banner, onClose }: { banner?: Banner; onClose: () => void 
                                         <p className="text-[11px] text-gray-400 mt-1">Current image (upload new to replace)</p>
                                     </div>
                                 )}
+                            </div>
+                        ) : data.media_type === 'video_file' ? (
+                            <div>
+                                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[var(--color-primary)] transition-colors bg-gray-50">
+                                    <span className="text-2xl mb-1">🎬</span>
+                                    <span className="text-[13px] font-bold text-gray-600">Click to upload video from PC</span>
+                                    <span className="text-[11px] text-gray-400">MP4, WebM, MOV — max 100MB</span>
+                                    <input type="file" accept="video/mp4,video/webm,video/mov" className="hidden"
+                                        onChange={e => { const f = e.target.files?.[0]; if(f) setData('video' as any, f) }} />
+                                </label>
+                                {(data as any).video && (
+                                    <div className="mt-2 flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-xl">
+                                        <span className="text-green-600 text-[12px] font-bold">✅ Video selected: {(data as any).video.name}</span>
+                                    </div>
+                                )}
+                                {(banner as any)?.video_url && !(data as any).video && (
+                                    <video src={(banner as any).video_url} autoPlay muted loop playsInline className="mt-2 h-24 w-full rounded-xl object-cover border border-gray-200"/>
+                                )}
+                                <p className="text-[11px] text-gray-400 mt-2">Video will autoplay, muted, looping on the storefront.</p>
                             </div>
                         ) : (
                             <div>

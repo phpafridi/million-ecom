@@ -55,10 +55,10 @@ export default function HeroSlider({ slides, settings }: Props) {
     const H = 'clamp(300px, 52vw, 640px)'
 
     return (
-        <section style={{ position: 'relative', width: '100%', height: H, overflow: 'hidden', background: '#080808', display: 'block' }}>
+        <section style={{ position: 'relative', width: '100%', height: H, overflow: 'hidden', background: '#080808', display: 'block', maxWidth: '100vw' }}>
 
             {/* Background */}
-            <AnimatePresence custom={dir} initial={false}>
+            <AnimatePresence custom={dir} initial={false} mode='wait'>
                 <motion.div key={`bg-${cur}`} custom={dir} variants={variants}
                     initial="enter" animate="center" exit="exit"
                     transition={{ duration: 0.75, ease: [0.25, 0.46, 0.45, 0.94] }}

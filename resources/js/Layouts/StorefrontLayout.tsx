@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, router, usePage } from '@inertiajs/react'
 import ChatWidget from '@/Components/Chat/ChatWidget'
+import FloatingCart from '@/Components/ui/FloatingCart'
 import {
     IconSearch, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram,
     IconMenu, IconX, IconChevronDown, IconPhone,
@@ -105,7 +106,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
     }
 
     return (
-        <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-body-bg)' }}>
+        <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-body-bg)', overflowX: 'hidden', maxWidth: '100vw', width: '100%' }}>
 
             {/* ── Admin Mode Banner ── */}
             {auth?.user?.role === 'admin' && (
@@ -128,7 +129,10 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                             <IconPhone size={12} /> {phone}
                         </a>
                     )}
-                    {showWhatsapp && whatsapp && (
+                    <FloatingCart settings={settings ?? {}} />
+            <ChatWidget settings={settings ?? {}} auth={auth} />
+
+            {showWhatsapp && whatsapp && (
                         <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
                             className="flex items-center gap-1.5 text-[11.5px] no-underline hover:opacity-80"
                             style={{ color: '#25D366' }}>
@@ -308,7 +312,10 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                                 <IconShoppingCart size={18} /> Cart {cartCount > 0 && <span className="ml-auto text-[11px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--color-primary)' }}>{cartCount}</span>}
                             </Link>
                         </div>
-                        {showWhatsapp && whatsapp && (
+                        <FloatingCart settings={settings ?? {}} />
+            <ChatWidget settings={settings ?? {}} auth={auth} />
+
+            {showWhatsapp && whatsapp && (
                             <div className="px-5 py-4">
                                 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
                                     className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold text-[14px] h-12 rounded-[13px] no-underline">
@@ -323,68 +330,81 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
             <main className="flex-1 min-h-screen">{children}</main>
 
             {/* ── FOOTER ── */}
-            <footer className="border-t" style={{ background: 'var(--color-dark-bg2)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                <div className="px-4 sm:px-6 lg:px-10 pt-8 sm:pt-10">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                        <div className="col-span-2 lg:col-span-1">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden mb-3 flex items-center justify-center border"
-                                style={{ background: 'var(--color-dark-bg)', borderColor: 'rgba(255,255,255,0.1)' }}>
-                                {logoUrl ? <img src={logoUrl} alt={siteName} className="w-full h-full object-contain" />
-                                    : <span className="font-manrope font-black text-xl" style={{ color: 'var(--color-primary)' }}>{siteName[0]}</span>}
-                            </div>
-                            <div className="font-manrope font-black text-[18px] text-white tracking-[2px] mb-2">{siteName}<span style={{ color: 'var(--color-primary)' }}>.</span></div>
-                            {tagline && <p className="text-[12px] mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{tagline}</p>}
-                            {phone && <div className="font-bold text-[13px] text-white mb-2">{phone}</div>}
-                            {/* Social icons */}
-                            <div className="flex gap-2 mt-2">
-                                {showWhatsapp && whatsapp && (
-                                    <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center no-underline transition-all hover:opacity-80"
-                                        style={{ background: '#25D366', color: '#fff' }}>
-                                        <IconBrandWhatsapp size={16} />
-                                    </a>
-                                )}
-                                {showFacebook && fbUrl && (
-                                    <a href={fbUrl} target="_blank" rel="noopener noreferrer"
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center no-underline hover:opacity-80"
-                                        style={{ background: '#1877F2', color: '#fff' }}>
-                                        <IconBrandFacebook size={16} />
-                                    </a>
-                                )}
-                                {showInstagram && igUrl && (
-                                    <a href={igUrl} target="_blank" rel="noopener noreferrer"
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center no-underline hover:opacity-80"
-                                        style={{ background: '#E1306C', color: '#fff' }}>
-                                        <IconBrandInstagram size={16} />
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                        {[
-                            { title: 'Quick Links', links: [['Home','/'],['Shop','/shop'],['About','/about'],['Contact','/contact'],['Cart','/cart']] },
-                            { title: 'Support',     links: [['FAQ','/about'],['Returns','/about'],['Track Order','/contact']] },
-                        ].map(col => (
-                            <div key={col.title}>
-                                <h4 className="text-[11px] font-black text-white uppercase tracking-[.08em] mb-4 pb-2 border-b-2"
-                                    style={{ borderColor: 'var(--color-primary)' }}>{col.title}</h4>
-                                {col.links.map(([label, href]) => (
-                                    <Link key={label} href={href} className="block text-[12.5px] mb-2 no-underline hover:opacity-80 transition-all"
-                                        style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</Link>
-                                ))}
-                            </div>
-                        ))}
+            <footer style={{ background: 'var(--color-dark-bg, #0a0a0a)', color: 'white' }}>
+                {/* Newsletter */}
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
+                    <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
                         <div>
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[.08em] mb-4 pb-2 border-b-2" style={{ borderColor: 'var(--color-primary)' }}>Contact</h4>
-                            {phone && <a href={`tel:${phone}`} className="block text-[12.5px] mb-2 no-underline hover:opacity-80" style={{ color: 'rgba(255,255,255,0.5)' }}>{phone}</a>}
-                            {showWhatsapp && whatsapp && <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" className="block text-[12.5px] mb-2 no-underline hover:opacity-80" style={{ color: 'rgba(255,255,255,0.5)' }}>WhatsApp</a>}
+                            <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 8px' }}>EXCLUSIVE OFFERS</p>
+                            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(22px,3vw,32px)', color: 'white', margin: '0 0 8px', lineHeight: 1.1 }}>Stay in the Loop</h2>
+                            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>New arrivals, exclusive deals & style tips. No spam, ever.</p>
+                        </div>
+                        <form onSubmit={(e)=>{e.preventDefault(); const inp=e.currentTarget.querySelector('input') as HTMLInputElement; if(inp?.value){ fetch('/newsletter/subscribe',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name=csrf-token]') as HTMLInputElement)?.content||''},body:JSON.stringify({email:inp.value})}); inp.value=''; alert('Subscribed! Thank you.'); }}}
+                            style={{ display: 'flex', gap: 0, borderRadius: 100, overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.15)', maxWidth: 440, width: '100%' }}>
+                            <input type="email" placeholder="Enter your email address" required
+                                style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: 'none', padding: '14px 20px', color: 'white', fontSize: 14, outline: 'none', minWidth: 0 }}/>
+                            <button type="submit"
+                                style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', border: 'none', padding: '14px 24px', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                Subscribe →
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Main footer */}
+                <div style={{ padding: 'clamp(40px,5vw,56px) clamp(20px,5vw,48px) 32px', maxWidth: 1400, margin: '0 auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'clamp(180px,25%,280px) repeat(3, 1fr)', gap: 'clamp(24px,4vw,48px)', marginBottom: 40 }}>
+
+                        {/* Brand */}
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 18, color: 'var(--color-primary-text, #0a0a0a)', fontFamily: 'Manrope, sans-serif' }}>M</div>
+                                <div>
+                                    <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 16, letterSpacing: '0.08em', margin: 0, color: 'white' }}>{siteName}.</p>
+                                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Wear Your Status</p>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: 16 }}>Premium fashion and lifestyle products for those who know their worth.</p>
+                            {phone && <a href={`tel:${phone}`} style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📞 {phone}</a>}
+                        </div>
+
+                        {/* Quick Links */}
+                        <div>
+                            <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 16 }}>QUICK LINKS</p>
+                            {[['Home','/'],['Shop','/shop'],['New Arrivals','/new-arrivals'],['About','/about'],['Contact','/contact'],['Track Order','/track-order']].map(([l,h])=>(
+                                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }}
+                                    onMouseEnter={e=>(e.currentTarget.style.color='white')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.5)')}>{l}</Link>
+                            ))}
+                        </div>
+
+                        {/* Support */}
+                        <div>
+                            <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 16 }}>SUPPORT</p>
+                            {[['Support Center','/support'],['Returns & Exchange','/pages/return-policy'],['Track Your Order','/track-order'],['Shipping Info','/pages/shipping-policy'],['FAQ','/support'],['Contact Us','/contact']].map(([l,h])=>(
+                                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }}
+                                    onMouseEnter={e=>(e.currentTarget.style.color='white')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.5)')}>{l}</Link>
+                            ))}
+                        </div>
+
+                        {/* Legal */}
+                        <div>
+                            <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 16 }}>LEGAL</p>
+                            {[['Privacy Policy','/pages/privacy-policy'],['Terms of Service','/pages/terms'],['Return Policy','/pages/return-policy'],['Shipping Policy','/pages/shipping-policy'],['Payment Policy','/pages/payment-policy']].map(([l,h])=>(
+                                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }}
+                                    onMouseEnter={e=>(e.currentTarget.style.color='white')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.5)')}>{l}</Link>
+                            ))}
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 gap-3">
-                        <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.3)' }}>© {new Date().getFullYear()} <strong className="text-white/50">{siteName}</strong> — All Rights Reserved.</span>
-                        <div className="flex gap-1.5 flex-wrap">
-                            {['JazzCash','Easypaisa','Visa','Mastercard','COD'].map(p => (
-                                <span key={p} className="px-2 py-1 text-[10px] font-bold rounded"
-                                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>{p}</span>
+
+                    {/* Bottom bar */}
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>© {new Date().getFullYear()} <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{siteName}</strong> — All Rights Reserved.</p>
+
+                        {/* Secure payment badges */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginRight: 4 }}>🔒 Secure Payments:</span>
+                            {['JazzCash','Easypaisa','Visa','Mastercard','PayFast','COD'].map(b=>(
+                                <span key={b} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>{b}</span>
                             ))}
                         </div>
                     </div>
@@ -392,6 +412,9 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
             </footer>
 
             {/* ── FLOATING WHATSAPP — only if enabled in settings ── */}
+            <FloatingCart settings={settings ?? {}} />
+            <ChatWidget settings={settings ?? {}} auth={auth} />
+
             {showWhatsapp && whatsapp && (
                 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
                     className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center justify-center bg-[#25D366] text-white rounded-full no-underline hover:scale-110 transition-transform"

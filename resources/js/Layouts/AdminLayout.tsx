@@ -33,8 +33,8 @@ const NAV_GROUPS = [
         items: [
             { label:'Coupons',    icon: IconTag,         path: '/coupons' },
             { label:'Reviews',    icon: IconStar,        path: '/reviews' },
-            { label:'Email Campaigns', icon: IconMail,        path: '/email-campaigns' },
-            { label:'Support Tickets', icon: IconHeadset,     path: '/support' },
+            { label:'Email Campaigns', icon: IconMail,    path: '/email-campaigns' },
+            { label:'Support Tickets', icon: IconHeadset,   path: '/support' },
         ]
     },
     {
@@ -42,7 +42,6 @@ const NAV_GROUPS = [
         items: [
             { label:'Hero Slides',  icon: IconPhoto,       path: '/hero-slides' },
             { label:'Banners',      icon: IconTrendingUp,  path: '/banners' },
-            { label:'Promo Video',  icon: IconPlayerPlay,  path: '/promo-video' },
             { label:'Pages',        icon: IconFileText,    path: '/pages' },
         ]
     },
@@ -53,7 +52,7 @@ const NAV_GROUPS = [
             { label:'Reports',    icon: IconChartBar,      path: '/reports' },
             { label:'Returns',    icon: IconArrowBackUp,   path: '/returns' },
             { label:'Staff',      icon: IconUserCheck,     path: '/staff' },
-            { label:'Payments',   icon: IconCreditCard,    path: '/payments' },
+            { label:'Payments',  icon: IconCreditCard,  path: '/payments' },
             { label:'Theme',     icon: IconPalette,     path: '/theme' },
             { label:'SEO',       icon: IconWorld,       path: '/seo' },
             { label:'Settings',  icon: IconSettings,    path: '/settings' },

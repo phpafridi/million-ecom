@@ -17,7 +17,21 @@ class HandleInertiaRequests extends Middleware
 
         try {
             $cartCount = CartItem::where('session_id', session()->getId())->sum('quantity');
-        } catch (\Throwable $e) { $cartCount = 0; }
+            $cartItems = CartItem::where('session_id', session()->getId())
+                ->with('product.productImages')
+                ->get()
+                ->map(fn($i) => [
+                    'id'            => $i->id,
+                    'product_id'    => $i->product_id,
+                    'product_name'  => $i->product?->name ?? 'Product',
+                    'product_image' => $i->product?->first_image ?? null,
+                    'variant_label' => $i->variant_label ?? null,
+                    'price'         => (float)$i->price,
+                    'quantity'      => $i->quantity,
+                    'subtotal'      => (float)($i->price * $i->quantity),
+                ]);
+            $cartTotal = $cartItems->sum('subtotal');
+        } catch (\Throwable $e) { $cartCount = 0; $cartItems = collect(); $cartTotal = 0; }
 
         try {
             $navCategories = Category::active()
@@ -54,6 +68,8 @@ class HandleInertiaRequests extends Middleware
             'settings'      => $settings,
             'adminPath'     => $adminPath,
             'cartCount'     => $cartCount,
+            'cartItems'     => $cartItems ?? collect(),
+            'cartTotal'     => $cartTotal ?? 0,
             'wishlistCount' => Wishlist::where('session_id', session()->getId())->count(),
             'wishlistIds'   => Wishlist::where('session_id', session()->getId())->pluck('product_id')->toArray(),
             'navCategories' => $navCategories,

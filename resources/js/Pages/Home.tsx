@@ -51,10 +51,6 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
     const [tab, setTab] = useState('featured')
     const [loaded, setLoaded] = useState(false)
     const whatsapp = settings?.whatsapp_number ?? ''
-    const promoVideoUrl   = settings?.promo_video_url   ?? ''
-    const promoVideoTitle = settings?.promo_video_title ?? ''
-    const promoVideoTag   = settings?.promo_video_tag   ?? 'Hot Deal'
-    const promoVideoCta   = settings?.promo_video_cta   ?? 'Enquire Now'
 
     // Trust bar — fully editable from Admin → Settings
     const TRUST = [1,2,3,4,5].map(n => ({
@@ -180,35 +176,33 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
                 <div className="hidden lg:grid gap-3" style={{ gridTemplateColumns: '340px 1fr', gridTemplateRows: '220px 228px' }}>
-                    <div style={{ gridColumn: 1, gridRow: '1 / 3', position: 'relative', borderRadius: 18, overflow: 'hidden', background: 'var(--color-dark-bg, #0a0e1a)' }}>
-                        {promoVideoUrl ? (
-                            <video autoPlay muted loop playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}>
-                                <source src={promoVideoUrl} type="video/mp4" />
-                            </video>
-                        ) : settings?.promo_image_url ? (
-                            <img src={settings.promo_image_url} alt={promoVideoTitle}
-                                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.75 }} />
-                        ) : (
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, opacity: 0.25 }}>
-                                <span style={{ fontSize: 48 }}>🎬</span>
-                                <span style={{ color: '#fff', fontSize: 11, fontWeight: 600, textAlign: 'center', padding: '0 20px' }}>Add video URL in Admin → Settings → promo_video_url</span>
+                    {/* LEFT TALL CARD — use banner position 'promo' from Admin → Banners */}
+                    {(() => {
+                        const promo = b('promo') ?? b('featured') ?? (Object.keys(banners).length > 0 ? banners[Object.keys(banners)[0]] : null)
+                        if (!promo) return (
+                            <div style={{ gridColumn: 1, gridRow: '1 / 3', borderRadius: 18, overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12, textAlign: 'center', padding: 24 }}>
+                                <div><div style={{fontSize:32,marginBottom:8}}>🖼️</div>Add a banner with position "promo" in<br/>Admin → Banners</div>
                             </div>
-                        )}
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(7,11,20,0.95), rgba(7,11,20,0.2), transparent)' }} />
-                        <div style={{ position: 'absolute', top: 14, left: 14, zIndex: 5 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,200,255,0.18)', border: '1px solid rgba(0,200,255,0.35)', color: 'var(--color-primary, #00c8ff)', fontSize: 10, fontWeight: 700, padding: '5px 11px', borderRadius: 100 }}>
-                                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary, #00c8ff)', display: 'inline-block' }} /> Live Deal
-                            </div>
-                        </div>
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, zIndex: 5 }}>
-                            <div style={{ fontSize: 9.5, color: 'var(--color-primary, #00c8ff)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>{promoVideoTag}</div>
-                            <div style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 900, fontSize: 19, color: '#fff', lineHeight: 1.2, marginBottom: 12 }}>{promoVideoTitle}</div>
-                            <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'var(--color-primary, #00c8ff)', color: 'var(--color-dark-bg, #0a0e1a)', fontSize: 12, fontWeight: 800, padding: '10px 16px', borderRadius: 100, textDecoration: 'none', width: '100%' }}>
-                                <IconBrandWhatsapp size={15} /> {promoVideoCta}
-                            </a>
-                        </div>
-                    </div>
+                        )
+                        return (
+                            <Link href={promo.link ?? '/shop'}
+                                style={{ gridColumn: 1, gridRow: '1 / 3', position: 'relative', borderRadius: 18, overflow: 'hidden', display: 'block', textDecoration: 'none', background: 'var(--color-dark-bg,#0a0e1a)' }}>
+                                {promo.video ? (
+                                    <video autoPlay muted loop playsInline style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}>
+                                        <source src={promo.video} type="video/mp4"/>
+                                    </video>
+                                ) : promo.image ? (
+                                    <img src={promo.image} alt={promo.title ?? ''} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}/>
+                                ) : null}
+                                <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2), transparent)' }}/>
+                                <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:20, zIndex:5 }}>
+                                    {promo.subtitle && <div style={{ fontSize:9.5, color:'var(--color-primary)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:4 }}>{promo.subtitle}</div>}
+                                    <div style={{ fontFamily:'Manrope,sans-serif', fontWeight:900, fontSize:19, color:'#fff', lineHeight:1.2, marginBottom:promo.cta_text?12:0 }}>{promo.title}</div>
+                                    {promo.cta_text && <span style={{ display:'inline-flex', alignItems:'center', gap:7, background:'var(--color-primary)', color:'var(--color-primary-text,#0a0a0a)', fontSize:12, fontWeight:800, padding:'10px 16px', borderRadius:100 }}>{promo.cta_text}</span>}
+                                </div>
+                            </Link>
+                        )
+                    })()}
 
                     <div style={{ gridColumn: 2, gridRow: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         {(['small_top_1', 'small_top_2'] as const).map(pos => b(pos) && (
@@ -263,25 +257,26 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
 
                 {/* Mobile banner stack */}
                 <div className="lg:hidden space-y-3">
-                    <div className="relative rounded-[16px] overflow-hidden bg-[var(--color-dark-bg, #0a0e1a)]" style={{ height: 200 }}>
-                        {promoVideoUrl ? (
-                            <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.85 }}>
-                                <source src={promoVideoUrl} type="video/mp4" />
-                            </video>
-                        ) : settings?.promo_image_url ? (
-                            <img src={settings.promo_image_url} alt={promoVideoTitle}
-                                className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75 }} />
-                        ) : null}
-                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.95), transparent)' }} />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                            <div className="text-[10px] text-[var(--color-primary, #00c8ff)] font-bold uppercase tracking-wider mb-1">{promoVideoTag}</div>
-                            <div className="font-manrope font-black text-[16px] text-white mb-3">{promoVideoTitle}</div>
-                            <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 bg-[var(--color-primary, #00c8ff)] text-[var(--color-dark-bg, #0a0e1a)] text-[12px] font-black py-2.5 rounded-full no-underline w-full">
-                                <IconBrandWhatsapp size={15} /> {promoVideoCta}
-                            </a>
-                        </div>
-                    </div>
+                    {(() => {
+                        const promo = b('promo') ?? b('featured') ?? (Object.keys(banners).length > 0 ? banners[Object.keys(banners)[0]] : null)
+                        return promo ? (
+                            <Link href={promo.link ?? '/shop'} className="relative rounded-[16px] overflow-hidden block no-underline" style={{ height: 200, background: 'var(--color-dark-bg,#0a0e1a)' }}>
+                                {promo.video ? (
+                                    <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover">
+                                        <source src={promo.video} type="video/mp4"/>
+                                    </video>
+                                ) : promo.image ? (
+                                    <img src={promo.image} alt={promo.title ?? ''} className="absolute inset-0 w-full h-full object-cover"/>
+                                ) : null}
+                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)' }}/>
+                                <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                                    {promo.subtitle && <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{color:'var(--color-primary)'}}>{promo.subtitle}</div>}
+                                    <div className="font-manrope font-black text-[16px] text-white mb-2">{promo.title}</div>
+                                    {promo.cta_text && <span className="inline-flex items-center gap-2 text-[12px] font-black py-2 px-4 rounded-full" style={{background:'var(--color-primary)',color:'var(--color-primary-text,#0a0a0a)'}}>{promo.cta_text}</span>}
+                                </div>
+                            </Link>
+                        ) : null
+                    })()}
                     <div className="grid grid-cols-2 gap-3">
                         {(['small_top_1', 'small_top_2'] as const).map(pos => b(pos) && (
                             <Link key={pos} href={b(pos).link ?? '/shop'} className="relative rounded-[14px] overflow-hidden block no-underline group" style={{ height: 140 }}>

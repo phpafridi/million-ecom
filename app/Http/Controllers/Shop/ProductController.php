@@ -75,4 +75,25 @@ class ProductController extends Controller
             'seo'      => $this->productSeo($product, $baseUrl), // ✅ SEO
         ]);
     }
+
+    public function newArrivals(\Illuminate\Http\Request $request)
+    {
+        $products = Product::active()
+            ->with('category', 'productImages')
+            ->where(function($q) {
+                $q->where('is_new', true)
+                  ->orWhere('created_at', '>=', now()->subDays(30));
+            })
+            ->latest()
+            ->paginate(24)
+            ->withQueryString();
+
+        return \Inertia\Inertia::render('Shop/Index', [
+            'products'   => $products,
+            'categories' => \App\Models\Category::active()->whereNull('parent_id')->orderBy('sort_order')->get(),
+            'filters'    => ['is_new' => '1'],
+            'settings'   => \App\Models\Setting::allKeyed(),
+            'seo'        => ['title' => 'New Arrivals — MILLIONAIRE', 'description' => 'Latest products from MILLIONAIRE'],
+        ]);
+    }
 }

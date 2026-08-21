@@ -3,6 +3,8 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Shop;
 use App\Http\Controllers\Shop\PaymentController;
 use App\Http\Controllers\Shop\PayFastController;
+use App\Http\Controllers\Shop\ChatController;
+use App\Http\Controllers\Shop\SupportController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\SeoController;
@@ -118,6 +120,39 @@ Route::get('/wishlist/check',        [Shop\WishlistController::class, 'checkAll'
 Route::get('/wishlist/check-single', [Shop\WishlistController::class, 'checkSingle'])->name('wishlist.check.single');
 
 // ── CUSTOMER ACCOUNT
+
+// ── POLICY PAGES ──────────────────────────────────────────────────────────────
+Route::get('/pages/return-policy',   [Shop\PageController::class, 'returnPolicy'])->name('pages.return-policy');
+Route::get('/pages/privacy-policy',  [Shop\PageController::class, 'privacyPolicy'])->name('pages.privacy-policy');
+Route::get('/pages/terms',           [Shop\PageController::class, 'termsOfService'])->name('pages.terms');
+Route::get('/pages/shipping-policy', [Shop\PageController::class, 'shippingPolicy'])->name('pages.shipping-policy');
+Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy'])->name('pages.payment-policy');
+
+
+
+// ── CHAT ─────────────────────────────────────────────────────────────────────
+Route::post('/chat/start',         [ChatController::class, 'start'])->name('chat.start');
+Route::post('/chat/send',          [ChatController::class, 'send'])->name('chat.send');
+Route::get('/chat/poll',           [ChatController::class, 'poll'])->name('chat.poll');
+Route::post('/chat/request-agent', [ChatController::class, 'requestAgent'])->name('chat.request-agent');
+Route::post('/chat/rate',          [ChatController::class, 'rate'])->name('chat.rate');
+
+// ── SUPPORT ───────────────────────────────────────────────────────────────────
+Route::get('/support',            [SupportController::class, 'index'])->name('support.index');
+Route::post('/support',           [SupportController::class, 'store'])->name('support.store');
+Route::get('/support/my-tickets', [SupportController::class, 'myTickets'])->name('support.my-tickets')->middleware('auth');
+
+// ── NEW ARRIVALS ──────────────────────────────────────────────────────────────
+Route::get('/new-arrivals', [Shop\ProductController::class, 'newArrivals'])->name('shop.new-arrivals');
+
+// ── POLICY PAGES ──────────────────────────────────────────────────────────────
+Route::get('/pages/return-policy',   [Shop\PageController::class, 'returnPolicy'])->name('pages.return-policy');
+Route::get('/pages/privacy-policy',  [Shop\PageController::class, 'privacyPolicy'])->name('pages.privacy-policy');
+Route::get('/pages/terms',           [Shop\PageController::class, 'termsOfService'])->name('pages.terms');
+Route::get('/pages/shipping-policy', [Shop\PageController::class, 'shippingPolicy'])->name('pages.shipping-policy');
+Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy'])->name('pages.payment-policy');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/account',          [Shop\AccountController::class, 'index'])->name('account.index');
     Route::get('/account/profile',  [Shop\AccountController::class, 'profile'])->name('account.profile');
@@ -234,4 +269,39 @@ Route::middleware(['auth', 'admin'])
     Route::post('email-campaigns/subscribers/import',      [Admin\EmailCampaignController::class, 'importSubscribers'])->name('email-campaigns.import');
     Route::delete('email-campaigns/subscribers/{subscriber}',[Admin\EmailCampaignController::class, 'removeSubscriber'])->name('email-campaigns.remove');
     Route::post('seo', [Admin\SeoSettingController::class, 'update'])->name('seo.update');
+
+    // ── STAFF ────────────────────────────────────────────────────────────
+    Route::get('staff',           [Admin\StaffController::class, 'index'])->name('staff.index');
+    Route::post('staff',          [Admin\StaffController::class, 'store'])->name('staff.store');
+    Route::put('staff/{user}',    [Admin\StaffController::class, 'update'])->name('staff.update');
+    Route::delete('staff/{user}', [Admin\StaffController::class, 'destroy'])->name('staff.destroy');
+
+    // ── SUPPORT TICKETS ───────────────────────────────────────────────────
+    Route::get('support',              [Admin\SupportTicketController::class, 'index'])->name('support.admin.index');
+    Route::get('support/{id}',         [Admin\SupportTicketController::class, 'show'])->name('support.admin.show');
+    Route::post('support/{id}/reply',  [Admin\SupportTicketController::class, 'reply'])->name('support.admin.reply');
+    Route::patch('support/{id}',       [Admin\SupportTicketController::class, 'update'])->name('support.admin.update');
+
+    // ── LIVE CHAT ─────────────────────────────────────────────────────────
+    Route::get('chat',                        [Admin\ChatAdminController::class, 'index'])->name('chat.admin.index');
+    Route::post('chat/sessions/{id}/join',    [Admin\ChatAdminController::class, 'join'])->name('chat.admin.join');
+    Route::post('chat/sessions/{id}/reply',   [Admin\ChatAdminController::class, 'reply'])->name('chat.admin.reply');
+    Route::get('chat/sessions/{id}/poll',     [Admin\ChatAdminController::class, 'sessionPoll'])->name('chat.admin.poll');
+    Route::post('chat/sessions/{id}/close',   [Admin\ChatAdminController::class, 'close'])->name('chat.admin.close');
+    Route::post('chat/heartbeat',             [Admin\ChatAdminController::class, 'heartbeat'])->name('chat.admin.heartbeat');
+    Route::get('chat/sessions/{id}/messages', [Admin\ChatAdminController::class, 'sessionMessages'])->name('chat.admin.messages');
+    Route::post('chat/faqs',                  [Admin\ChatAdminController::class, 'storeFaq'])->name('chat.admin.faqs.store');
+    Route::delete('chat/faqs/{id}',           [Admin\ChatAdminController::class, 'destroyFaq'])->name('chat.admin.faqs.destroy');
+
+    // ── REPORTS ───────────────────────────────────────────────────────────
+    Route::get('reports',        [Admin\ReportsController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [Admin\ReportsController::class, 'export'])->name('reports.export');
+
+    // ── RETURNS ───────────────────────────────────────────────────────────
+    Route::get('returns',        [Admin\ReturnController::class, 'index'])->name('returns.index');
+    Route::patch('returns/{id}', [Admin\ReturnController::class, 'update'])->name('returns.update');
+
+    // ── ANALYTICS ────────────────────────────────────────────────────────
+    Route::get('analytics', [Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+
 });
