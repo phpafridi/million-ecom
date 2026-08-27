@@ -47,7 +47,7 @@ body{font-family:Manrope,Arial,sans-serif;background:#f5f5f0;margin:0;padding:20
     @endif
 
     <div style="background:#f9f9f7;border-radius:12px;padding:16px;margin:20px 0">
-      <div class="info-row"><span class="info-label">Order #</span><span class="info-value">{{ $order->id }}</span></div>
+      <div class="info-row"><span class="info-label">Order #</span><span class="info-value">{{ ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT))) }}</span></div>
       <div class="info-row"><span class="info-label">Total</span><span class="info-value">Rs {{ number_format($order->total) }}</span></div>
       <div class="info-row"><span class="info-label">Payment</span><span class="info-value">{{ ucfirst($order->payment_status) }}</span></div>
       <div class="info-row"><span class="info-label">Items</span><span class="info-value">{{ $order->items->count() }} item(s)</span></div>

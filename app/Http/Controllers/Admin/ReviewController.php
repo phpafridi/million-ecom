@@ -8,8 +8,13 @@ use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $q = \App\Models\Review::with('product')->latest();
+        if ($s = $request->search) $q->where(fn($q) => $q->where('name','like',"%{$s}%")->orWhere('body','like',"%{$s}%")->orWhere('email','like',"%{$s}%"));
+        if ($request->status === 'approved') $q->where('is_approved',true);
+        elseif ($request->status === 'pending') $q->where('is_approved',false);
+        if ($request->rating) $q->where('rating',(int)$request->rating);
         return Inertia::render('Admin/Reviews/Index', [
             'reviews' => Review::with('product')->latest()->paginate(30),
             'stats' => [

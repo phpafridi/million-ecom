@@ -12,7 +12,7 @@ interface Props { coupons: Coupon[] }
 
 function CouponForm({ coupon, onClose }: { coupon?: Coupon; onClose: () => void }) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const { data, setData, post, put, processing, errors } = useForm({
         code: coupon?.code ?? '',
         type: coupon?.type ?? 'percentage',
@@ -104,7 +104,7 @@ function CouponForm({ coupon, onClose }: { coupon?: Coupon; onClose: () => void 
 
 export default function CouponsIndex({ coupons }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Coupon | 'new' | null>(null)
 
     function del(c: Coupon) {

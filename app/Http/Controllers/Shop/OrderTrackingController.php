@@ -26,9 +26,12 @@ class OrderTrackingController extends Controller
 
         // Search by tracking token OR order ID OR phone
         $order = Order::with(['items.product.productImages', 'statusHistory'])
-            ->where('tracking_token', $query)
-            ->orWhere('id', is_numeric($query) ? $query : 0)
-            ->orWhere('customer_phone', $query)
+            ->where(function($q) use ($query) {
+                $q->where('tracking_token', $query)
+                  ->orWhere('order_number', $query)
+                  ->orWhere('id', is_numeric($query) ? $query : 0)
+                  ->orWhere('customer_phone', $query);
+            })
             ->latest()
             ->first();
 

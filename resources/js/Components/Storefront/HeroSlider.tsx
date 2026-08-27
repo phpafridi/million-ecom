@@ -18,6 +18,9 @@ export default function HeroSlider({ slides, settings }: Props) {
     const [muted, setMuted] = useState(true)
     const videoRef  = useRef<HTMLVideoElement>(null)
     const timerRef  = useRef<ReturnType<typeof setInterval>>()
+    const tsX       = useRef<number | null>(null)
+    const tsY       = useRef<number | null>(null)
+    const tsLocked  = useRef(false)
     const wa        = settings?.whatsapp_number ?? ''
 
     const go = useCallback((n: number, d = 1) => {
@@ -35,6 +38,26 @@ export default function HeroSlider({ slides, settings }: Props) {
     useEffect(() => {
         if (videoRef.current) videoRef.current.muted = muted
     }, [muted, cur])
+
+    function onTouchStart(e: React.TouchEvent) {
+        tsX.current     = e.touches[0].clientX
+        tsY.current     = e.touches[0].clientY
+        tsLocked.current = false
+    }
+    function onTouchMove(e: React.TouchEvent) {
+        if (tsX.current === null || tsY.current === null) return
+        const dx = e.touches[0].clientX - tsX.current
+        const dy = e.touches[0].clientY - tsY.current
+        if (!tsLocked.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8))
+            tsLocked.current = Math.abs(dy) > Math.abs(dx)
+        if (!tsLocked.current) e.preventDefault()
+    }
+    function onTouchEnd(e: React.TouchEvent) {
+        if (tsX.current === null || tsLocked.current) { tsX.current = null; tsY.current = null; return }
+        const dx = e.changedTouches[0].clientX - tsX.current
+        tsX.current = null; tsY.current = null
+        if (Math.abs(dx) > 50) goTo(dx < 0 ? (cur + 1) % slides.length : (cur - 1 + slides.length) % slides.length)
+    }
 
     if (!slides.length) return (
         <div style={{ width: '100%', height: 400, background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
@@ -55,10 +78,15 @@ export default function HeroSlider({ slides, settings }: Props) {
     const H = 'clamp(300px, 52vw, 640px)'
 
     return (
-        <section style={{ position: 'relative', width: '100%', height: H, overflow: 'hidden', background: '#080808', display: 'block', maxWidth: '100vw' }}>
+        <section
+            style={{ position: 'relative', width: '100%', height: H, overflow: 'hidden', background: '#080808', display: 'block', touchAction: 'pan-y' }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
 
             {/* Background */}
-            <AnimatePresence custom={dir} initial={false} mode='wait'>
+            <AnimatePresence custom={dir} initial={false}>
                 <motion.div key={`bg-${cur}`} custom={dir} variants={variants}
                     initial="enter" animate="center" exit="exit"
                     transition={{ duration: 0.75, ease: [0.25, 0.46, 0.45, 0.94] }}

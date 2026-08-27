@@ -9,26 +9,23 @@ import type { Banner } from '@/types'
 interface Props { banners: Banner[] }
 
 const POSITIONS = [
-    { value: 'tall_left',    label: 'Tall Banner (Left) — 600×500px' },
-    { value: 'small_top_1',  label: 'Small Banner Top-Right 1 — 600×200px' },
-    { value: 'small_top_2',  label: 'Small Banner Top-Right 2 — 600×200px' },
-    { value: 'wide_bottom',  label: 'Wide Banner (Bottom-Left) — 900×252px' },
-    { value: 'full_hero',    label: 'Full-Width Hero Banner (between Categories & Grid) — 1400×380px' },
-    { value: 'full_gaming',  label: 'Full-Width Gaming Banner — 1400×360px' },
-    { value: 'full_printers',label: 'Full-Width Printers Banner — 1400×300px' },
-    { value: 'promo_1',      label: 'Promo 3-Col Banner 1 — 600×200px' },
-    { value: 'promo_2',      label: 'Promo 3-Col Banner 2 — 500×200px' },
-    { value: 'promo_3',      label: 'Promo 3-Col Banner 3 — 500×200px' },
+    { value: 'full_hero',   label: '① Full-Width Hero — below categories, 1400×380px' },
+    { value: 'promo',        label: '② Promo Left Tall Card — homepage left column, 600×500px' },
+    { value: 'small_top_1', label: '③ Small Top Right 1 — homepage top right, 600×200px' },
+    { value: 'small_top_2', label: '④ Small Top Right 2 — homepage top right, 600×200px' },
+    { value: 'wide_bottom',  label: '⑤ Wide Bottom — homepage bottom left, 900×252px' },
 ]
 
 function getSpec(position: string) {
-    if (position === 'tall_left')                        return IMAGE_SPECS.banner_tall
+    if (position === 'promo')                            return IMAGE_SPECS.banner_tall
     if (position === 'wide_bottom')                      return IMAGE_SPECS.banner_wide
     if (position.startsWith('full'))                     return IMAGE_SPECS.full_banner
     return IMAGE_SPECS.banner_sm
 }
 
 function BannerForm({ banner, onClose }: { banner?: Banner; onClose: () => void }) {
+    const { props: _bf } = usePage<any>()
+    const ap = `/${_bf?.adminPath ?? 'ml-admin'}`
     const { data, setData, post, processing } = useForm<any>({
         _method: banner ? 'PUT' : 'POST',
         title:     banner?.title    ?? '',
@@ -189,7 +186,7 @@ function BannerForm({ banner, onClose }: { banner?: Banner; onClose: () => void 
 
 export default function BannersIndex({ banners }: Props) {
     const { props: _p } = usePage<{ adminPath?: string }>()
-    const ap = `/${_p.adminPath ?? 'tijar-admin'}`
+    const ap = `/${_p.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Banner | 'new' | null>(null)
 
     return (

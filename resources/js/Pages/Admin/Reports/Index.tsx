@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 import { IconDownload, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
@@ -18,14 +18,16 @@ interface Props {
 const COLORS=['#C9A84C','#0a0a0a','#3B82F6','#10B981','#F59E0B','#EF4444']
 const fmt=(n:number)=>'Rs '+Math.round(n).toLocaleString('en-PK')
 
-export default function Reports({from,to,revenueDaily,byPayment,topProducts,byStatus,lowStock,kpis}:Props) {
-    const ap='/ml-admin'
+export default function Reports({from,to,revenueDaily,byPayment,byCity,topProducts,byStatus,lowStock,kpis}:Props) {
+    const { props: pp } = usePage<any>()
+    const ap = `/${pp.adminPath ?? 'ml-admin'}`
     const [df,setDf]=useState(from)
     const [dt,setDt]=useState(to)
     const growth=kpis.last_month>0?((kpis.this_month-kpis.last_month)/kpis.last_month*100):0
     const statusData=Object.entries(byStatus).map(([name,value])=>({name,value}))
 
-    function applyFilter(){ router.get(`${ap}/reports`,{from:df,to:dt},{preserveState:true}) }
+    function applyFilter(){
+        router.get(`${ap}/reports`,{from:df,to:dt},{preserveState:true}) }
 
     const KCard=({label,value,sub,up}:{label:string;value:string;sub?:string;up?:boolean})=>(
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -138,6 +140,22 @@ export default function Reports({from,to,revenueDaily,byPayment,topProducts,bySt
                             <YAxis tick={{fontSize:10}} tickFormatter={v=>'Rs '+Math.round(v/1000)+'k'}/>
                             <Tooltip formatter={(v:any)=>[fmt(v),'Revenue']}/>
                             <Bar dataKey="revenue" fill="var(--color-primary)" radius={[5,5,0,0]}/>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Top Cities */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-4">
+                    <h3 className="font-black text-[15px] text-gray-800 mb-4">📍 Revenue by City</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={byCity} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={false}/>
+                            <XAxis type="number" tick={{fontSize:10}} tickFormatter={v=>'Rs '+Math.round(v/1000)+'k'}/>
+                            <YAxis type="category" dataKey="city" tick={{fontSize:10}} width={80}/>
+                            <Tooltip formatter={(v:any)=>[fmt(v),'Revenue']}/>
+                            <Bar dataKey="revenue" radius={[0,6,6,0]}>
+                                {byCity.map((_,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

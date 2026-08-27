@@ -150,7 +150,7 @@ function VariantBuilder({ productId }: { productId?: number }) {
 // ── MAIN COMPONENT ──
 export default function ProductEdit({ product, categories, isCreate = false }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing, errors } = useForm({
         _method:       isCreate ? 'POST' : 'PUT',
@@ -162,6 +162,7 @@ export default function ProductEdit({ product, categories, isCreate = false }: P
         stock:         product?.stock         ?? 0,
         category_id:   product?.category_id   ?? '',
         is_featured:   product?.is_featured   ?? false,
+        is_new:        (product as any)?.is_new ?? false,
         is_active:     product?.is_active      ?? true,
         sort_order:    product?.sort_order     ?? 0,
         images:        [] as File[],
@@ -311,8 +312,9 @@ export default function ProductEdit({ product, categories, isCreate = false }: P
                     <div className="bg-white rounded-2xl border border-gray-100 p-5">
                         <h3 className="font-manrope font-bold text-[15px] mb-3">Visibility</h3>
                         {[
-                            { field: 'is_active'  as const, label: 'Published',  hint: 'Visible to customers' },
-                            { field: 'is_featured' as const, label: 'Featured',   hint: 'Show on homepage' },
+                            { field: 'is_active'   as const, label: 'Published',    hint: 'Visible to customers' },
+                            { field: 'is_featured'  as const, label: 'Featured',     hint: 'Show on homepage featured section' },
+                            { field: 'is_new'       as const, label: 'New Arrival',  hint: 'Mark as new arrival (shows in New Arrivals page)' },
                         ].map(t => (
                             <div key={t.field} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                                 <div>

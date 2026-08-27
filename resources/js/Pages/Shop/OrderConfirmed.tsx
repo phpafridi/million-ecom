@@ -3,7 +3,8 @@ import { IconCheck, IconShoppingBag, IconHome, IconPhone, IconBrandWhatsapp, Ico
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 
 interface Order {
-    id: number; total: number; payment_method: string
+    id: number; order_number?: string; tracking_token?: string
+    total: number; payment_method: string
     payment_status: string; status: string
     customer_name: string; customer_phone: string; items_count: number
 }
@@ -18,6 +19,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 export default function OrderConfirmed({ order, auth, settings }: Props) {
     const fmt      = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
+    const displayNum = order?.order_number ?? `#${order?.id}`
     const whatsapp = settings?.whatsapp_number ?? ''
     const phone    = settings?.phone ?? ''
     const isPaid   = order?.payment_status === 'paid'
@@ -26,7 +28,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
     const method   = PAYMENT_LABELS[order?.payment_method ?? ''] ?? order?.payment_method ?? ''
 
     const waMsg = order ? encodeURIComponent(
-        `Hi, I just placed Order #${order.id} for ${fmt(order.total)} via ${method}. Please confirm my order. Name: ${order.customer_name}, Phone: ${order.customer_phone}`
+        `Hi, I placed order ${displayNum} for ${fmt(order.total)} via ${method}. Please confirm. Name: ${order.customer_name}, Phone: ${order.customer_phone}`
     ) : ''
 
     return (
@@ -42,7 +44,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                     </div>
                     <h1 className="font-manrope font-black text-[28px] sm:text-[32px] text-gray-900 mb-2">Order Placed!</h1>
                     <p className="text-gray-500 text-[15px]">
-                        {order ? `Order #${order.id} confirmed — ${order.items_count} item${order.items_count !== 1 ? 's' : ''}` : 'Your order has been received.'}
+                        {order ? `${displayNum} confirmed — ${order.items_count} item${order.items_count !== 1 ? 's' : ''}` : 'Your order has been received.'}
                     </p>
                 </div>
 
@@ -52,8 +54,8 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                         {/* Order summary */}
                         <div className="p-5 border-b border-gray-100">
                             <div className="flex justify-between items-center mb-3">
-                                <span className="text-[13px] font-semibold text-gray-600">Order #</span>
-                                <span className="font-manrope font-black text-[15px]">#{order.id}</span>
+                                <span className="text-[13px] font-semibold text-gray-600">Order Number</span>
+                                <span className="font-manrope font-black text-[15px]">{displayNum}</span>
                             </div>
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-[13px] font-semibold text-gray-600">Total</span>

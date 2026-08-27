@@ -10,30 +10,36 @@ class Product extends Model
     protected $fillable = [
         'name','slug','description','price','compare_price',
         'category_id','stock','stock_reserved','stock_sold',
-        'is_featured','is_active','sort_order',
+        'is_featured','is_new','is_active','sort_order',
         'avg_rating','review_count',
     ];
 
     protected $casts = [
         'is_featured' => 'boolean',
+        'is_new'      => 'boolean',
         'is_active'   => 'boolean',
     ];
 
-    protected $appends = ['images','discount_pct','first_image'];
+    protected $appends = ['images','discount_pct','first_image','is_low_stock'];
 
     // Relations
-    public function category()         { return $this->belongsTo(Category::class); }
-    public function productImages()    { return $this->hasMany(ProductImage::class)->orderBy('sort_order'); }
-    public function orderItems()       { return $this->hasMany(OrderItem::class); }
-    public function variants()         { return $this->hasMany(ProductVariant::class)->orderBy('sort_order'); }
-    public function variantAttributes(){ return $this->hasMany(VariantAttribute::class)->with('values')->orderBy('sort_order'); }
-    public function reviews()          { return $this->hasMany(Review::class); }
-    public function approvedReviews()  { return $this->hasMany(Review::class)->where('is_approved', true)->latest(); }
+    public function category()          { return $this->belongsTo(Category::class); }
+    public function productImages()     { return $this->hasMany(ProductImage::class)->orderBy('sort_order'); }
+    public function orderItems()        { return $this->hasMany(OrderItem::class); }
+    public function variants()          { return $this->hasMany(ProductVariant::class)->orderBy('sort_order'); }
+    public function variantAttributes() { return $this->hasMany(VariantAttribute::class)->with('values')->orderBy('sort_order'); }
+    public function reviews()           { return $this->hasMany(Review::class); }
+    public function approvedReviews()   { return $this->hasMany(Review::class)->where('is_approved', true)->latest(); }
 
     // Scopes
     public function scopeActive($q)    { return $q->where('is_active', true); }
     public function scopeFeatured($q)  { return $q->where('is_featured', true); }
     public function scopeOnSale($q)    { return $q->whereColumn('price', '<', 'compare_price'); }
+    public function scopeNew($q)       { return $q->where('is_new', true); }
+    public function scopeLowStock($q)  {
+        $threshold = (int) (\App\Models\Setting::get('low_stock_threshold', 5) ?? 5);
+        return $q->where('stock', '<=', $threshold)->where('stock', '>', 0);
+    }
 
     // Appended attributes
     public function getImagesAttribute(): array {
@@ -52,6 +58,11 @@ class Product extends Model
     public function getDiscountPctAttribute(): int {
         if (!$this->compare_price || $this->compare_price <= $this->price) return 0;
         return (int) round((($this->compare_price - $this->price) / $this->compare_price) * 100);
+    }
+
+    public function getIsLowStockAttribute(): bool {
+        $threshold = (int) (\App\Models\Setting::get('low_stock_threshold', 5) ?? 5);
+        return $this->stock <= $threshold && $this->stock > 0;
     }
 
     // Effective stock (total across variants if has variants)

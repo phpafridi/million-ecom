@@ -21,11 +21,11 @@ class HeroSlideController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title'         => 'required|string',
-            'subtitle'      => 'required|string',
-            'description'   => 'required|string',
-            'cta_text'      => 'required|string',
-            'cta_url'       => 'required|string',
+            'title'         => 'nullable|string',
+            'subtitle'      => 'nullable|string',
+            'description'   => 'nullable|string',
+            'cta_text'      => 'nullable|string',
+            'cta_url'       => 'nullable|string',
             'discount_pct'  => 'integer|min:0|max:99',
             'price'         => 'nullable|string',
             'compare_price' => 'nullable|string',
@@ -35,7 +35,9 @@ class HeroSlideController extends Controller
         $data['sort_order'] = HeroSlide::max('sort_order') + 1;
 
         if ($request->hasFile('image')) {
-            $imagePath = \App\Services\ImageService::process($request->file('image'), 'banners', 'hero');
+            $data['image_path'] = \App\Services\ImageService::process($request->file('image'), 'banners', 'hero');
+        } else {
+            $data['image_path'] = null;
         }
 
         HeroSlide::create($data);
@@ -58,7 +60,7 @@ class HeroSlideController extends Controller
 
         if ($request->hasFile('image')) {
             if ($heroSlide->image_path) Storage::delete($heroSlide->image_path);
-            $imagePath = \App\Services\ImageService::process($request->file('image'), 'banners', 'hero');
+            $data['image_path'] = \App\Services\ImageService::process($request->file('image'), 'banners', 'hero');
         }
 
         $heroSlide->update($data);

@@ -13,7 +13,7 @@ interface Props {
 
 export default function CustomersIndex({ customers, stats }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const fmt = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
 
     return (

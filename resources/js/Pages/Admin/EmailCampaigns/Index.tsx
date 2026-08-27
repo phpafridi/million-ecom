@@ -24,7 +24,7 @@ const TEMPLATES = [
 
 export default function EmailCampaigns({ subscribers, subscriberCount, orderedCount, registeredCount, totalCount }: Props) {
     const { props } = usePage<{ adminPath?: string; flash?: any }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const [tab, setTab] = useState<'compose'|'subscribers'>('compose')
     const [tpl, setTpl] = useState(0)
     const [showImport, setShowImport] = useState(false)
@@ -58,7 +58,8 @@ export default function EmailCampaigns({ subscribers, subscriberCount, orderedCo
         (data.audiences.includes('ordered')     ? orderedCount     : 0) +
         (data.audiences.includes('registered')  ? registeredCount  : 0)
 
-    function sendTest(e: React.FormEvent) { e.preventDefault(); post(`${ap}/email-campaigns/test`) }
+    function sendTest(e: React.FormEvent) {
+        e.preventDefault(); post(`${ap}/email-campaigns/test`) }
     function sendCampaign(e: React.FormEvent) {
         e.preventDefault()
         if (!confirm(`Send to ${totalSelected} recipients?`)) return

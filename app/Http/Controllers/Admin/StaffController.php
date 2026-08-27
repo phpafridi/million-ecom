@@ -18,7 +18,7 @@ class StaffController extends Controller
 
     public function index()
     {
-        $staff = User::where(fn($q) => $q->where('role','admin')->orWhere('is_staff',true))
+        $staff = User::where(fn($q) => $q->where('role','admin')->orWhere('role','staff')->orWhere('is_staff',true))
             ->orderBy('created_at')->get()
             ->map(fn($u) => ['id'=>$u->id,'name'=>$u->name,'email'=>$u->email,'role'=>$u->role,'staff_role'=>$u->staff_role,'is_staff'=>(bool)$u->is_staff,'is_active'=>(bool)($u->is_active??true),'last_login_at'=>$u->last_login_at,'created_at'=>$u->created_at,'permissions'=>$u->permissions??[]]);
         return Inertia::render('Admin/Staff/Index', ['staff'=>$staff,'roles'=>self::$roles]);

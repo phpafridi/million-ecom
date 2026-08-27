@@ -8,8 +8,11 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $q = \App\Models\User::where('role','customer');
+        if ($s = $request->search) $q->where(fn($q) => $q->where('name','like',"%{$s}%")->orWhere('email','like',"%{$s}%")->orWhere('phone','like',"%{$s}%"));
+        if ($request->city) $q->where('city','like',"%{$request->city}%");
         $registered = User::where('role', 'customer')
             ->withCount('orders')
             ->withSum('orders', 'total')

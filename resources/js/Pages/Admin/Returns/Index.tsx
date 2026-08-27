@@ -14,7 +14,8 @@ export default function ReturnsIndex({ returns, stats }:Props) {
     const [form, setForm]       = useState({ status:'', admin_notes:'', refund_amount:'' })
 
     function startEdit(r:Return){ setEditing(r); setForm({ status:r.status, admin_notes:'', refund_amount:String(r.refund_amount||r.order_total||0) }) }
-    function submit(e:React.FormEvent){ e.preventDefault(); if(!editing) return; router.patch(`${ap}/returns/${editing.id}`, form, { onSuccess:()=>setEditing(null) }) }
+    function submit(e:React.FormEvent){
+        e.preventDefault(); if(!editing) return; router.patch(`${ap}/returns/${editing.id}`, form, { onSuccess:()=>setEditing(null) }) }
 
     return (
         <AdminLayout title="Returns & Refunds">

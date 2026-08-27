@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Order, PaymentGateway, Setting};
+use App\Services\OrderNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Http, Log};
 
@@ -20,6 +21,7 @@ class PaymentController extends Controller
             'notes'          => trim(($order->notes ?? '') . ($txnId ? " [TxnID: $txnId]" : '')),
         ]);
         Log::info("Order #{$order->id} marked paid. TxnID: {$txnId}");
+        try { (new OrderNotificationService())->notify($order->fresh(), 'processing'); } catch (\Throwable $e) { Log::error('Notify failed: '.$e->getMessage()); }
     }
 
     private function markFailed(Order $order, string $reason = ''): void
@@ -693,7 +695,6 @@ HTML);
             <script>document.getElementById("pgform").submit();</script>
         </body></html>';
     }
-}
 
 
     // ─────────────────────────────────────────────────────

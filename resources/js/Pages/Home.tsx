@@ -47,6 +47,46 @@ function SectionHeader({ eyebrow, title, viewAll }: { eyebrow: string; title: st
     )
 }
 
+function CatDots({ total }: { total: number }) {
+    const [active, setActive] = useState(0)
+    const pages = Math.ceil(total / 2)
+    useEffect(() => {
+        const track = document.getElementById('ml-cat-track')
+        if (!track) return
+        const iv = setInterval(() => {
+            if (track.dataset.touching === '1') return
+            setActive(p => {
+                const next = (p + 1) % pages
+                const w = track.scrollWidth / total
+                track.scrollTo({ left: next * 2 * w, behavior: 'smooth' })
+                return next
+            })
+        }, 3000)
+        const onScroll = () => {
+            const w = track.scrollWidth / total
+            setActive(Math.min(Math.round(track.scrollLeft / (w * 2)), pages - 1))
+        }
+        track.addEventListener('scroll', onScroll, { passive: true })
+        return () => { clearInterval(iv); track.removeEventListener('scroll', onScroll) }
+    }, [total, pages])
+    return (
+        <div style={{ display:'flex', justifyContent:'center', gap:6, marginTop:10 }}>
+            {Array(pages).fill(0).map((_,i) => (
+                <button key={i}
+                    onClick={() => {
+                        const track = document.getElementById('ml-cat-track')
+                        if (!track) return
+                        const w = track.scrollWidth / total
+                        track.scrollTo({ left: i * 2 * w, behavior: 'smooth' })
+                        setActive(i)
+                    }}
+                    style={{ width:i===active?22:7, height:7, borderRadius:100, background:i===active?'var(--color-primary)':'#D1D5DB', border:'none', cursor:'pointer', padding:0, transition:'all 0.3s' }}
+                />
+            ))}
+        </div>
+    )
+}
+
 export default function Home({ heroSlides, featuredProducts, onSaleProducts, topRatedProducts, newProducts, categories, topCategories, categoryProducts, banners, settings, auth }: Props) {
     const [tab, setTab] = useState('featured')
     const [loaded, setLoaded] = useState(false)
@@ -78,58 +118,108 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
 
             <HeroSlider slides={heroSlides} />
 
-            {/* TRUST BAR */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 border-b"
-                style={{ background: settings?.trust_bar_bg || 'var(--color-dark-bg,#0a0e1a)', borderColor: settings?.trust_bar_bg || 'var(--color-dark-bg,#0a0e1a)' }}>
-                {TRUST.map((t, i) => (
-                    <div key={i} className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 border-r last:border-r-0"
-                        style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[9px] sm:rounded-[10px] flex items-center justify-center text-sm sm:text-base flex-shrink-0"
-                            style={{ background: (settings?.trust_icon_color || 'var(--color-primary,#00c8ff)') + '18', border: '1px solid ' + (settings?.trust_icon_color || 'var(--color-primary,#00c8ff)') + '30' }}>
-                            {t.icon}
+            {/* TRUST BAR — 2 items mobile, 4 desktop */}
+            <div style={{ background: settings?.trust_bar_bg || 'var(--color-dark-bg,#0a0a0a)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex lg:hidden">
+                    {TRUST.slice(0,2).map((t, i) => (
+                        <div key={i} className="flex flex-1 items-center gap-2.5 px-4 py-3"
+                            style={{ borderRight: i===0 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+                            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 text-[15px]"
+                                style={{ background:(settings?.trust_icon_color||'var(--color-primary)')+'20', border:'1px solid '+(settings?.trust_icon_color||'var(--color-primary)')+'35' }}>
+                                {t.icon}
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-[11px] font-bold leading-tight text-white truncate">{t.title}</div>
+                                <div className="text-[10px] mt-0.5 truncate" style={{ color:'rgba(255,255,255,0.45)' }}>{t.sub}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div className="text-[11px] sm:text-[12px] font-bold"
-                                style={{ color: settings?.trust_title_color || '#ffffff' }}>{t.title}</div>
-                            <div className="hidden sm:block text-[11px]"
-                                style={{ color: settings?.trust_sub_color || '#6b8aaa' }}>{t.sub}</div>
+                    ))}
+                </div>
+                <div className="hidden lg:grid lg:grid-cols-4">
+                    {TRUST.slice(0,4).map((t, i) => (
+                        <div key={i} className="flex items-center gap-3 px-5 py-4"
+                            style={{ borderRight: i<3 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
+                            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 text-base"
+                                style={{ background:(settings?.trust_icon_color||'var(--color-primary)')+'18', border:'1px solid '+(settings?.trust_icon_color||'var(--color-primary)')+'30' }}>
+                                {t.icon}
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-[12px] font-bold leading-tight truncate" style={{ color:settings?.trust_title_color||'#fff' }}>{t.title}</div>
+                                <div className="text-[10.5px] mt-0.5 truncate" style={{ color:settings?.trust_sub_color||'rgba(255,255,255,0.45)' }}>{t.sub}</div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {/* TICKER */}
-            <div className="border-b border-gray-100 overflow-hidden flex items-center h-9 sm:h-10"
-                style={{ background: settings?.ticker_bg || '#ffffff' }}>
-                <div className="text-[9.5px] sm:text-[10.5px] font-black tracking-[.12em] uppercase px-3 sm:px-5 h-full flex items-center gap-2 flex-shrink-0"
-                    style={{ background: settings?.ticker_live_bg || 'var(--color-primary,#00c8ff)', color: settings?.ticker_live_text || 'var(--color-dark-bg,#0a0e1a)' }}>
-                    <span className="w-1.5 h-1.5 rounded-full animate-pulse"
-                        style={{ background: settings?.ticker_live_text || 'var(--color-dark-bg,#0a0e1a)' }} /> Live
+            <div className="border-b border-gray-100 flex items-center overflow-hidden" style={{ height:36, background:settings?.ticker_bg||'#fff' }}>
+                <div className="flex-shrink-0 flex items-center gap-1.5 px-3 h-full"
+                    style={{ background:settings?.ticker_live_bg||'var(--color-primary)', color:settings?.ticker_live_text||'#0a0a0a', borderRight:'1px solid rgba(0,0,0,0.1)', minWidth:62, justifyContent:'center' }}>
+                    <span style={{ width:6, height:6, borderRadius:'50%', background:'currentColor', flexShrink:0, animation:'mlLiveDot 1.4s ease-in-out infinite' }} />
+                    <span style={{ fontSize:10, fontWeight:900, letterSpacing:'0.1em' }}>LIVE</span>
                 </div>
-                <div className="overflow-hidden flex-1 flex items-center">
-                    <div className="flex gap-8 sm:gap-12 whitespace-nowrap pl-6 sm:pl-10 items-center" style={{ animation: 'ticker 30s linear infinite' }}>
+                <div className="flex-1 min-w-0 overflow-hidden"
+                    style={{ WebkitMaskImage:'linear-gradient(to right,transparent,black 40px,black calc(100% - 30px),transparent)', maskImage:'linear-gradient(to right,transparent,black 40px,black calc(100% - 30px),transparent)' }}>
+                    <div style={{ display:'flex', width:'max-content', animation:'mlTickerScroll 30s linear infinite', willChange:'transform' }}>
                         {[...TICKER, ...TICKER].map((item, i) => (
-                            <span key={i} className="inline-flex items-center gap-1.5 sm:gap-2 text-[11.5px] sm:text-[12.5px] text-gray-500 font-medium">
-                                <IconCircleCheck size={13} className="text-[var(--color-primary, #00c8ff)] flex-shrink-0" /> {item}
+                            <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0 22px', whiteSpace:'nowrap', fontSize:11.5, fontWeight:500, color:'#555' }}>
+                                <span style={{ width:4, height:4, borderRadius:'50%', background:'var(--color-primary)', flexShrink:0 }} />
+                                {item}
                             </span>
                         ))}
                     </div>
                 </div>
-                <style>{`@keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }`}</style>
+                <style>{`@keyframes mlTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes mlLiveDot{0%,100%{opacity:1}50%{opacity:0.2}}`}</style>
             </div>
 
-            {/* CATEGORIES STRIP */}
-            <section className="px-4 sm:px-6 lg:px-10 py-5 sm:py-6">
-                <SectionHeader eyebrow="Shop by" title="All Categories" viewAll="/shop" />
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+            {/* CATEGORIES — swipe carousel on mobile, grid on desktop */}
+            <section className="py-5 sm:py-6">
+                <div className="px-4 sm:px-6 lg:px-10">
+                    <SectionHeader eyebrow="Shop by" title="All Categories" viewAll="/shop" />
+                </div>
+                {/* Mobile swipe — touch-aware auto scroll */}
+                <div className="lg:hidden">
+                    <div id="ml-cat-track"
+                        style={{ display:'flex', gap:12, padding:'0 16px 4px', overflowX:'auto', scrollSnapType:'x mandatory', WebkitOverflowScrolling:'touch', scrollbarWidth:'none', scrollBehavior:'smooth' }}
+                        onTouchStart={() => { const el=document.getElementById('ml-cat-track'); if(el) el.dataset.touching='1' }}
+                        onTouchEnd={()   => { const el=document.getElementById('ml-cat-track'); if(el) setTimeout(()=>{ el.dataset.touching='0' }, 800) }}>
+                        {!loaded
+                            ? Array(8).fill(0).map((_,i)=>(
+                                <div key={i} className="flex-shrink-0 animate-pulse"
+                                    style={{ width:'calc(50% - 6px)', scrollSnapAlign:'start' }}>
+                                    <div className="bg-gray-200 rounded-[18px] w-full" style={{ aspectRatio:'3/4' }} />
+                                </div>
+                            ))
+                            : categories.slice(0,8).map(cat=>(
+                                <Link key={cat.id} href={`/shop?category=${cat.slug}`}
+                                    className="no-underline flex-shrink-0 block"
+                                    style={{ width:'calc(50% - 6px)', scrollSnapAlign:'start' }}>
+                                    <div className="relative overflow-hidden rounded-[18px] w-full" style={{ aspectRatio:'3/4' }}>
+                                        <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name}
+                                            className="w-full h-full object-cover block" loading="lazy" />
+                                        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.05) 55%,transparent 100%)' }} />
+                                        <span style={{ position:'absolute', bottom:0, left:0, right:0, padding:'10px 12px', color:'white', fontSize:13, fontWeight:700, lineHeight:1.2 }}>
+                                            {cat.name}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))
+                        }
+                    </div>
+                    <CatDots total={Math.min(categories.length,8)} />
+                    <style>{`#ml-cat-track::-webkit-scrollbar{display:none}`}</style>
+                </div>
+                {/* Desktop grid */}
+                <div className="hidden lg:grid lg:grid-cols-8 gap-3 px-10">
                     {!loaded
-                        ? Array(8).fill(0).map((_, i) => <CategorySkeleton key={i} />)
-                        : categories.slice(0, 8).map((cat, i) => (
-                            <motion.div key={cat.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}>
+                        ? Array(8).fill(0).map((_,i)=><CategorySkeleton key={i} />)
+                        : categories.slice(0,8).map((cat,i)=>(
+                            <motion.div key={cat.id} initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} transition={{ delay:i*0.04 }}>
                                 <Link href={`/shop?category=${cat.slug}`}
-                                    className="bg-white rounded-[12px] sm:rounded-[13px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary, #00c8ff)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,200,255,0.1)]">
-                                    <img src={cat.image ?? '/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" loading="lazy" />
-                                    <span className="block text-[10.5px] sm:text-[12px] font-bold text-gray-900 py-1.5 sm:py-2 px-1 truncate">{cat.name}</span>
+                                    className="bg-white rounded-[13px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]">
+                                    <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" loading="lazy" />
+                                    <span className="block text-[11px] font-bold text-gray-900 py-2 px-1 truncate">{cat.name}</span>
                                 </Link>
                             </motion.div>
                         ))
@@ -401,27 +491,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
             </motion.section>
             )}
 
-            {/* NEWSLETTER */}
-            <motion.section className="px-4 sm:px-6 lg:px-10 pb-6 sm:pb-8"
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                <div className="bg-gradient-to-br from-[var(--color-dark-bg, #0a0e1a)] to-[#0d1a2e] rounded-[16px] sm:rounded-[18px] p-6 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-7 relative overflow-hidden border border-[var(--color-dark-bg, #0a0e1a)]">
-                    <div className="absolute right-[-60px] bottom-[-80px] w-[260px] h-[260px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,200,255,0.07), transparent 70%)' }} />
-                    <div className="relative z-10">
-                        <h3 className="font-manrope font-black text-[18px] sm:text-[22px] text-white mb-2 tracking-tight">Stay Updated</h3>
-                        <p className="text-[12.5px] sm:text-[13px] text-white/60">Latest deals & new arrivals. <strong className="text-[var(--color-primary, #00c8ff)]">No spam, ever.</strong></p>
-                    </div>
-                    <form className="flex bg-[var(--color-dark-bg, #0a0e1a)] border border-[var(--color-dark-bg, #0a0e1a)] rounded-[11px] p-1.5 gap-1.5 w-full sm:w-auto sm:min-w-[340px] relative z-10 flex-shrink-0" onSubmit={e => e.preventDefault()}>
-                        <input type="email" placeholder="Enter your email" required
-                            className="flex-1 outline-none px-3 sm:px-4 text-[13px] bg-transparent text-white placeholder:text-[#4a5568] border-none min-w-0" />
-                        <button type="submit" className="bg-[var(--color-primary, #00c8ff)] hover:bg-[var(--color-primary-dark, #00b0e0)] text-[var(--color-dark-bg, #0a0e1a)] font-black text-[12px] sm:text-[12.5px] px-3 sm:px-4 py-2.5 rounded-[8px] transition-colors whitespace-nowrap border-none cursor-pointer">
-                            Subscribe
-                        </button>
-                    </form>
-                </div>
-            </motion.section>
+
         </StorefrontLayout>
     )
 }

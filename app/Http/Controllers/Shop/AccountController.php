@@ -216,6 +216,7 @@ class AccountController extends Controller
     {
         return [
             'id'             => $order->id,
+            'order_number'   => $order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT)),
             'tracking_token' => $order->tracking_token,
             'status'         => $order->status,
             'payment_status' => $order->payment_status,
@@ -233,6 +234,7 @@ class AccountController extends Controller
 
         return [
             'id'             => $order->id,
+            'order_number'   => $order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT)),
             'tracking_token' => $order->tracking_token,
             'status'         => $order->status,
             'payment_status' => $order->payment_status,

@@ -30,7 +30,7 @@ const PAY_COLORS: Record<string, string> = {
 
 export default function OrdersIndex({ orders, filters }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const [search, setSearch] = useState(filters.q ?? '')
     const fmt = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
 
@@ -89,7 +89,7 @@ export default function OrdersIndex({ orders, filters }: Props) {
                             {orders.data.map(order => (
                                 <tr key={order.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-5 py-3.5">
-                                        <div className="font-bold text-[13px]" style={{ color: 'var(--color-dark-bg)' }}>#{order.id}</div>
+                                        <div className="font-bold text-[13px]" style={{ color: 'var(--color-dark-bg)' }}>{(order as any).order_number ?? `#${order.id}`}</div>
                                         <div className="text-[11px] text-gray-400">{new Date(order.created_at).toLocaleDateString('en-PK', { day:'numeric', month:'short', year:'numeric' })}</div>
                                     </td>
                                     <td className="px-5 py-3.5">

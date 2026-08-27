@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [
         laravel({
             input:   'resources/js/app.tsx',
-            ssr:     'resources/js/ssr.tsx',  // ✅ SSR entry
+            ssr:     'resources/js/ssr.tsx',
             refresh: true,
         }),
         react(),
@@ -20,6 +20,20 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'resources/js'),
+        },
+    },
+    // Suppress the useLayoutEffect warning from @inertiajs/react SSR bundle
+    // It's a harmless warning — useLayoutEffect is tree-shaken out in SSR
+    build: {
+        rollupOptions: {
+            onwarn(warning, warn) {
+                if (
+                    warning.code === 'UNUSED_EXTERNAL_IMPORT' &&
+                    warning.exporter === 'react' &&
+                    warning.names?.includes('useLayoutEffect')
+                ) return  // suppress this specific warning
+                warn(warning)
+            },
         },
     },
     server: {

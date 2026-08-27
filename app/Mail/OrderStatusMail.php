@@ -20,12 +20,12 @@ class OrderStatusMail extends Mailable
     {
         $siteName = Setting::get('site_name', 'MILLIONAIRE');
         $subject  = match($this->newStatus) {
-            'processing' => "✅ Order #{$this->order->id} Confirmed — {$siteName}",
-            'shipped'    => "🚚 Your Order #{$this->order->id} Has Been Shipped!",
-            'delivered'  => "🎉 Order #{$this->order->id} Delivered — Thank You!",
-            'cancelled'  => "❌ Order #{$this->order->id} Cancelled — {$siteName}",
-            'refunded'   => "💰 Refund Processed for Order #{$this->order->id}",
-            default      => "Order #{$this->order->id} Update — {$siteName}",
+            'processing' => "✅ Order " . ($this->order->order_number ?? '#'.$this->order->id) . " Confirmed — {$siteName}",
+            'shipped'    => "🚚 Your Order " . ($this->order->order_number ?? '#'.$this->order->id) . " Has Been Shipped!",
+            'delivered'  => "🎉 Order " . ($this->order->order_number ?? '#'.$this->order->id) . " Delivered — Thank You!",
+            'cancelled'  => "❌ Order " . ($this->order->order_number ?? '#'.$this->order->id) . " Cancelled — {$siteName}",
+            'refunded'   => "💰 Refund for Order " . ($this->order->order_number ?? '#'.$this->order->id),
+            default      => "Order " . ($this->order->order_number ?? '#'.$this->order->id) . " Update — {$siteName}",
         };
         return new Envelope(subject: $subject);
     }
@@ -37,8 +37,8 @@ class OrderStatusMail extends Mailable
             'order'     => $this->order->load('items.product'),
             'status'    => $this->newStatus,
             'siteName'  => $s['site_name'] ?? 'MILLIONAIRE',
-            'logoUrl'   => $s['logo_url']  ?? null,
-            'siteUrl'   => $s['site_url']  ?? url('/'),
+            'logoUrl'   => isset($s['logo_url']) ? (str_starts_with($s['logo_url'], 'http') ? $s['logo_url'] : url($s['logo_url'])) : null,
+            'siteUrl'   => $s['site_url'] ?? url('/'),
             'phone'     => $s['phone']     ?? '',
             'trackUrl'  => url("/track/{$this->order->tracking_token}"),
         ]);

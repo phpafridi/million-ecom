@@ -46,7 +46,11 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
     }, [])
 
     function apply(params: Record<string, any>) {
-        router.get('/shop', { ...(filters ?? {}), ...params }, { preserveState: true, preserveScroll: true })
+        const base: Record<string,any> = {}
+        if (filters && typeof filters === 'object' && !Array.isArray(filters)) Object.assign(base, filters)
+        Object.assign(base, params)
+        Object.keys(base).forEach(k => { if (base[k] == null || base[k] === '') delete base[k] })
+        router.get('/shop', base, { preserveState: true, preserveScroll: true })
     }
 
     const title = filters.q
@@ -60,11 +64,14 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
             <Head title={title} />
 
             {/* Page header */}
-            <div className="bg-[var(--color-dark-bg, #0a0e1a)] border-b border-[var(--color-dark-bg, #0a0e1a)] px-4 sm:px-6 lg:px-10 py-4 sm:py-5">
-                <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary, #00c8ff)] uppercase tracking-[.1em] mb-1">
+            <div className="px-4 sm:px-6 lg:px-10 py-4 sm:py-5"
+                style={{ background: 'var(--color-dark-bg,#0a0a0a)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.1em] mb-1"
+                    style={{ color: 'var(--color-primary,#C9A84C)' }}>
                     {filters.q ? 'Search Results' : 'Shop'}
                 </div>
-                <h1 className="font-manrope font-black text-[22px] sm:text-[26px] text-white tracking-tight">{title}</h1>
+                <h1 className="font-manrope font-black text-[22px] sm:text-[26px] tracking-tight"
+                    style={{ color: '#ffffff' }}>{title}</h1>
             </div>
 
             <div className="flex min-h-0 items-start">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Order #{{ $order->id }} Confirmed</title>
+<title>Order {{ ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT))) }} Confirmed</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -85,7 +85,7 @@
 
     <div class="body">
       <div style="text-align:center;margin-bottom:24px;">
-        <span class="status-pill">Order #{{ $order->id }}</span>
+        <span class="status-pill">Order {{ ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT))) }}</span>
       </div>
 
       <!-- Items -->
@@ -179,7 +179,7 @@
       <div class="contact-row">
         <p>Need help with your order?</p>
         @if($whatsapp)
-        <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I need help with Order #' . $order->id) }}">💬 WhatsApp Us</a>
+        <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I need help with Order ' . ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT)))) }}">💬 WhatsApp Us</a>
         @endif
         @if($phone)
         <a href="tel:{{ $phone }}">📞 {{ $phone }}</a>

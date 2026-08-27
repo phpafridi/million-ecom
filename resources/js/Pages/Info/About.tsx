@@ -1,107 +1,164 @@
 import { Head, Link } from '@inertiajs/react'
-import { IconShieldCheck, IconTruck, IconHeadset, IconStar, IconBrandWhatsapp } from '@tabler/icons-react'
+import { IconShieldCheck, IconTruck, IconHeadset, IconStar, IconBrandWhatsapp, IconArrowRight } from '@tabler/icons-react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
-import type { PageProps } from '@/types'
 
-interface Props extends PageProps { settings: Record<string, string>; content?: Record<string, string> }
+interface Props { settings: Record<string, string>; content?: Record<string, string>; auth?: any }
 
 export default function About({ settings, content, auth }: Props) {
-    const whatsapp = settings?.whatsapp_number ?? '923001234567'
+    const wa      = settings?.whatsapp_number ?? ''
+    const siteName = settings?.site_name ?? 'MILLIONAIRE'
+    const phone   = settings?.phone ?? ''
+
+    const stats = [
+        { value: '50,000+', label: 'Happy Customers' },
+        { value: '1,000+',  label: 'Premium Products' },
+        { value: '7',       label: 'Product Categories' },
+        { value: '4.9★',    label: 'Average Rating' },
+    ]
+
+    const values = [
+        { icon: '💎', title: 'Premium Quality',    desc: 'Every product is hand-selected and verified for authenticity. We never compromise on quality.' },
+        { icon: '🚚', title: 'Fast Delivery',       desc: 'Lahore, Karachi, Islamabad — 2 to 3 business days. All other cities within 5 days.' },
+        { icon: '🔒', title: 'Secure Payments',     desc: 'PayFast, JazzCash, Easypaisa, Bank Transfer, COD — all payments secured and verified.' },
+        { icon: '↩️', title: 'Easy Returns',        desc: '7-day hassle-free returns on clothing. 30 days on shoes. Your satisfaction is guaranteed.' },
+        { icon: '🎧', title: '24/7 Support',        desc: 'Our team is always available via WhatsApp, live chat, or email to assist you.' },
+        { icon: '✅', title: '100% Genuine',        desc: 'Every item is 100% authentic. No replicas, no fakes — ever.' },
+    ]
+
+    const team = [
+        { name: 'Salman Afridi', role: 'Founder & CEO',          emoji: '👑' },
+        { name: 'Operations',    role: 'Warehouse & Fulfillment', emoji: '📦' },
+        { name: 'Customer Care', role: 'Support Team',           emoji: '🎧' },
+    ]
 
     return (
         <StorefrontLayout auth={auth} settings={settings}>
-            <Head title="About Us" />
+            <Head title={`About Us — ${siteName}`} />
 
-            {/* Hero */}
-            <div className="relative h-[220px] sm:h-[300px] md:h-[360px] overflow-hidden bg-[var(--color-dark-bg2, #070b14)]">
-                <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-dark-bg2, #070b14)] via-[rgba(7,11,20,0.7)] to-transparent z-10" />
-                <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,200,255,0.012)_2px,rgba(0,200,255,0.012)_4px)]" />
-                <div className="relative z-20 h-full flex items-center px-4 sm:px-6 lg:px-16">
+            {/* ── HERO ── */}
+            <div style={{ position: 'relative', background: 'var(--color-dark-bg, #0a0a0a)', padding: 'clamp(64px,10vw,120px) clamp(20px,6vw,64px)', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at 80% 50%, rgba(201,168,76,0.12) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'center' }}>
                     <div>
-                        <div className="flex items-center gap-2 sm:gap-2.5 mb-3 sm:mb-4">
-                            <div className="w-6 sm:w-7 h-[2px] bg-[var(--color-primary, #00c8ff)]" style={{ boxShadow: '0 0 8px #00c8ff' }} />
-                            <span className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary, #00c8ff)] uppercase tracking-[.18em]">Our Story</span>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 100, padding: '5px 14px', marginBottom: 20 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary)' }} />
+                            <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Our Story</span>
                         </div>
-                        <h1 className="font-manrope font-black text-white leading-none tracking-tight mb-3 sm:mb-4"
-                            style={{ fontSize: 'clamp(28px, 6vw, 52px)' }}>
-                            About <span style={{color:"var(--color-primary)"}}>Us</span>
+                        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(32px,6vw,60px)', color: 'white', margin: '0 0 16px', lineHeight: 1.05 }}>
+                            Wear Your<br /><span style={{ color: 'var(--color-primary)' }}>Status.</span>
                         </h1>
-                        <p className="text-[13px] sm:text-[15px] text-white/55 max-w-[90vw] sm:max-w-[500px] leading-relaxed">
-                            {content?.about_tagline ?? 'Your trusted online store.'}
+                        <p style={{ fontSize: 'clamp(14px,1.8vw,17px)', color: 'rgba(255,255,255,0.55)', maxWidth: 520, lineHeight: 1.7, margin: '0 0 32px' }}>
+                            {content?.about_tagline ?? `${siteName} is Pakistan's premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.`}
+                        </p>
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', fontWeight: 800, fontSize: 14, padding: '12px 24px', borderRadius: 100, textDecoration: 'none' }}>
+                                Shop Collection <IconArrowRight size={16} />
+                            </Link>
+                            {wa && <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#25D366', color: 'white', fontWeight: 800, fontSize: 14, padding: '12px 24px', borderRadius: 100, textDecoration: 'none' }}>
+                                <IconBrandWhatsapp size={17} /> WhatsApp Us
+                            </a>}
+                        </div>
+                    </div>
+                    <div className="hidden lg:block" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {stats.map(s => (
+                            <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '16px 24px', textAlign: 'center', minWidth: 140 }}>
+                                <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 24, color: 'var(--color-primary)', margin: 0 }}>{s.value}</p>
+                                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: '4px 0 0', fontWeight: 600 }}>{s.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── STATS MOBILE ── */}
+            <div className="lg:hidden" style={{ background: 'var(--color-dark-bg, #0a0a0a)', padding: '0 20px 32px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                    {stats.map(s => (
+                        <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+                            <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 22, color: 'var(--color-primary)', margin: 0 }}>{s.value}</p>
+                            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '3px 0 0', fontWeight: 600 }}>{s.label}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* ── MISSION ── */}
+            <div style={{ padding: 'clamp(48px,8vw,80px) clamp(20px,6vw,64px)', maxWidth: 1200, margin: '0 auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 48, alignItems: 'start' }}>
+                    <div>
+                        <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Our Mission</p>
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 20px', lineHeight: 1.15 }}>
+                            Premium lifestyle.<br />Honest prices.
+                        </h2>
+                        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, margin: '0 0 16px' }}>
+                            {content?.about_mission ?? `${siteName} was founded with one goal — make premium quality fashion and lifestyle products accessible to every Pakistani who knows their worth.`}
+                        </p>
+                        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
+                            {content?.about_mission2 ?? 'From signature clothing to luxury perfumes, premium watches to designer sunglasses — every product in our store is carefully selected to match the Millionaire standard.'}
+                        </p>
+                    </div>
+                    <div>
+                        <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Our Vision</p>
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 20px', lineHeight: 1.15 }}>
+                            Pakistan's most trusted premium store.
+                        </h2>
+                        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, margin: '0 0 16px' }}>
+                            {content?.about_vision ?? 'We are building a brand that Pakistanis trust for quality, speed and service. Every order we fulfill is a step toward that vision.'}
+                        </p>
+                        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
+                            {content?.about_vision2 ?? 'Whether you shop from Karachi, Lahore or a small city, MILLIONAIRE delivers the same premium experience to your doorstep.'}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="px-4 sm:px-6 lg:px-16 py-8 sm:py-12 max-w-6xl mx-auto">
-                {/* Mission */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 mb-12 sm:mb-16 items-center">
-                    <div>
-                        <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary, #00c8ff)] uppercase tracking-wider mb-2">Our Mission</div>
-                        <h2 className="font-manrope font-black text-[24px] sm:text-[28px] lg:text-[32px] text-gray-900 tracking-tight mb-3 sm:mb-4 leading-tight">
-                            Making premium tech <span className="text-[var(--color-primary, #00c8ff)]">accessible</span> to everyone
-                        </h2>
-                        <p className="text-[13px] sm:text-[14.5px] text-gray-600 leading-[1.8] mb-3 sm:mb-4">
-                            {content?.about_mission ?? 'We were founded with a simple goal: give our customers access to quality products at honest prices.'}
-                        </p>
-                        <p className="text-[13px] sm:text-[14.5px] text-gray-600 leading-[1.8]">
-                            {content?.about_mission2 ?? "From Apple MacBooks to Sony headphones, gaming PCs to printers — we stock everything and back it with a service team that actually picks up the phone."}
-                        </p>
+            {/* ── WHY CHOOSE US ── */}
+            <div style={{ background: '#F9FAFB', padding: 'clamp(48px,8vw,80px) clamp(20px,6vw,64px)' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 48 }}>
+                        <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Why MILLIONAIRE</p>
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: 0 }}>The MILLIONAIRE Promise</h2>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                        {[
-                            { num: '50,000+', label: 'Happy Customers' },
-                            { num: '12,000+', label: 'Products Listed' },
-                            { num: '8+',      label: 'Years in Business' },
-                            { num: '99%',     label: 'Positive Feedback' },
-                        ].map(s => (
-                            <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 text-center shadow-sm hover:border-[var(--color-primary, #00c8ff)] hover:shadow-[0_4px_20px_rgba(0,200,255,0.08)] transition-all">
-                                <div className="font-manrope font-black text-[24px] sm:text-[28px] lg:text-[32px] text-[var(--color-primary, #00c8ff)] mb-1">{s.num}</div>
-                                <div className="text-[11.5px] sm:text-[13px] font-semibold text-gray-600">{s.label}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+                        {values.map(v => (
+                            <div key={v.title} style={{ background: 'white', borderRadius: 20, padding: '28px 24px', border: '1px solid #F3F4F6', transition: 'box-shadow 0.2s' }}>
+                                <div style={{ fontSize: 36, marginBottom: 14 }}>{v.icon}</div>
+                                <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 17, color: '#111', margin: '0 0 8px' }}>{v.title}</h3>
+                                <p style={{ fontSize: 13.5, color: '#6B7280', lineHeight: 1.7, margin: 0 }}>{v.desc}</p>
                             </div>
                         ))}
                     </div>
                 </div>
+            </div>
 
-                {/* Values */}
-                <div className="mb-12 sm:mb-16">
-                    <div className="text-center mb-6 sm:mb-8">
-                        <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary, #00c8ff)] uppercase tracking-wider mb-2">Why Choose Us</div>
-                        <h2 className="font-manrope font-black text-[22px] sm:text-[28px] text-gray-900 tracking-tight">Our Core Values</h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-                        {[
-                            { icon: IconShieldCheck, title: '100% Genuine',  desc: 'Every product is verified and sourced directly from official distributors.',      color: 'text-[var(--color-primary, #00c8ff)]', bg: 'bg-[rgba(0,200,255,0.06)]' },
-                            { icon: IconTruck,       title: 'Fast Delivery', desc: 'Free delivery on orders over Rs 15,000. Same-day in major cities.',               color: 'text-green-500',   bg: 'bg-green-50' },
-                            { icon: IconHeadset,     title: '24/7 Support',  desc: 'Our expert team is always available via phone, WhatsApp, or in-store.',            color: 'text-purple-500',  bg: 'bg-purple-50' },
-                            { icon: IconStar,        title: 'Best Prices',   desc: 'We match or beat any verified competitor price. Quality without compromise.',      color: 'text-amber-500',   bg: 'bg-amber-50' },
-                        ].map(v => (
-                            <div key={v.title} className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 hover:border-[var(--color-primary, #00c8ff)] hover:shadow-[0_4px_20px_rgba(0,200,255,0.08)] transition-all">
-                                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[12px] sm:rounded-[13px] ${v.bg} flex items-center justify-center mb-3 sm:mb-4`}>
-                                    <v.icon size={22} className={v.color} />
-                                </div>
-                                <h3 className="font-manrope font-bold text-[15px] sm:text-[16px] text-gray-900 mb-1.5 sm:mb-2">{v.title}</h3>
-                                <p className="text-[12.5px] sm:text-[13px] text-gray-500 leading-relaxed">{v.desc}</p>
-                            </div>
-                        ))}
-                    </div>
+            {/* ── TEAM ── */}
+            <div style={{ padding: 'clamp(48px,8vw,80px) clamp(20px,6vw,64px)', maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>The Team</p>
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 40px' }}>People Behind MILLIONAIRE</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, maxWidth: 700, margin: '0 auto' }}>
+                    {team.map(t => (
+                        <div key={t.name} style={{ background: '#F9FAFB', borderRadius: 20, padding: '28px 20px', border: '1px solid #F3F4F6' }}>
+                            <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--color-dark-bg, #0a0a0a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 14px' }}>{t.emoji}</div>
+                            <p style={{ fontWeight: 800, fontSize: 15, color: '#111', margin: '0 0 4px' }}>{t.name}</p>
+                            <p style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600, margin: 0 }}>{t.role}</p>
+                        </div>
+                    ))}
                 </div>
+            </div>
 
-                {/* CTA */}
-                <div className="bg-gradient-to-br from-[var(--color-dark-bg, #0a0e1a)] to-[#0d1a2e] rounded-[18px] sm:rounded-[20px] p-6 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6 border border-[var(--color-dark-bg, #0a0e1a)]">
-                    <div>
-                        <h3 className="font-manrope font-black text-[20px] sm:text-[24px] text-white mb-2">Ready to shop?</h3>
-                        <p className="text-[13px] sm:text-[14px] text-white/60">Browse our full catalogue or chat with our experts on WhatsApp.</p>
-                    </div>
-                    <div className="flex gap-2.5 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
-                        <Link href="/shop" className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[var(--color-primary, #00c8ff)] hover:bg-[var(--color-primary-dark, #00b0e0)] text-[var(--color-dark-bg, #0a0e1a)] font-black text-[13px] sm:text-[13.5px] px-4 sm:px-6 h-[46px] sm:h-[48px] rounded-[12px] transition-all no-underline">
-                            Browse Products
-                        </Link>
-                        <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1da853] text-white font-bold text-[13px] sm:text-[13.5px] px-4 sm:px-6 h-[46px] sm:h-[48px] rounded-[12px] transition-all no-underline">
-                            <IconBrandWhatsapp size={19} /> WhatsApp
-                        </a>
-                    </div>
+            {/* ── CTA ── */}
+            <div style={{ background: 'var(--color-dark-bg, #0a0a0a)', padding: 'clamp(48px,8vw,72px) clamp(20px,6vw,48px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at center, rgba(201,168,76,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px', position: 'relative' }}>Start Shopping</p>
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,4vw,40px)', color: 'white', margin: '0 0 16px', position: 'relative' }}>Ready to wear your status?</h2>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', position: 'relative' }}>Join 50,000+ customers who trust MILLIONAIRE for premium lifestyle products.</p>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
+                    <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', fontWeight: 800, fontSize: 14, padding: '14px 28px', borderRadius: 100, textDecoration: 'none' }}>
+                        Shop Now <IconArrowRight size={16} />
+                    </Link>
+                    {wa && <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', color: 'white', fontWeight: 700, fontSize: 14, padding: '14px 28px', borderRadius: 100, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.15)' }}>
+                        <IconBrandWhatsapp size={17} /> WhatsApp
+                    </a>}
                 </div>
             </div>
         </StorefrontLayout>

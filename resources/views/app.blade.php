@@ -47,6 +47,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="{{ $t['primary'] ?? '#C9A84C' }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ $siteName }}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/icon-192.png">
 
     <title inertia>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDesc }}">
@@ -120,6 +127,16 @@
             --color-logo-box-bg:   {{ $t['logo_box_bg'] }};
         }
         *, *::before, *::after { box-sizing: border-box; }
+        /* Mobile optimizations */
+        @media (max-width: 1024px) {
+            html { -webkit-text-size-adjust: 100%; }
+            img { max-width: 100%; height: auto; }
+            * { -webkit-tap-highlight-color: transparent; }
+        }
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+        /* Better touch targets */
+        button, a { touch-action: manipulation; }
         html, body { overflow-x: hidden !important; max-width: 100%; width: 100%; margin: 0; padding: 0; }
         body { background: var(--color-body-bg); }
     </style>

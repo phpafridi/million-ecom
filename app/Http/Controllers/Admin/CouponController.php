@@ -8,10 +8,15 @@ use Inertia\Inertia;
 
 class CouponController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $q = Coupon::latest();
+        if ($s = $request->search) $q->where(fn($q) => $q->where('code','like',"%{$s}%")->orWhere('description','like',"%{$s}%"));
+        if ($request->type) $q->where('type', $request->type);
+        if ($request->status === 'active') $q->where('is_active', true);
+        elseif ($request->status === 'inactive') $q->where('is_active', false);
         return Inertia::render('Admin/Coupons/Index', [
-            'coupons' => Coupon::latest()->get(),
+            'coupons' => $q->get(), 'filters' => $request->only(['search','type','status']),
         ]);
     }
 

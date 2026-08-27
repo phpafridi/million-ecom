@@ -57,7 +57,7 @@ function CatForm({ cat, allCategories, onClose }: {
     cat?: Category; allCategories: Props['allCategories']; onClose: () => void
 }) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing, errors } = useForm<any>({
         _method:      cat ? 'PUT' : 'POST',
@@ -291,7 +291,7 @@ function CatRow({ cat, depth, allCategories, onEdit, onDelete }: {
 
 export default function CategoriesIndex({ categories, allCategories }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Category | 'new' | null>(null)
 
     function del(cat: Category) {

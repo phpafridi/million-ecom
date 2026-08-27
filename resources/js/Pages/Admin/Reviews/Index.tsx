@@ -13,6 +13,8 @@ interface Props {
 }
 
 function Stars({ n }: { n: number }) {
+    const { props: _sub } = usePage<any>()
+    const ap = `/${_sub?.adminPath ?? 'ml-admin'}`
     return (
         <div className="flex gap-0.5">
             {[1,2,3,4,5].map(i => (
@@ -24,7 +26,7 @@ function Stars({ n }: { n: number }) {
 
 export default function ReviewsIndex({ reviews, stats }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
 
     function approve(id: number) {
         router.patch(`${ap}/reviews/${id}/approve`, {}, { preserveScroll: true })

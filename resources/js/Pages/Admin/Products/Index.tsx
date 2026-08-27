@@ -46,7 +46,7 @@ function StockEditor({ product, ap }: { product: Product; ap: string }) {
 
 export default function ProductsIndex({ products, categories, filters }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const [search, setSearch] = useState(filters.q ?? '')
     const [selected, setSelected] = useState<number[]>([])
     const [bulkAction, setBulkAction] = useState('activate')

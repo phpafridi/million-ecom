@@ -50,6 +50,7 @@ class ProductController extends Controller
             'stock'         => 'required|integer|min:0',
             'category_id'   => 'required|exists:categories,id',
             'is_featured'   => 'boolean',
+            'is_new'        => 'boolean',
             'is_active'     => 'boolean',
             'sort_order'    => 'integer|min:0',
             'images.*'      => 'nullable|image|max:5120',
@@ -80,6 +81,7 @@ class ProductController extends Controller
             'stock'         => 'sometimes|integer|min:0',
             'category_id'   => 'sometimes|exists:categories,id',
             'is_featured'   => 'boolean',
+            'is_new'        => 'boolean',
             'is_active'     => 'boolean',
             'sort_order'    => 'integer|min:0',
             'images.*'      => 'nullable|image|max:5120',
@@ -139,6 +141,7 @@ class ProductController extends Controller
                 $p->compare_price ?? '',
                 $p->stock,
                 $p->is_featured ? '1' : '0',
+                    $p->is_new       ? '1' : '0',
                 '"' . $desc . '"',
             ]) . "\n";
         }

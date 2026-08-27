@@ -8,7 +8,8 @@ interface Props { ticket:any; replies:Reply[] }
 export default function SupportShow({ ticket, replies }:Props) {
     const ap = '/ml-admin'
     const { data, setData, post, processing, reset } = useForm({ message:'' })
-    function send(e:React.FormEvent){ e.preventDefault(); post(`${ap}/support/${ticket.id}/reply`, { onSuccess:()=>reset() }) }
+    function send(e:React.FormEvent){
+        e.preventDefault(); post(`${ap}/support/${ticket.id}/reply`, { onSuccess:()=>reset() }) }
     const PC:Record<string,string> = { urgent:'#EF4444', high:'#F59E0B', normal:'#3B82F6', low:'#6B7280' }
 
     return (

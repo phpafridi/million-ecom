@@ -67,7 +67,8 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
         setActive(null); setMsgs([]); router.reload({only:['sessions']})
     }
 
-    function addFaq(e:React.FormEvent){ e.preventDefault(); router.post(`${ap}/chat/faqs`,faq,{onSuccess:()=>{ setFaq({question:'',answer:'',category:'general',keywords:''}); setFaqForm(false) }}) }
+    function addFaq(e:React.FormEvent){
+        e.preventDefault(); router.post(`${ap}/chat/faqs`,faq,{onSuccess:()=>{ setFaq({question:'',answer:'',category:'general',keywords:''}); setFaqForm(false) }}) }
 
     const bgColor:Record<string,string>={visitor:'#F3F4F6',agent:'var(--color-dark-bg,#0a0a0a)',bot:'#EFF6FF',system:'#F9FAFB'}
     const txtColor:Record<string,string>={visitor:'#111',agent:'white',bot:'#1E40AF',system:'#6B7280'}
@@ -180,7 +181,7 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
                                     <p className="text-[12.5px] text-gray-500">{f.answer.slice(0,120)}{f.answer.length>120?'...':''}</p>
                                     {f.keywords&&<p className="text-[11px] text-gray-400 mt-1">Keywords: {typeof f.keywords==='string'?f.keywords:JSON.stringify(f.keywords)}</p>}
                                 </div>
-                                <button onClick={()=>router.delete(`${ap}/chat/faqs/${f.id}`)} className="w-8 h-8 rounded-lg border border-red-100 flex items-center justify-center text-red-400 hover:bg-red-50 cursor-pointer bg-white flex-shrink-0"><IconTrash size={14}/></button>
+                                <button onClick={()=>{ if(confirm('Delete this FAQ?')) router.delete(`${ap}/chat/faqs/${f.id}`, {preserveScroll:true}) }} className="w-8 h-8 rounded-lg border border-red-100 flex items-center justify-center text-red-400 hover:bg-red-50 cursor-pointer bg-white flex-shrink-0"><IconTrash size={14}/></button>
                             </div>
                         ))}
                         {faqs.length===0&&<div className="p-12 text-center text-gray-400"><IconRobot size={40} className="mx-auto mb-3 opacity-20"/><p className="font-bold">No FAQs yet — add some so the bot can answer questions</p></div>}

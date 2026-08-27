@@ -13,6 +13,7 @@ class User extends Authenticatable
         'name', 'email', 'password', 'role', 'phone',
         'avatar', 'date_of_birth', 'gender', 'address', 'city',
         'loyalty_points', 'total_points_earned',
+        'is_staff', 'staff_role', 'permissions', 'is_active', 'last_login_at',
         'newsletter_subscribed', 'newsletter_subscribed_at',
     ];
 
@@ -24,6 +25,10 @@ class User extends Authenticatable
         'newsletter_subscribed'      => 'boolean',
         'newsletter_subscribed_at'   => 'datetime',
         'date_of_birth'              => 'date',
+        'permissions'                => 'array',
+        'is_staff'                   => 'boolean',
+        'is_active'                  => 'boolean',
+        'last_login_at'              => 'datetime',
     ];
 
     // ── Relations ────────────────────────────────────────────────────

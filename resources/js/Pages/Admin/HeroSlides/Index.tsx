@@ -7,6 +7,8 @@ import type { HeroSlide } from '@/types'
 interface Props { slides: HeroSlide[] }
 
 function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void }) {
+    const { props: _sp } = usePage<any>()
+    const ap = `/${_sp?.adminPath ?? 'ml-admin'}`
     const { data, setData, post, processing, errors } = useForm<any>({
         _method: slide ? 'PUT' : 'POST',
         title: slide?.title ?? '',
@@ -134,7 +136,7 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
 
 export default function HeroSlidesIndex({ slides }: Props) {
     const { props: _p } = usePage<{ adminPath?: string }>()
-    const ap = `/${_p.adminPath ?? 'tijar-admin'}`
+    const ap = `/${_p.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<HeroSlide | 'new' | null>(null)
 
     return (

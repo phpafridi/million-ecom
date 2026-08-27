@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Route;
 
 // ── AUTH
 Route::get('/login',    [LoginController::class, 'show'])->name('login');
-Route::post('/login',   [LoginController::class, 'store'])->name('login.store');
+Route::post('/login',   [LoginController::class, 'store'])->name('login.store')->middleware('throttle:5,1');
 Route::post('/logout',  [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
-Route::post('/register',[RegisterController::class, 'store'])->name('register.store');
+Route::post('/register',[RegisterController::class, 'store'])->name('register.store')->middleware('throttle:10,1');
 
 // ── SEO
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
@@ -26,7 +26,7 @@ Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('seo.robots')
 Route::get('/',                [Shop\HomeController::class,    'index'])->name('home');
 Route::get('/shop',            [Shop\ProductController::class, 'index'])->name('shop.index');
 Route::get('/products/{slug}', [Shop\ProductController::class, 'show'])->name('shop.show');
-Route::post('/products/{product}/reviews', [Shop\ReviewController::class, 'store'])->name('reviews.store');
+Route::post('/products/{product}/reviews', [Shop\ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
 Route::get('/about',   [Shop\PageController::class, 'about'])->name('about');
 Route::get('/contact', [Shop\PageController::class, 'contact'])->name('contact');
 Route::post('/contact',[Shop\PageController::class, 'contactSend'])->name('contact.send');
@@ -84,34 +84,44 @@ Route::get('/payment/failed',                      fn() => inertia('Shop/Payment
 
 // ── CART
 Route::get('/cart',            [Shop\CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add',       [Shop\CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/add',       [Shop\CartController::class, 'add'])->name('cart.add')->middleware('throttle:60,1');
 Route::patch('/cart/{id}',     [Shop\CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{id}',    [Shop\CartController::class, 'destroy'])->name('cart.destroy');
 Route::post('/cart/coupon',    [Shop\CartController::class, 'applyCoupon'])->name('cart.coupon');
 Route::delete('/cart/coupon',  [Shop\CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+Route::post('/cart/points/redeem', [Shop\CartController::class, 'redeemPoints'])->name('cart.points.redeem');
+Route::post('/cart/points/remove', [Shop\CartController::class, 'removePoints'])->name('cart.points.remove');
 Route::post('/cart/checkout',  [Shop\CartController::class, 'checkout'])->name('cart.checkout');
 Route::get('/order/{id}/confirmed', function(int $id) {
     $order = \App\Models\Order::with('items')->find($id);
+    if (!$order) abort(404);
     return inertia('Shop/OrderConfirmed', [
-        'order'    => $order ? [
+        'order' => [
             'id'             => $order->id,
+            'order_number'   => $order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT)),
             'total'          => $order->total,
             'payment_method' => $order->payment_method,
             'payment_status' => $order->payment_status,
             'status'         => $order->status,
             'customer_name'  => $order->customer_name,
             'customer_phone' => $order->customer_phone,
+            'tracking_token' => $order->tracking_token,
             'items_count'    => $order->items->count(),
-        ] : null,
+        ],
         'settings' => \App\Models\Setting::allKeyed(),
     ]);
 })->name('order.confirmed');
 
-Route::get('/order/payment-failed', function() {
-    return inertia('Shop/PaymentFailed', [
-        'settings' => \App\Models\Setting::allKeyed(),
-    ]);
-})->name('payment.failed');
+Route::get('/order/payment-failed', fn() => redirect()->route('payment.failed'));
+
+// ── ORDER TRACKING
+Route::get('/track-order',   [Shop\OrderTrackingController::class, 'index'])->name('track.index');
+Route::post('/track-order',  [Shop\OrderTrackingController::class, 'track'])->name('track.search');
+Route::get('/track/{token}', [Shop\OrderTrackingController::class, 'show'])->name('track.show');
+
+// ── NEWSLETTER
+Route::post('/newsletter/subscribe',          [Shop\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/newsletter/unsubscribe/{token}', [Shop\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 
 // ── WISHLIST
 Route::get('/wishlist',              [Shop\WishlistController::class, 'index'])->name('wishlist.index');
@@ -132,7 +142,7 @@ Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy
 
 // ── CHAT ─────────────────────────────────────────────────────────────────────
 Route::post('/chat/start',         [ChatController::class, 'start'])->name('chat.start');
-Route::post('/chat/send',          [ChatController::class, 'send'])->name('chat.send');
+Route::post('/chat/send',          [ChatController::class, 'send'])->name('chat.send')->middleware('throttle:30,1');
 Route::get('/chat/poll',           [ChatController::class, 'poll'])->name('chat.poll');
 Route::post('/chat/request-agent', [ChatController::class, 'requestAgent'])->name('chat.request-agent');
 Route::post('/chat/rate',          [ChatController::class, 'rate'])->name('chat.rate');
@@ -154,19 +164,26 @@ Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/account',          [Shop\AccountController::class, 'index'])->name('account.index');
-    Route::get('/account/profile',  [Shop\AccountController::class, 'profile'])->name('account.profile');
-    Route::post('/account/profile', [Shop\AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::get('/account',                   [Shop\AccountController::class, 'index'])->name('account.index');
+    Route::get('/account/orders',            [Shop\AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/account/orders/{id}',       [Shop\AccountController::class, 'orderShow'])->name('account.orders.show');
+    Route::get('/account/wishlist',          [Shop\AccountController::class, 'wishlist'])->name('account.wishlist');
+    Route::get('/account/loyalty',           [Shop\AccountController::class, 'loyalty'])->name('account.loyalty');
+    Route::get('/account/profile',           [Shop\AccountController::class, 'profile'])->name('account.profile');
+    Route::post('/account/profile',          [Shop\AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::post('/account/avatar',           [Shop\AccountController::class, 'uploadAvatar'])->name('account.avatar');
+    Route::post('/account/addresses',        [Shop\AccountController::class, 'storeAddress'])->name('account.addresses.store');
+    Route::delete('/account/addresses/{id}', [Shop\AccountController::class, 'destroyAddress'])->name('account.addresses.destroy');
 });
 
 // ── ADMIN
 try {
-    $adminPath = Setting::get('admin_path', 'tijar-admin');
+    $adminPath = Setting::get('admin_path', 'ml-admin');
 } catch (\Throwable $e) {
-    $adminPath = 'tijar-admin';
+    $adminPath = 'ml-admin';
 }
 
-Route::middleware(['auth', 'admin'])
+Route::middleware(['auth', 'admin'])  // Only admin role
     ->prefix($adminPath)
     ->name('admin.')
     ->group(function () {
@@ -257,6 +274,25 @@ Route::middleware(['auth', 'admin'])
     // Profile + Settings + SEO
     Route::get('profile',  [Admin\ProfileController::class, 'index'])->name('profile.index');
     Route::post('profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
+    // Blocked IPs / Firewall
+    Route::get('blocked-ips',               [Admin\BlockedIpController::class, 'index'])->name('blocked-ips.index');
+    Route::post('blocked-ips',              [Admin\BlockedIpController::class, 'store'])->name('blocked-ips.store');
+    Route::patch('blocked-ips/{ip}/unblock',[Admin\BlockedIpController::class, 'unblock'])->name('blocked-ips.unblock');
+    Route::delete('blocked-ips/{id}',       [Admin\BlockedIpController::class, 'destroy'])->name('blocked-ips.destroy');
+
+    // System Logs
+    Route::get('system-logs',           [Admin\SystemLogController::class, 'index'])->name('system-logs.index');
+    Route::delete('system-logs/clear',  [Admin\SystemLogController::class, 'clear'])->name('system-logs.clear');
+
+    // Database Backups
+    Route::get('backup',                [Admin\BackupController::class, 'index'])->name('backup.index');
+    Route::post('backup',               [Admin\BackupController::class, 'create'])->name('backup.create');
+    Route::get('backup/{id}/download',  [Admin\BackupController::class, 'download'])->name('backup.download');
+    Route::delete('backup/{id}',        [Admin\BackupController::class, 'destroy'])->name('backup.destroy');
+
+    Route::get('whatsapp',  [Admin\WhatsAppController::class, 'index'])->name('whatsapp.index');
+    Route::post('whatsapp/send', [Admin\WhatsAppController::class, 'send'])->name('whatsapp.send');
+
     Route::get('settings',  [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
     Route::get('seo',  [Admin\SeoSettingController::class, 'index'])->name('seo.index');

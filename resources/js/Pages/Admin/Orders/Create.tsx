@@ -11,7 +11,7 @@ interface LineItem { product_id: number; product_name: string; price: number; qu
 
 export default function OrderCreate({ products, gateways, settings }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
 
     const [items, setItems]         = useState<LineItem[]>([])
     const [productSearch, setPSearch] = useState('')

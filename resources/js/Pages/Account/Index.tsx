@@ -29,13 +29,13 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title="My Account" />
-            <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-body-bg)' }}>
+            <div className="min-h-screen py-0 lg:py-8 px-0 lg:px-4" style={{ background: 'var(--color-body-bg)' }}>
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
 
                         <AccountSidebar auth={auth} active="dashboard" />
 
-                        <div className="lg:col-span-3 space-y-5">
+                        <div className="lg:col-span-3 space-y-5 px-4 pt-5 lg:px-0 lg:pt-0">
 
                             {/* Welcome Banner */}
                             <div className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -117,7 +117,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>
-                                                            Order #{order.id}
+                                                            {(order as any).order_number ?? `Order #${order.id}`}
                                                         </p>
                                                         <p className="text-gray-400 text-[11.5px]">
                                                             {order.items_count} item{order.items_count !== 1 ? 's' : ''} · {order.created_at}

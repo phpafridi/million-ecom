@@ -15,9 +15,12 @@ export default function StaffIndex({ staff, roles }:Props) {
     const [eform, setEform]     = useState({ name:'', staff_role:'support', is_active:true, password:'' })
     const inp = "w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white"
 
-    function add(e:React.FormEvent){ e.preventDefault(); router.post(`${ap}/staff`, form, { onSuccess:()=>{ setForm({name:'',email:'',password:'',staff_role:'support'}); setAdding(false) } }) }
-    function edit(e:React.FormEvent){ e.preventDefault(); if(!editing) return; router.put(`${ap}/staff/${editing.id}`, eform as any, { onSuccess:()=>setEditing(null) }) }
-    function del(s:Staff){ if(!confirm(`Remove ${s.name}?`)) return; router.delete(`${ap}/staff/${s.id}`) }
+    function add(e:React.FormEvent){
+        e.preventDefault(); router.post(`${ap}/staff`, form, { onSuccess:()=>{ setForm({name:'',email:'',password:'',staff_role:'support'}); setAdding(false) } }) }
+    function edit(e:React.FormEvent){
+        e.preventDefault(); if(!editing) return; router.put(`${ap}/staff/${editing.id}`, eform as any, { onSuccess:()=>setEditing(null) }) }
+    function del(s:Staff){
+        if(!confirm(`Remove ${s.name}?`)) return; router.delete(`${ap}/staff/${s.id}`) }
     function startEdit(s:Staff){ setEditing(s); setEform({ name:s.name, staff_role:s.staff_role||'support', is_active:s.is_active, password:'' }) }
 
     return (

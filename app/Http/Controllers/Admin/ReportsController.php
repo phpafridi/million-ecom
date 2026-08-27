@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Product, User};
+use App\Models\{Product, Setting, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -24,7 +24,7 @@ class ReportsController extends Controller
             'byCity'       => DB::table('orders')->whereNotIn('status',['cancelled'])->selectRaw('city, COUNT(*) as orders, COALESCE(SUM(total),0) as revenue')->groupBy('city')->orderByDesc('revenue')->limit(10)->get(),
             'topProducts'  => DB::table('order_items')->join('orders','order_items.order_id','=','orders.id')->whereNotIn('orders.status',['cancelled'])->whereBetween('orders.created_at',[$f,$t])->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.subtotal) as revenue')->groupBy('order_items.product_name')->orderByDesc('revenue')->limit(10)->get(),
             'byStatus'     => DB::table('orders')->selectRaw('status, COUNT(*) as count')->groupBy('status')->get()->mapWithKeys(fn($r)=>[$r->status=>$r->count]),
-            'lowStock'     => Product::where('stock','<=',5)->where('is_active',true)->select('id','name','stock')->orderBy('stock')->limit(10)->get(),
+            'lowStock'     => Product::where('stock','<=',(int)(Setting::get('low_stock_threshold',5)))->where('is_active',true)->select('id','name','stock')->orderBy('stock')->limit(10)->get(),
             'kpis'         => [
                 'total_revenue' => (float)DB::table('orders')->whereNotIn('status',['cancelled'])->whereBetween('created_at',[$f,$t])->sum('total'),
                 'total_orders'  => DB::table('orders')->whereBetween('created_at',[$f,$t])->count(),

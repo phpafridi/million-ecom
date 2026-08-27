@@ -66,6 +66,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
     const [activeImg, setActiveImg]     = useState(0)
     const [wished, setWished]           = useState(initWishlisted)
     const [qty, setQty]                 = useState(1)
+    const [cartError, setCartError]     = useState('')
     const [adding, setAdding]           = useState(false)
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
         product.variants?.find(v => v.is_active && v.stock > 0) ?? null
@@ -97,11 +98,28 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
         : [{ id: 0, url: '/images/placeholder.jpg', thumb: '/images/placeholder.jpg' }]
 
     const hasVariants   = (product.variant_attributes?.length ?? 0) > 0
-    const activePrice   = selectedVariant?.price         ?? product.price
-    const activeCompare = selectedVariant?.compare_price ?? product.compare_price
+    // Attributes that have values but haven't been selected yet
+    // We check values?.length so even if is_required is null/false (DB bug), we still validate
+    const missingRequired = hasVariants
+        ? (product.variant_attributes ?? []).filter((a: any) =>
+            (a.values?.length ?? 0) > 0 && !selectedValues[a.id]
+          )
+        : []
+    const rawPrice      = selectedVariant?.price         ?? product.price
+    const rawCompare    = selectedVariant?.compare_price ?? product.compare_price
     const activeStock   = selectedVariant?.stock         ?? product.stock
-    const activeDiscount = activeCompare > activePrice
-        ? Math.round(((activeCompare - activePrice) / activeCompare) * 100) : 0
+
+    // Flash sale discount
+    const _settings   = (pageProps as any).settings ?? settings ?? {}
+    const _saleActive = _settings.sale_enabled === '1'
+        && !!_settings.sale_ends_at
+        && new Date(_settings.sale_ends_at) > new Date()
+    const _salePct    = _saleActive && _settings.sale_discount ? parseInt(_settings.sale_discount) : 0
+
+    const activePrice   = _salePct > 0 ? Math.round(rawPrice * (1 - _salePct / 100)) : rawPrice
+    const activeCompare = _salePct > 0 ? rawPrice : (rawCompare ?? 0)
+    const activeDiscount = _salePct > 0 ? _salePct
+        : (activeCompare > activePrice ? Math.round(((activeCompare - activePrice) / activeCompare) * 100) : 0)
 
     const whatsapp      = settings?.whatsapp_number ?? ''
     const pageSettings  = (pageProps as any).settings ?? settings ?? {}
@@ -130,14 +148,19 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
     }
 
     function addToCart() {
-        const requiredAttrs = (product.variant_attributes ?? []).filter((a: any) => a.is_required)
-        const missing = requiredAttrs.filter((a: any) => !selectedValues[a.id])
-        if (missing.length > 0) {
-            alert('Please select: ' + missing.map((a: any) => a.name).join(', '))
+        // Block if any attribute with values is unselected
+        if (missingRequired.length > 0) {
+            // Shake the first missing attribute
+            const el = document.getElementById(`attr-${missingRequired[0].id}`)
+            if (el) {
+                el.style.cssText += ';outline:2px solid #ef4444;outline-offset:4px;border-radius:8px;animation:mlShake 0.4s ease'
+                setTimeout(() => { if (el) el.style.cssText = el.style.cssText.replace(/outline[^;]*;/g, '').replace(/animation[^;]*;/g, '') }, 1800)
+            }
             return
         }
-        if (hasVariants && Object.keys(selectedValues).length > 0 && !selectedVariant) {
-            alert('This combination is not available. Please try different options.')
+        // Block if all selected but no matching variant found
+        if (hasVariants && !selectedVariant && Object.keys(selectedValues).length > 0) {
+            alert('This combination is out of stock. Please try different options.')
             return
         }
         if (adding) return
@@ -146,7 +169,12 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
             product_id: product.id,
             quantity: qty,
             variant_id: selectedVariant?.id ?? null,
-        }, { preserveScroll: true, onFinish: () => setAdding(false) })
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setAdding(false),
+            onError:   () => setAdding(false),
+            onFinish:  () => setAdding(false),
+        })
     }
 
     function toggleWishlist() {
@@ -379,7 +407,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         <div className="flex items-baseline gap-4 flex-wrap py-4 border-y border-gray-100">
                             <span className="font-black text-[32px] sm:text-[36px] leading-none"
                                 style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
-                                {fmt(activePrice)}
+                                <span style={{ color: _salePct > 0 ? '#DC2626' : 'inherit' }}>{fmt(activePrice)}</span>
                             </span>
                             {activeCompare > activePrice && <>
                                 <span className="text-[16px] text-gray-400 line-through font-medium">{fmt(activeCompare)}</span>
@@ -401,10 +429,26 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {/* Variants */}
                         {hasVariants && product.variant_attributes?.map(attr => (
                             <div key={attr.id}>
-                                <div className="text-[12px] font-black text-gray-700 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
-                                    {attr.name}
-                                    {(attr as any).is_required && <span className="text-red-500">*</span>}
-                                    {(attr as any).is_required && !selectedValues[attr.id] && <span className="text-[10px] font-semibold text-red-400 normal-case tracking-normal">(required)</span>}
+                                <div className="flex items-center gap-2 mb-2.5" id={`attr-${attr.id}`}>
+                                    <span className="text-[12px] font-black text-gray-800 uppercase tracking-widest">
+                                        {attr.name.replace(/\d+$/, '').replace(/_/g, ' ')}
+                                    </span>
+                                    {/* Always show asterisk if attribute has values */}
+                                    {(attr.values?.length ?? 0) > 0 && (
+                                        <span className="text-red-500 text-[13px]">*</span>
+                                    )}
+                                    {/* Show selected value */}
+                                    {selectedValues[attr.id] && (
+                                        <span className="text-[11px] font-bold" style={{ color: 'var(--color-primary)' }}>
+                                            — {attr.values.find((v: any) => v.id === selectedValues[attr.id])?.value}
+                                        </span>
+                                    )}
+                                    {/* Show prompt if not selected */}
+                                    {!selectedValues[attr.id] && (attr.values?.length ?? 0) > 0 && (
+                                        <span className="text-[10.5px] font-semibold text-red-400 normal-case tracking-normal">
+                                            ← select
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
                                     {attr.values.map(val => {
@@ -452,11 +496,16 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                             {activeStock > 0 && (
                                 <div className="grid grid-cols-2 gap-2.5">
                                     <button onClick={addToCart}
-                                        disabled={adding || (hasVariants && !selectedVariant)}
-                                        className="col-span-2 flex items-center justify-center gap-2.5 h-[54px] font-black text-[14px] rounded-2xl transition-all border-none cursor-pointer disabled:opacity-60 hover:opacity-90"
-                                        style={{ background: 'var(--color-dark-bg)', color: '#fff' }}>
+                                        disabled={adding}
+                                        className="col-span-2 flex items-center justify-center gap-2.5 h-[54px] font-black text-[14px] rounded-2xl transition-all border-none cursor-pointer hover:opacity-90 disabled:opacity-70"
+                                        style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
                                         <IconShoppingCart size={20} />
-                                        {adding ? 'Adding…' : hasVariants && !selectedVariant ? 'Select Options First' : 'Add to Cart'}
+                                        {adding
+                                            ? 'Adding…'
+                                            : missingRequired.length > 0
+                                                ? `Select ${missingRequired[0]?.name?.replace(/\d+$/, '') || 'Option'} First`
+                                                : 'Add to Cart'
+                                        }
                                     </button>
                                     <Link href="/cart"
                                         className="flex items-center justify-center gap-2 h-[48px] font-bold text-[13px] rounded-2xl no-underline border-2 transition-all hover:opacity-80"

@@ -1,15 +1,53 @@
 import { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import { Link, router, usePage } from '@inertiajs/react'
 import ChatWidget from '@/Components/Chat/ChatWidget'
 import FloatingCart from '@/Components/ui/FloatingCart'
 import {
-    IconSearch, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram,
+    IconSearch, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram, IconUser,
     IconMenu, IconX, IconChevronDown, IconPhone,
     IconInfoCircle, IconMessageCircle, IconShoppingCart, IconSun, IconMoon, IconHeart
 } from '@tabler/icons-react'
 
 interface NavItem { label: string; href: string; children?: NavItem[] }
 interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string> }
+
+
+function SaleCountdownBar({ label, badge, endsAt, bg, color }: {
+    label: string; badge: string; endsAt: string; bg: string; color: string
+}) {
+    const [time, setTime] = React.useState({ d:0, h:0, m:0, s:0, done:false })
+    React.useEffect(() => {
+        function tick() {
+            const diff = Math.max(0, new Date(endsAt).getTime() - Date.now())
+            if (diff === 0) { setTime(t => ({...t, done:true})); return }
+            setTime({ d:Math.floor(diff/86400000), h:Math.floor((diff%86400000)/3600000), m:Math.floor((diff%3600000)/60000), s:Math.floor((diff%60000)/1000), done:false })
+        }
+        tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
+    }, [endsAt])
+    if (time.done) return null
+    const pad = (n:number) => String(n).padStart(2,'0')
+    const box = (val:string, lbl:string) => (
+        <div className="flex flex-col items-center">
+            <div className="font-black text-[15px] leading-none px-2 py-1 rounded-md" style={{background:'rgba(255,255,255,0.15)',minWidth:32,textAlign:'center'}}>{val}</div>
+            <div className="text-[9px] font-bold uppercase tracking-wider opacity-70 mt-0.5">{lbl}</div>
+        </div>
+    )
+    return (
+        <div className="w-full flex items-center justify-center gap-4 px-4 py-2 text-[13px] font-bold" style={{background:bg,color}}>
+            <span className="font-black text-[13px] uppercase tracking-wide">{label}</span>
+            <div className="flex items-center gap-1.5">
+                {time.d > 0 && <>{box(pad(time.d),'DAYS')}<span className="font-black text-[16px] opacity-70">:</span></>}
+                {box(pad(time.h),'HRS')}
+                <span className="font-black text-[16px] opacity-70">:</span>
+                {box(pad(time.m),'MIN')}
+                <span className="font-black text-[16px] opacity-70">:</span>
+                {box(pad(time.s),'SEC')}
+            </div>
+            <span className="hidden sm:inline font-black text-[12px] px-3 py-1 rounded-full" style={{background:'rgba(255,255,255,0.2)',border:'1px solid rgba(255,255,255,0.3)'}}>{badge}</span>
+        </div>
+    )
+}
 
 export default function StorefrontLayout({ children, auth, settings }: Props) {
     const [search, setSearch]           = useState('')
@@ -119,6 +157,16 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                 </div>
             )}
 
+            {settings?.sale_enabled === '1' && settings?.sale_ends_at && (
+                <SaleCountdownBar
+                    label={settings.sale_label ?? 'FLASH SALE'}
+                    badge={settings.sale_badge ?? 'UP TO 60% OFF'}
+                    endsAt={settings.sale_ends_at}
+                    bg={settings.sale_bg ?? '#1a472a'}
+                    color={settings.sale_text_color ?? '#ffffff'}
+                />
+            )}
+
             {/* ── TOPBAR — uses CSS vars so it changes with theme ── */}
             <div className="hidden md:flex h-9 items-center justify-between px-6 lg:px-10 border-b"
                 style={{ background: 'var(--color-topbar-bg, var(--color-dark-bg, #0a0a0a))', borderColor: 'rgba(255,255,255,0.06)' }}>
@@ -129,9 +177,6 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                             <IconPhone size={12} /> {phone}
                         </a>
                     )}
-                    <FloatingCart settings={settings ?? {}} />
-            <ChatWidget settings={settings ?? {}} auth={auth} />
-
             {showWhatsapp && whatsapp && (
                         <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
                             className="flex items-center gap-1.5 text-[11.5px] no-underline hover:opacity-80"
@@ -161,25 +206,25 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
 
             {/* ── HEADER ── */}
             <header className={`bg-white sticky top-0 z-50 transition-shadow duration-200 ${scrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.08)]' : 'border-b border-gray-200'}`}>
-                <div className="px-4 sm:px-6 lg:px-10 h-[60px] sm:h-[70px] flex items-center gap-3">
+                <div className="px-3 sm:px-6 lg:px-10 h-[54px] sm:h-[70px] flex items-center gap-2 sm:gap-3">
 
                     {/* Mobile menu toggle */}
-                    <button className="lg:hidden flex-shrink-0 w-9 h-9 flex items-center justify-center border-none bg-transparent cursor-pointer text-gray-600"
+                    <button className="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-gray-600"
                         onClick={() => { setMobileOpen(!mobileOpen); setSearchOpen(false) }}>
                         {mobileOpen ? <IconX size={22} /> : <IconMenu size={22} />}
                     </button>
 
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 no-underline">
-                        <div className="w-[40px] h-[40px] sm:w-[46px] sm:h-[46px] rounded-[calc(var(--radius,12px))] overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100"
+                        <div className="w-[34px] h-[34px] sm:w-[46px] sm:h-[46px] rounded-[calc(var(--radius,12px))] overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100"
                             style={{ background: 'var(--color-dark-bg)' }}>
                             {logoUrl
                                 ? <img src={logoUrl} alt={siteName} className="w-full h-full object-contain" />
                                 : <span className="font-manrope font-black text-lg sm:text-xl" style={{ color: 'var(--color-primary)' }}>{siteName[0]}</span>
                             }
                         </div>
-                        <div className="hidden sm:block">
-                            <div className="font-manrope font-black text-[17px] sm:text-[19px] tracking-[2px] leading-none" style={{ color: 'var(--color-dark-bg)' }}>{siteName}</div>
+                        <div>
+                            <div className="font-manrope font-black text-[13px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none" style={{ color: 'var(--color-dark-bg)' }}>{siteName}</div>
                             {tagline && <div className="text-[7px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5" style={{ color: 'var(--color-primary)' }}>{tagline}</div>}
                         </div>
                     </Link>
@@ -196,7 +241,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                     </form>
 
                     {/* Mobile search toggle */}
-                    <button className="lg:hidden w-9 h-9 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-gray-600"
+                    <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-gray-600"
                         onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false) }}>
                         <IconSearch size={20} />
                     </button>
@@ -234,6 +279,22 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                     <div className="hidden lg:flex items-center gap-1 ml-1">
                         <Link href="/about"   className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline"><IconInfoCircle size={16} /> About</Link>
                         <Link href="/contact" className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline"><IconMessageCircle size={16} /> Contact</Link>
+                        {auth?.user ? (
+                            <Link href="/account"
+                                className="flex items-center gap-2 h-[38px] pl-2 pr-3 rounded-[10px] text-[13px] font-semibold hover:bg-gray-50 transition-all no-underline"
+                                style={{ color: 'var(--color-primary)' }}>
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0"
+                                    style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
+                                    {auth.user.name?.[0]?.toUpperCase() ?? 'A'}
+                                </div>
+                                <span>{auth.user.name?.split(' ')[0]}</span>
+                            </Link>
+                        ) : (
+                            <Link href="/login"
+                                className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline">
+                                <IconUser size={16} /> Login
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -312,9 +373,6 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                                 <IconShoppingCart size={18} /> Cart {cartCount > 0 && <span className="ml-auto text-[11px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--color-primary)' }}>{cartCount}</span>}
                             </Link>
                         </div>
-                        <FloatingCart settings={settings ?? {}} />
-            <ChatWidget settings={settings ?? {}} auth={auth} />
-
             {showWhatsapp && whatsapp && (
                             <div className="px-5 py-4">
                                 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
@@ -327,13 +385,13 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                 </>
             )}
 
-            <main className="flex-1 min-h-screen">{children}</main>
+            <main className="flex-1 min-h-screen pb-14 lg:pb-0">{children}</main>
 
             {/* ── FOOTER ── */}
             <footer style={{ background: 'var(--color-dark-bg, #0a0a0a)', color: 'white' }}>
                 {/* Newsletter */}
                 <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
-                    <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+                    <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <div>
                             <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 8px' }}>EXCLUSIVE OFFERS</p>
                             <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(22px,3vw,32px)', color: 'white', margin: '0 0 8px', lineHeight: 1.1 }}>Stay in the Loop</h2>
@@ -353,7 +411,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
 
                 {/* Main footer */}
                 <div style={{ padding: 'clamp(40px,5vw,56px) clamp(20px,5vw,48px) 32px', maxWidth: 1400, margin: '0 auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'clamp(180px,25%,280px) repeat(3, 1fr)', gap: 'clamp(24px,4vw,48px)', marginBottom: 40 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'clamp(24px,4vw,48px)', marginBottom: 40 }}>
 
                         {/* Brand */}
                         <div>
@@ -411,17 +469,44 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                 </div>
             </footer>
 
-            {/* ── FLOATING WHATSAPP — only if enabled in settings ── */}
-            <FloatingCart settings={settings ?? {}} />
-            <ChatWidget settings={settings ?? {}} auth={auth} />
+            {/* ── Mobile Bottom Navigation ── */}
+            <nav className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9970, background: 'white', borderTop: '1.5px solid #E5E7EB', paddingBottom: 'env(safe-area-inset-bottom, 0px)', boxShadow: '0 -2px 16px rgba(0,0,0,0.07)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', height: 56 }}>
+                    {([
+                        { href: '/',         label: 'Home',     d: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+                        { href: '/shop',     label: 'Shop',     d: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
+                        { href: '/cart',     label: 'Cart',     d: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z', badge: cartCount },
+                        { href: '/wishlist', label: 'Wishlist', d: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+                        { href: auth?.user ? '/account' : '/login', label: auth?.user ? 'Account' : 'Login', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+                    ] as Array<{href:string;label:string;d:string;badge?:number}>).map(item => {
+                        const isActive = typeof window !== 'undefined' && (window.location.pathname === item.href || (item.href !== '/' && window.location.pathname.startsWith(item.href)))
+                        return (
+                            <Link key={item.href} href={item.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textDecoration: 'none', position: 'relative', color: isActive ? 'var(--color-primary)' : '#9CA3AF' }}>
+                                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d={item.d}/>
+                                </svg>
+                                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.02em', lineHeight: 1 }}>{item.label}</span>
+                                {isActive && <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 20, height: 2, background: 'var(--color-primary)', borderRadius: '2px 2px 0 0' }} />}
+                                {item.badge && item.badge > 0 ? <span style={{ position: 'absolute', top: 5, right: 'calc(50% - 16px)', background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', borderRadius: '50%', width: 14, height: 14, fontSize: 7.5, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid white' }}>{item.badge > 9 ? '9+' : item.badge}</span> : null}
+                            </Link>
+                        )
+                    })}
+                </div>
+            </nav>
+            <div className="lg:hidden" style={{ height: 56 }} />
 
+
+            {/* ── FLOATING WHATSAPP — only if enabled in settings ── */}
             {showWhatsapp && whatsapp && (
                 <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                    className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center justify-center bg-[#25D366] text-white rounded-full no-underline hover:scale-110 transition-transform"
+                    className="fixed bottom-[72px] right-4 sm:bottom-6 sm:right-6 z-[9960] flex items-center justify-center bg-[#25D366] text-white rounded-full no-underline hover:scale-110 transition-transform"
                     style={{ width: 54, height: 54, animation: 'wapulse 2.5s infinite', boxShadow: '0 4px 20px rgba(37,211,102,0.45)' }}>
                     <IconBrandWhatsapp size={26} />
                 </a>
             )}
+            {/* ── Floating UI — above bottom nav ── */}
+            <FloatingCart settings={settings ?? {}} />
+            <ChatWidget settings={settings ?? {}} auth={auth} />
         </div>
     )
 }

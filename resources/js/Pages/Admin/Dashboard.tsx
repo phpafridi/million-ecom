@@ -21,7 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function Dashboard({ stats, revenueChart, topProducts, recentOrders, lowStock }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const fmt = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
 
     const statCards = [

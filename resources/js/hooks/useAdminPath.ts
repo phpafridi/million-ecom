@@ -1,13 +1,13 @@
 import { usePage } from '@inertiajs/react'
 
 /**
- * Returns the current admin path prefix (e.g. "tijar-admin").
+ * Returns the current admin path prefix (e.g. "ml-admin").
  * All admin pages use this so changing admin_path in Settings
  * automatically updates every link and form action in the admin panel.
  */
 export function useAdminPath(): string {
     const { props } = usePage<{ adminPath?: string }>()
-    return props.adminPath ?? 'tijar-admin'
+    return props.adminPath ?? 'ml-admin'
 }
 
 /**

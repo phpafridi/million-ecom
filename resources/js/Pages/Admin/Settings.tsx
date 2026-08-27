@@ -54,40 +54,64 @@ function ImageUploadField({ label, current, onFile }: { label: string; current?:
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 export default function Settings({ settings }: Props) {
-    const { props: _p } = usePage<{ adminPath?: string }>()
-    const ap = `/${_p.adminPath ?? 'tijar-admin'}`
 
     const { data, setData, post, processing } = useForm<Record<string, any>>({
         site_name:            settings.site_name            ?? 'Tijar',
         site_tagline:         settings.site_tagline         ?? 'Your Online Store',
         phone:                settings.phone                ?? '',
         email:                settings.email                ?? '',
+        admin_email:              settings.admin_email              ?? '',
+        mail_host:                settings.mail_host                ?? '',
+        mail_port:                settings.mail_port                ?? '587',
+        mail_username:            settings.mail_username            ?? '',
+        mail_password:            settings.mail_password            ?? '',
+        mail_encryption:          settings.mail_encryption          ?? 'tls',
+        mail_from_address:        settings.mail_from_address        ?? '',
+        mail_from_name:           settings.mail_from_name           ?? '',
+        email_notify_customer:    settings.email_notify_customer    ?? '1',
+        email_notify_admin:       settings.email_notify_admin       ?? '1',
+        email_notify_on:          settings.email_notify_on          ?? 'processing,shipped,delivered,cancelled',
+        whatsapp_enabled:         settings.whatsapp_enabled         ?? '0',
+        whatsapp_api_key:         settings.whatsapp_api_key         ?? '',
+        whatsapp_phone_id:        settings.whatsapp_phone_id        ?? '',
+        whatsapp_admin_phone:     settings.whatsapp_admin_phone     ?? '',
+        whatsapp_notify_customer: settings.whatsapp_notify_customer ?? '1',
+        whatsapp_notify_admin:    settings.whatsapp_notify_admin    ?? '1',
+        whatsapp_notify_on:       settings.whatsapp_notify_on       ?? 'processing,shipped,delivered,cancelled',
+        whatsapp_order_template:  settings.whatsapp_order_template  ?? '',
+        whatsapp_ship_template:   settings.whatsapp_ship_template   ?? '',
+        whatsapp_deliver_template:settings.whatsapp_deliver_template?? '',
+        whatsapp_cancel_template: settings.whatsapp_cancel_template ?? '',
+        sms_enabled:              settings.sms_enabled              ?? '0',
+        sms_provider:             settings.sms_provider             ?? '',
+        sms_api_key:              settings.sms_api_key              ?? '',
+        sms_api_secret:           settings.sms_api_secret           ?? '',
+        sms_api_url:              settings.sms_api_url              ?? '',
+        sms_sender_id:            settings.sms_sender_id            ?? '',
+        sms_notify_on:            settings.sms_notify_on            ?? '',
         address:              settings.address              ?? '',
         whatsapp_number:      settings.whatsapp_number      ?? '',
         shipping_fee:         settings.shipping_fee         ?? '0',
-        delivery_threshold:   settings.delivery_threshold   ?? '0',
-        admin_path:           settings.admin_path           ?? 'tijar-admin',
+        delivery_threshold:      settings.delivery_threshold      ?? '0',
+        low_stock_threshold:     settings.low_stock_threshold     ?? '5',
+        new_arrival_days:        settings.new_arrival_days        ?? '30',
+        loyalty_enabled:         settings.loyalty_enabled         ?? '1',
+        loyalty_points_rate:     settings.loyalty_points_rate     ?? '10',
+        loyalty_redeem_enabled:  settings.loyalty_redeem_enabled  ?? '1',
+        loyalty_min_redeem:      settings.loyalty_min_redeem      ?? '100',
+        login_max_attempts:      settings.login_max_attempts      ?? '5',
+        login_lockout_minutes:   settings.login_lockout_minutes   ?? '15',
+        admin_max_attempts:      settings.admin_max_attempts      ?? '3',
+        admin_lockout_minutes:   settings.admin_lockout_minutes   ?? '30',
+        admin_path:           settings.admin_path           ?? 'ml-admin',
         topbar_message:       settings.topbar_message       ?? '',
-        // Navbar colors
-        navbar_bg:            settings.navbar_bg            ?? '#ffffff',
-        navbar_text_color:    settings.navbar_text_color    ?? '#111111',
-        navbar_border_color:  settings.navbar_border_color  ?? '#e5e7eb',
-        subnav_bg:            settings.subnav_bg            ?? '#ffffff',
-        logo_box_bg:          settings.logo_box_bg          ?? '#0a0a0a',
-        // Cart & Chat
-        cart_bubble_color:    settings.cart_bubble_color    ?? '#0a0a0a',
-        cart_bubble_icon:     settings.cart_bubble_icon     ?? '🛒',
-        chat_bubble_color:    settings.chat_bubble_color    ?? '#0a0a0a',
-        chat_bubble_icon:     settings.chat_bubble_icon     ?? '💬',
-        // Tracking
-        ga_enabled:           settings.ga_enabled           ?? '0',
-        ga_measurement_id:    settings.ga_measurement_id    ?? '',
-        gtm_enabled:          settings.gtm_enabled          ?? '0',
-        gtm_id:               settings.gtm_id               ?? '',
-        fb_pixel_enabled:     settings.fb_pixel_enabled     ?? '0',
-        fb_pixel_id:          settings.fb_pixel_id          ?? '',
-        tiktok_pixel_enabled: settings.tiktok_pixel_enabled ?? '0',
-        tiktok_pixel_id:      settings.tiktok_pixel_id      ?? '',
+        sale_enabled:         settings.sale_enabled         ?? '0',
+        sale_label:           settings.sale_label           ?? 'FLASH SALE',
+        sale_badge:           settings.sale_badge           ?? 'UP TO 60% OFF',
+        sale_ends_at:         settings.sale_ends_at         ?? '',
+        sale_bg:              settings.sale_bg              ?? '#991B1B',
+        sale_text_color:      settings.sale_text_color      ?? '#ffffff',
+        sale_discount:        settings.sale_discount        ?? '',
         ticker_items:         settings.ticker_items         ?? '',
         facebook_url:         settings.facebook_url         ?? '',
         instagram_url:        settings.instagram_url        ?? '',
@@ -156,6 +180,69 @@ export default function Settings({ settings }: Props) {
                             <Field label="Free Delivery Above (Rs)" hint="0 = always charge shipping">
                                 <input className={inputCls} type="number" min="0" value={data.delivery_threshold} onChange={e => setData('delivery_threshold', e.target.value)} placeholder="5000" />
                             </Field>
+                            <Field label="Low Stock Alert" hint="Warn admin when product stock falls to or below this number">
+                                <input className={inputCls} type="number" min="0" value={data.low_stock_threshold} onChange={e => setData('low_stock_threshold', e.target.value)} placeholder="5" />
+                            </Field>
+                            <Field label="New Arrivals Window (days)" hint="Products added within N days show in New Arrivals">
+                                <input className={inputCls} type="number" min="1" value={data.new_arrival_days} onChange={e => setData('new_arrival_days', e.target.value)} placeholder="30" />
+                            </Field>
+                            <div className="col-span-2 pt-3 pb-1 border-t border-gray-100">
+                                <p className="text-[11px] font-black text-gray-400 uppercase tracking-wider">🪙 Loyalty Points</p>
+                            </div>
+                            <Field label="Enable Loyalty Program">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked={data.loyalty_enabled === '1'} onChange={e => setData('loyalty_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4 cursor-pointer" style={{ accentColor:'var(--color-primary)' }} />
+                                    <span className="text-[13px] font-semibold">{data.loyalty_enabled === '1' ? '✅ Enabled' : '❌ Disabled'}</span>
+                                </label>
+                            </Field>
+                            <Field label="Points Earning Rate" hint="1 point per Rs X spent. 100 pts = Rs 10 discount">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[13px] text-gray-500 whitespace-nowrap">1 pt per Rs</span>
+                                    <input className={inputCls} type="number" min="1" value={data.loyalty_points_rate} onChange={e => setData('loyalty_points_rate', e.target.value)} placeholder="10" />
+                                    <span className="text-[13px] text-gray-500 whitespace-nowrap">spent</span>
+                                </div>
+                            </Field>
+                            <Field label="Allow Points Redemption at Checkout">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked={data.loyalty_redeem_enabled === '1'} onChange={e => setData('loyalty_redeem_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4 cursor-pointer" style={{ accentColor:'var(--color-primary)' }} />
+                                    <span className="text-[13px] font-semibold">{data.loyalty_redeem_enabled === '1' ? '✅ Allowed' : '❌ Disabled'}</span>
+                                </label>
+                            </Field>
+                            <Field label="Minimum Points to Redeem">
+                                <input className={inputCls} type="number" min="1" value={data.loyalty_min_redeem} onChange={e => setData('loyalty_min_redeem', e.target.value)} placeholder="100" />
+                            </Field>
+                            <div className="col-span-2 pt-3 pb-1 border-t border-gray-100">
+                                <p className="text-[11px] font-black text-gray-400 uppercase tracking-wider">🔒 Security</p>
+                            </div>
+                            <Field label="Customer Max Login Attempts">
+                                <input className={inputCls} type="number" min="3" max="20" value={data.login_max_attempts} onChange={e => setData('login_max_attempts', e.target.value)} placeholder="5" />
+                            </Field>
+                            <Field label="Customer Lockout (minutes)">
+                                <input className={inputCls} type="number" min="5" value={data.login_lockout_minutes} onChange={e => setData('login_lockout_minutes', e.target.value)} placeholder="15" />
+                            </Field>
+                            <Field label="Admin Max Login Attempts" hint="Recommended: 3">
+                                <input className={inputCls} type="number" min="1" max="10" value={data.admin_max_attempts} onChange={e => setData('admin_max_attempts', e.target.value)} placeholder="3" />
+                            </Field>
+                            <Field label="Admin Lockout (minutes)" hint="Recommended: 30">
+                                <input className={inputCls} type="number" min="5" value={data.admin_lockout_minutes} onChange={e => setData('admin_lockout_minutes', e.target.value)} placeholder="30" />
+                            </Field>
+
+                            {/* Security Settings */}
+                            <div className="col-span-2 mt-2 mb-1">
+                                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">🔒 Security — Login Attempts</div>
+                            </div>
+                            <Field label="Customer Max Login Attempts" hint="Lock account after this many failed attempts (per 15 min window)">
+                                <input className={inputCls} type="number" min="3" max="20" value={data.login_max_attempts} onChange={e => setData('login_max_attempts', e.target.value)} placeholder="5" />
+                            </Field>
+                            <Field label="Customer Lockout (minutes)" hint="How long to lock after max attempts">
+                                <input className={inputCls} type="number" min="5" max="1440" value={data.login_lockout_minutes} onChange={e => setData('login_lockout_minutes', e.target.value)} placeholder="15" />
+                            </Field>
+                            <Field label="Admin Max Login Attempts" hint="Stricter limit for admin login (recommended: 3)">
+                                <input className={inputCls} type="number" min="1" max="10" value={data.admin_max_attempts} onChange={e => setData('admin_max_attempts', e.target.value)} placeholder="3" />
+                            </Field>
+                            <Field label="Admin Lockout (minutes)" hint="How long to lock admin after max attempts (recommended: 30)">
+                                <input className={inputCls} type="number" min="5" max="1440" value={data.admin_lockout_minutes} onChange={e => setData('admin_lockout_minutes', e.target.value)} placeholder="30" />
+                            </Field>
                         </div>
                         <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12.5px] text-blue-700">
                             💡 <strong>Example:</strong> Fee = Rs 200, Free above = Rs 5,000 → orders under Rs 5,000 pay Rs 200, orders over get free delivery. Set both to 0 for always free.
@@ -185,7 +272,7 @@ export default function Settings({ settings }: Props) {
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-[12.5px] text-amber-800">
                             ⚠️ <strong>After saving, your admin URL will change.</strong> You will be logged out and redirected to the new URL.
                         </div>
-                        <Field label="Admin Path" hint={`Current: ${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8000'}/${data.admin_path}`}>
+                        <Field label="Admin Path" hint={`Current: ${typeof window !== 'undefined' ? window.location.origin : ''}/${data.admin_path}`}>
                             <div className="flex items-center">
                                 <span className="h-11 px-3 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl text-[13px] text-gray-500 flex items-center flex-shrink-0 whitespace-nowrap">yourdomain.com/</span>
                                 <input className={inputCls + ' rounded-l-none'} value={data.admin_path} onChange={e => setData('admin_path', e.target.value.replace(/[^a-z0-9-]/g,'').toLowerCase())} placeholder="tijar-admin" />
@@ -348,18 +435,137 @@ export default function Settings({ settings }: Props) {
                     </Section>
 
                     {/* Email config info */}
-                    <Section title="Email Notifications (SMTP)" icon="📧">
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-[13px] text-amber-800">
-                            <p className="font-bold mb-2">⚠️ Email settings must be set in your <code className="bg-white px-1 rounded">.env</code> file:</p>
-                            <pre className="bg-white rounded-lg p-3 text-[11.5px] text-gray-700 overflow-x-auto">{`MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=you@gmail.com
-MAIL_PASSWORD=your-app-password
-MAIL_FROM_ADDRESS=you@gmail.com
-MAIL_FROM_NAME="Your Store Name"`}</pre>
-                            <p className="mt-2 text-[12px]">For Gmail: Enable 2FA → Google Account → Security → App Passwords → generate one.</p>
+                    <Section title="Email / SMTP Settings" icon="📧">
+                        <div className="col-span-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12px] text-blue-700 mb-1">
+                            Configure SMTP here — overrides .env. Leave blank to use .env settings.
+                            Mailtrap: sandbox.smtp.mailtrap.io / port 2525 / TLS.
+                            Gmail: enable 2FA → Google Account → App Passwords.
                         </div>
+                        <Field label="SMTP Host">
+                            <input className={inputCls} type="text" value={data.mail_host} onChange={e => setData('mail_host', e.target.value)} placeholder="sandbox.smtp.mailtrap.io" />
+                        </Field>
+                        <Field label="SMTP Port">
+                            <input className={inputCls} type="number" value={data.mail_port} onChange={e => setData('mail_port', e.target.value)} placeholder="587" />
+                        </Field>
+                        <Field label="SMTP Username">
+                            <input className={inputCls} type="text" value={data.mail_username} onChange={e => setData('mail_username', e.target.value)} placeholder="you@gmail.com" />
+                        </Field>
+                        <Field label="SMTP Password">
+                            <input className={inputCls} type="password" value={data.mail_password} onChange={e => setData('mail_password', e.target.value)} placeholder="••••••••" />
+                        </Field>
+                        <Field label="Encryption">
+                            <select className={inputCls} value={data.mail_encryption} onChange={e => setData('mail_encryption', e.target.value)}>
+                                <option value="tls">TLS (recommended)</option>
+                                <option value="ssl">SSL</option>
+                                <option value="">None</option>
+                            </select>
+                        </Field>
+                        <Field label="From Email">
+                            <input className={inputCls} type="email" value={data.mail_from_address} onChange={e => setData('mail_from_address', e.target.value)} placeholder="noreply@millionaire.pk" />
+                        </Field>
+                        <Field label="From Name">
+                            <input className={inputCls} type="text" value={data.mail_from_name} onChange={e => setData('mail_from_name', e.target.value)} placeholder="MILLIONAIRE" />
+                        </Field>
+                        <Field label="Admin Email" hint="Receives new order alerts">
+                            <input className={inputCls} type="email" value={data.admin_email} onChange={e => setData('admin_email', e.target.value)} placeholder="admin@millionaire.pk" />
+                        </Field>
+                    </Section>
+
+                    <Section title="Email Notification Rules" icon="✉️">
+                        <Field label="Notify Customer">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.email_notify_customer === '1'} onChange={e => setData('email_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">Send email to customer on status change</span>
+                            </label>
+                        </Field>
+                        <Field label="Notify Admin">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.email_notify_admin === '1'} onChange={e => setData('email_notify_admin', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">Send new order alert to admin</span>
+                            </label>
+                        </Field>
+                        <Field label="Send Email On" hint="Comma separated statuses">
+                            <input className={inputCls} type="text" value={data.email_notify_on} onChange={e => setData('email_notify_on', e.target.value)} placeholder="processing,shipped,delivered,cancelled" />
+                        </Field>
+                    </Section>
+
+                    <Section title="WhatsApp Business API" icon="💬">
+                        <div className="col-span-2 p-3 bg-green-50 border border-green-100 rounded-xl text-[12px] text-green-700 mb-1">
+                            Get API Key &amp; Phone ID from developers.facebook.com → WhatsApp → API Setup. Free: 1,000 msgs/month.
+                        </div>
+                        <Field label="Enable WhatsApp">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.whatsapp_enabled === '1'} onChange={e => setData('whatsapp_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">{data.whatsapp_enabled === '1' ? '✅ Enabled' : '❌ Disabled'}</span>
+                            </label>
+                        </Field>
+                        <Field label="Send WA On" hint="Comma separated statuses">
+                            <input className={inputCls} type="text" value={data.whatsapp_notify_on} onChange={e => setData('whatsapp_notify_on', e.target.value)} placeholder="processing,shipped,delivered,cancelled" />
+                        </Field>
+                        <Field label="API Key (Access Token)">
+                            <input className={inputCls} type="password" value={data.whatsapp_api_key} onChange={e => setData('whatsapp_api_key', e.target.value)} placeholder="EAAxxxxxxxxxxxxxxx" />
+                        </Field>
+                        <Field label="Phone Number ID">
+                            <input className={inputCls} type="text" value={data.whatsapp_phone_id} onChange={e => setData('whatsapp_phone_id', e.target.value)} placeholder="1234567890123456" />
+                        </Field>
+                        <Field label="Admin WhatsApp Number" hint="With country code, no + (e.g. 923001234567)">
+                            <input className={inputCls} type="text" value={data.whatsapp_admin_phone} onChange={e => setData('whatsapp_admin_phone', e.target.value)} placeholder="923001234567" />
+                        </Field>
+                        <Field label="Notify Customer">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.whatsapp_notify_customer === '1'} onChange={e => setData('whatsapp_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">WA message to customer on status change</span>
+                            </label>
+                        </Field>
+                        <div className="col-span-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-1">
+                            Message Templates — use: name, order_number, total, tracking_url in curly braces
+                        </div>
+                        <Field label="Order Placed Template">
+                            <textarea className={inputCls} rows={2} value={data.whatsapp_order_template} onChange={e => setData('whatsapp_order_template', e.target.value)} placeholder="Hi {name}! Order {order_number} confirmed. Total: {total}. Track: {tracking_url}" />
+                        </Field>
+                        <Field label="Shipped Template">
+                            <textarea className={inputCls} rows={2} value={data.whatsapp_ship_template} onChange={e => setData('whatsapp_ship_template', e.target.value)} placeholder="Hi {name}! Order {order_number} shipped! Track: {tracking_url}" />
+                        </Field>
+                        <Field label="Delivered Template">
+                            <textarea className={inputCls} rows={2} value={data.whatsapp_deliver_template} onChange={e => setData('whatsapp_deliver_template', e.target.value)} placeholder="Hi {name}! Order {order_number} delivered. Thank you!" />
+                        </Field>
+                        <Field label="Cancelled Template">
+                            <textarea className={inputCls} rows={2} value={data.whatsapp_cancel_template} onChange={e => setData('whatsapp_cancel_template', e.target.value)} placeholder="Hi {name}, order {order_number} was cancelled." />
+                        </Field>
+                    </Section>
+
+                    <Section title="SMS API (Optional — Future Use)" icon="📱">
+                        <div className="col-span-2 p-3 bg-gray-50 border border-gray-200 rounded-xl text-[12px] text-gray-500 mb-1">
+                            Supports Twilio, eOcean Pakistan, Zong, Ufone or custom API. Leave blank to disable SMS.
+                        </div>
+                        <Field label="Enable SMS">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.sms_enabled === '1'} onChange={e => setData('sms_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">{data.sms_enabled === '1' ? '✅ Enabled' : '❌ Disabled'}</span>
+                            </label>
+                        </Field>
+                        <Field label="Provider">
+                            <select className={inputCls} value={data.sms_provider} onChange={e => setData('sms_provider', e.target.value)}>
+                                <option value="">— Select Provider —</option>
+                                <option value="twilio">Twilio (International)</option>
+                                <option value="eocean">eOcean Pakistan</option>
+                                <option value="zong">Zong (CMPAK)</option>
+                                <option value="ufone">Ufone (PTML)</option>
+                                <option value="custom">Custom API URL</option>
+                            </select>
+                        </Field>
+                        <Field label="API Key">
+                            <input className={inputCls} type="password" value={data.sms_api_key} onChange={e => setData('sms_api_key', e.target.value)} placeholder="API Key / Account SID" />
+                        </Field>
+                        <Field label="API Secret" hint="Twilio Auth Token">
+                            <input className={inputCls} type="password" value={data.sms_api_secret} onChange={e => setData('sms_api_secret', e.target.value)} placeholder="Auth Token" />
+                        </Field>
+                        <Field label="Sender ID">
+                            <input className={inputCls} type="text" value={data.sms_sender_id} onChange={e => setData('sms_sender_id', e.target.value)} placeholder="MILLIONAIRE" />
+                        </Field>
+                        <Field label="Send SMS On">
+                            <input className={inputCls} type="text" value={data.sms_notify_on} onChange={e => setData('sms_notify_on', e.target.value)} placeholder="shipped,delivered" />
+                        </Field>
                     </Section>
 
                     {/* Save button — also at bottom of left col for convenience */}
@@ -587,6 +793,36 @@ MAIL_FROM_NAME="Your Store Name"`}</pre>
                         </div>
                     </div>
                 </div>
+
+                    <Section title="Flash Sale / Countdown Timer" icon="⚡">
+                        <div className="col-span-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-[12px] text-amber-700 mb-1">
+                            Show a countdown timer in the storefront header. Set end time and enable to activate.
+                        </div>
+                        <Field label="Enable Flash Sale Bar">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={data.sale_enabled === '1'} onChange={e => setData('sale_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                                <span className="text-[13px]">{data.sale_enabled === '1' ? '✅ Active' : '❌ Hidden'}</span>
+                            </label>
+                        </Field>
+                        <Field label="Sale Label" hint="e.g. AZADI SALE, EID SPECIAL">
+                            <input className={inputCls} type="text" value={data.sale_label} onChange={e => setData('sale_label', e.target.value)} placeholder="FLASH SALE" />
+                        </Field>
+                        <Field label="Badge Text" hint="e.g. UP TO 60% OFF">
+                            <input className={inputCls} type="text" value={data.sale_badge} onChange={e => setData('sale_badge', e.target.value)} placeholder="UP TO 60% OFF" />
+                        </Field>
+                        <Field label="Sale Ends At">
+                            <input className={inputCls} type="datetime-local" value={data.sale_ends_at} onChange={e => setData('sale_ends_at', e.target.value)} />
+                        </Field>
+                        <Field label="Sale Discount %" hint="e.g. 60 means all products show 60% OFF and prices are reduced by 60%">
+                            <input className={inputCls} type="number" min="0" max="99" value={data.sale_discount} onChange={e => setData('sale_discount', e.target.value)} placeholder="e.g. 60" />
+                        </Field>
+                        <Field label="Bar Color">
+                            <input type="color" value={data.sale_bg} onChange={e => setData('sale_bg', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border border-gray-200" />
+                        </Field>
+                        <Field label="Text Color">
+                            <input type="color" value={data.sale_text_color} onChange={e => setData('sale_text_color', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border border-gray-200" />
+                        </Field>
+                    </Section>
 
 <div className="sticky top-20">
                         <button type="submit" disabled={processing}

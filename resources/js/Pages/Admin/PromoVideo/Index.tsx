@@ -7,8 +7,6 @@ import { Button } from '@/Components/ui/Button'
 interface Props { current_video?: string; video_title: string; video_tag: string; video_cta: string }
 
 export default function PromoVideoIndex({ current_video, video_title, video_tag, video_cta }: Props) {
-    const { props: _p } = usePage<{ adminPath?: string }>()
-    const ap = `/${_p.adminPath ?? 'tijar-admin'}`
     const { data, setData, post, processing } = useForm<any>({
         video: null as File | null,
         video_title, video_tag, video_cta,

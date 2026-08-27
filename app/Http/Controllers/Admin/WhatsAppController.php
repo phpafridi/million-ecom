@@ -41,10 +41,10 @@ class WhatsAppController extends Controller
         };
 
         $message = str_replace(
-            ['{name}', '{order_id}', '{total}', '{tracking_url}', '{status}'],
+            ['{name}', '{order_id}', '{order_number}', '{total}', '{tracking_url}', '{status}'],
             [
                 $order->customer_name,
-                $order->id,
+                $order->order_number ?? '#'.$order->id,
                 'Rs ' . number_format($order->total),
                 url("/track/{$order->tracking_token}"),
                 ucfirst($order->status),

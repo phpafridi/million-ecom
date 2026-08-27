@@ -15,7 +15,7 @@ function ProfileField({ label, children }: { label: string; children: React.Reac
 
 export default function Profile({ user }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing, errors } = useForm({
         name: user.name,

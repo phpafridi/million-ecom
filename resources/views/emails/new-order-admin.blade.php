@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>New Order #{{ $order->id }}</title>
+<title>New Order {{ ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT))) }}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
          background:#f0f2f5; padding:24px 16px; }
@@ -37,7 +37,7 @@
       <h1>🛍 New Order Received</h1>
       <p>{{ now()->format('D, d M Y — H:i') }}</p>
     </div>
-    <div class="alert">⚡ Action required — Order #{{ $order->id }} is waiting for processing</div>
+    <div class="alert">⚡ Action required — Order {{ ($order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT))) }} is waiting for processing</div>
     <div class="body">
       <div class="big-amount">Rs {{ number_format($order->total) }}</div>
 

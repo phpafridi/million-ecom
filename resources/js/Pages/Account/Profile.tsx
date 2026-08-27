@@ -47,12 +47,12 @@ export default function AccountProfile({ user, addresses, settings, auth }: Prop
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title="My Profile" />
-            <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-body-bg)' }}>
+            <div className="min-h-screen py-0 lg:py-8 px-0 lg:px-4" style={{ background: 'var(--color-body-bg)' }}>
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                         <AccountSidebar auth={auth} />
 
-                        <div className="lg:col-span-3 space-y-4">
+                        <div className="lg:col-span-3 space-y-4 px-4 pt-5 lg:px-0 lg:pt-0">
 
                             {/* Success Message */}
                             {flash?.success && (

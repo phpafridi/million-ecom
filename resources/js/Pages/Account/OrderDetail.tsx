@@ -34,12 +34,12 @@ export default function OrderDetail({ order, settings, auth }: Props) {
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title={`Order #${order.id}`} />
-            <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-body-bg)' }}>
+            <div className="min-h-screen py-0 lg:py-8 px-0 lg:px-4" style={{ background: 'var(--color-body-bg)' }}>
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                         <AccountSidebar auth={auth} active="orders" />
 
-                        <div className="lg:col-span-3 space-y-4">
+                        <div className="lg:col-span-3 space-y-4 px-4 pt-5 lg:px-0 lg:pt-0">
 
                             {/* Back */}
                             <Link href="/account/orders" className="inline-flex items-center gap-2 text-[13px] font-semibold text-gray-500 no-underline hover:text-gray-700">

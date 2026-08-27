@@ -12,7 +12,8 @@ export default function SupportIndex({ tickets, stats }:Props) {
     const ap = '/ml-admin'
     const [search, setSearch] = useState('')
 
-    function changeStatus(id:number, status:string){ router.patch(`${ap}/support/${id}`, { status }, { preserveScroll:true }) }
+    function changeStatus(id:number, status:string){
+        router.patch(`${ap}/support/${id}`, { status }, { preserveScroll:true }) }
 
     return (
         <AdminLayout title="Support Tickets">

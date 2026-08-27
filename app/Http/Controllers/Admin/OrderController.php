@@ -56,6 +56,13 @@ class OrderController extends Controller
         ]);
 
         $order->update($data);
+        \App\Models\ActivityLog::log(
+            'order.updated',
+            'Order ' . ($order->order_number ?? '#'.$order->id) . ' updated',
+            'info', $order,
+            ['status' => $oldStatus],
+            array_filter($data)
+        );
 
         // Inventory management on status change
         $newStatus = $data['status'] ?? $oldStatus;
@@ -66,13 +73,33 @@ class OrderController extends Controller
             $order->restoreStock();
         }
 
-        // ── Send email on status change ──────────────────────────────
+        // ── Notifications + loyalty on status change ────────────────
         $newStatus = $data['status'] ?? $oldStatus;
-        if (isset($data['status']) && $newStatus !== $oldStatus && $order->customer_email) {
+        if (isset($data['status']) && $newStatus !== $oldStatus) {
+            $freshOrder = $order->fresh();
+
+            // Unified: Email + WhatsApp + SMS via NotificationService
             try {
-                Mail::to($order->customer_email)->send(new OrderStatusMail($order->fresh(), $newStatus));
+                (new \App\Services\OrderNotificationService())->notifyStatusChange($freshOrder, $newStatus);
             } catch (\Throwable $e) {
-                \Log::warning("Order status email failed: " . $e->getMessage());
+                \Log::error("Notification failed: " . $e->getMessage());
+            }
+
+            // Award loyalty points on DELIVERY only
+            if ($newStatus === 'delivered' && $freshOrder->user_id
+                && \App\Models\Setting::get('loyalty_enabled', '1') === '1') {
+                try {
+                    $user = \App\Models\User::find($freshOrder->user_id);
+                    if ($user) {
+                        $rate = (int)(\App\Models\Setting::get('loyalty_points_rate', 10) ?: 10);
+                        $pts  = (int)floor($freshOrder->total / $rate);
+                        if ($pts > 0) {
+                            $user->addPoints('Earned for delivered order '.($freshOrder->order_number??'#'.$freshOrder->id), $freshOrder->id, $pts);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning("Loyalty points failed: " . $e->getMessage());
+                }
             }
         }
 

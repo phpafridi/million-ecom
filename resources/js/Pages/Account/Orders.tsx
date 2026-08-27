@@ -38,12 +38,12 @@ export default function AccountOrders({ orders, filters, settings, auth }: Props
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title="My Orders" />
-            <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-body-bg)' }}>
+            <div className="min-h-screen py-0 lg:py-8 px-0 lg:px-4" style={{ background: 'var(--color-body-bg)' }}>
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                         <AccountSidebar auth={auth} active="orders" />
 
-                        <div className="lg:col-span-3 space-y-4">
+                        <div className="lg:col-span-3 space-y-4 px-4 pt-5 lg:px-0 lg:pt-0">
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-4">
@@ -89,7 +89,7 @@ export default function AccountOrders({ orders, filters, settings, auth }: Props
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-0.5">
                                                         <p className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>
-                                                            Order #{order.id}
+                                                            {(order as any).order_number ?? `Order #${order.id}`}
                                                         </p>
                                                         {order.tracking_token && (
                                                             <span className="font-mono text-[10px] text-gray-400">#{order.tracking_token}</span>

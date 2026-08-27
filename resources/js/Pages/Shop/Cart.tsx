@@ -20,12 +20,16 @@ interface Gateway {
 }
 interface Props {
     items: CartItem[]; subtotal: number; shipping: number; total: number
+    discount?: number; points_discount?: number; coupon_discount?: number
+    loyalty_points?: number; loyalty_value?: number; points_used?: number
+    loyalty_enabled?: boolean; redeem_enabled?: boolean
     gateways: Gateway[]; settings: Record<string, string>; auth: any
+    user_profile?: { name:string; email:string; phone:string; address:string; city:string } | null
 }
 
 const FIELD_ERRORS: Record<string, string> = {}
 
-export default function Cart({ items, subtotal, shipping, total, gateways, settings, auth }: Props) {
+export default function Cart({ items, subtotal, shipping, total, discount=0, points_discount=0, coupon_discount=0, loyalty_points=0, loyalty_value=0, points_used=0, loyalty_enabled=true, redeem_enabled=true, user_profile, gateways, settings, auth }: Props) {
     const [step, setStep] = useState<'cart' | 'checkout' | 'payment'>('cart')
     const [proofFile, setProofFile] = useState<File | null>(null)
     const [proofPreview, setProofPreview] = useState<string | null>(null)
@@ -35,11 +39,11 @@ export default function Cart({ items, subtotal, shipping, total, gateways, setti
     const fmt = (n: number) => `Rs ${n.toLocaleString('en-PK')}`
 
     const { data, setData, post, processing, errors, setError, clearErrors } = useForm({
-        name:    auth?.user?.name ?? '',
-        phone:   '',
-        email:   auth?.user?.email ?? '',
-        address: '',
-        city:    '',
+        name:    user_profile?.name    ?? auth?.user?.name  ?? '',
+        phone:   user_profile?.phone   ?? '',
+        email:   user_profile?.email   ?? auth?.user?.email ?? '',
+        address: user_profile?.address ?? '',
+        city:    user_profile?.city    ?? '',
         gateway: gateways[0]?.code ?? 'cod',
         notes:   '',
     })
@@ -504,6 +508,12 @@ export default function Cart({ items, subtotal, shipping, total, gateways, setti
                                     <span className="flex items-center gap-1.5"><IconTruck size={14}/> Shipping</span>
                                     <span className="font-semibold">{shipping === 0 ? <span className="text-green-600">Free</span> : fmt(shipping)}</span>
                                 </div>
+                                {discount > 0 && (
+                                    <div className="flex justify-between text-green-600 font-semibold">
+                                        <span>✓ Discount</span>
+                                        <span>-{fmt(discount)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between font-black text-[16px] pt-2 border-t border-gray-100">
                                     <span>Total</span>
                                     <span style={{ color: 'var(--color-primary)' }}>{fmt(total)}</span>
@@ -526,6 +536,24 @@ export default function Cart({ items, subtotal, shipping, total, gateways, setti
                                 </div>
                             )}
 
+                            {step === 'cart' && auth?.user && loyalty_enabled && redeem_enabled && loyalty_points > 0 && (
+                                <div className="mt-4 p-4 rounded-xl border-2 border-dashed" style={{ borderColor:'var(--color-primary,#C9A84C)', background:'rgba(201,168,76,0.06)' }}>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[13px] font-bold text-gray-800">🪙 Loyalty Points</p>
+                                            <p className="text-[11px] text-gray-500 mt-0.5">{loyalty_points} pts ≈ Rs {loyalty_value.toLocaleString('en-PK')} discount</p>
+                                        </div>
+                                        {points_used > 0 ? (
+                                            <button type="button" onClick={() => router.post('/cart/points/remove', {}, { preserveScroll:true })} className="text-[11px] font-bold text-red-500 border border-red-200 rounded-lg px-3 py-1.5 bg-white cursor-pointer">Remove</button>
+                                        ) : (
+                                            <button type="button" onClick={() => router.post('/cart/points/redeem', { points: loyalty_points }, { preserveScroll:true })} className="text-[12px] font-black rounded-lg px-3 py-1.5 border-none cursor-pointer" style={{ background:'var(--color-primary,#C9A84C)', color:'var(--color-primary-text,#0a0a0a)' }}>Use Points</button>
+                                        )}
+                                    </div>
+                                    {points_used > 0 && (
+                                        <div className="mt-2 flex items-center gap-2 text-[12px] font-semibold text-green-700 bg-green-50 rounded-lg px-3 py-2">✓ {points_used} points applied — Rs {points_discount.toLocaleString('en-PK')} off</div>
+                                    )}
+                                </div>
+                            )}
                             {step === 'cart' && (
                                 <button onClick={() => setStep('checkout')} disabled={items.length === 0}
                                     className="w-full mt-5 h-12 flex items-center justify-center gap-2 font-black text-[14px] rounded-xl border-none cursor-pointer disabled:opacity-50 transition-all"

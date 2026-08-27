@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrderShow({ order }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
-    const ap = `/${pageProps.adminPath ?? 'tijar-admin'}`
+    const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [showReturn, setShowReturn] = useState(false)
     const fmt = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
 
@@ -57,8 +57,8 @@ export default function OrderShow({ order }: Props) {
     }
 
     return (
-        <AdminLayout title={`Order #${order.id}`}>
-            <Head title={`Order #${order.id}`}/>
+        <AdminLayout title={(order as any).order_number ?? (order as any).order_number ?? `Order #${order.id}`}>
+            <Head title={(order as any).order_number ?? (order as any).order_number ?? `Order #${order.id}`}/>
 
             <div className="flex items-center gap-3 mb-5">
                 <Link href={`${ap}/orders`} className="flex items-center gap-2 text-[13px] font-semibold text-gray-500 hover:text-[var(--color-primary)] no-underline">

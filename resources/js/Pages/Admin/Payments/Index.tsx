@@ -28,7 +28,7 @@ const STATUS_INFO: Record<string, { label: string; color: string }> = {
 
 function GatewayCard({ gw }: { gw: Gateway }) {
     const { props } = usePage<{ adminPath?: string }>()
-    const ap = `/${props.adminPath ?? 'tijar-admin'}`
+    const ap = `/${props.adminPath ?? 'ml-admin'}`
     const credFields: CredField[] = gw.config?.credential_fields ?? []
     const status     = gw.config?.status ?? 'sandbox_available'
     const statusInfo = STATUS_INFO[status] ?? STATUS_INFO['sandbox_available']
@@ -45,8 +45,10 @@ function GatewayCard({ gw }: { gw: Gateway }) {
         sort_order:    gw.sort_order,
     })
 
-    function save(e: React.FormEvent) { e.preventDefault(); put(`${ap}/payments/${gw.id}`) }
-    function toggle() { router.patch(`${ap}/payments/${gw.id}/toggle`, {}, { preserveScroll: true }) }
+    function save(e: React.FormEvent) {
+        e.preventDefault(); put(`${ap}/payments/${gw.id}`) }
+    function toggle() {
+        router.patch(`${ap}/payments/${gw.id}/toggle`, {}, { preserveScroll: true }) }
     function setCred(key: string, val: string) { setData('credentials', { ...data.credentials, [key]: val }) }
 
     return (

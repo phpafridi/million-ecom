@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -52,7 +53,7 @@ class CategoryController extends Controller
         if (empty($data['parent_id'])) $data['parent_id'] = null;
 
         $cat = Category::create($data);
-        return back()->with('success', "Category \"{$cat->name}\" created.");
+        Cache::forget('nav_categories'); return back()->with('success', "Category \"{$cat->name}\" created.");
     }
 
     public function update(Request $request, Category $category)
@@ -86,14 +87,14 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
-        return back()->with('success', "Category \"{$category->name}\" updated.");
+        Cache::forget('nav_categories'); return back()->with('success', "Category \"{$category->name}\" updated.");
     }
 
     public function destroy(Category $category)
     {
         $category->children()->update(['parent_id' => $category->parent_id]);
         $category->delete();
-        return back()->with('success', "Category deleted.");
+        Cache::forget('nav_categories'); return back()->with('success', "Category deleted.");
     }
 
     public function reorder(Request $request)
