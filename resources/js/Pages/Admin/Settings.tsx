@@ -54,6 +54,8 @@ function ImageUploadField({ label, current, onFile }: { label: string; current?:
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 export default function Settings({ settings }: Props) {
+    const { props: _p } = usePage<{ adminPath?: string }>()
+    const ap = `/${_p.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing } = useForm<Record<string, any>>({
         site_name:            settings.site_name            ?? 'Tijar',

@@ -86,6 +86,8 @@ function ImageUploadField({ label, w, h, hint, current, onFile }: {
 }
 
 export default function SeoIndex({ seo }: Props) {
+    const { props: _p } = usePage<{ adminPath?: string }>()
+    const ap = `/${_p.adminPath ?? 'ml-admin'}`
     const { data, setData, post, processing, errors } = useForm<any>({
         meta_title: seo.meta_title,
         meta_description: seo.meta_description,
