@@ -10,7 +10,7 @@ import {
 } from '@tabler/icons-react'
 
 interface NavItem { label: string; href: string; children?: NavItem[] }
-interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string> }
+interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string>; hideFloatingCart?: boolean }
 
 
 function SaleCountdownBar({ label, badge, endsAt, bg, color }: {
@@ -49,7 +49,7 @@ function SaleCountdownBar({ label, badge, endsAt, bg, color }: {
     )
 }
 
-export default function StorefrontLayout({ children, auth, settings }: Props) {
+export default function StorefrontLayout({ children, auth, settings, hideFloatingCart }: Props) {
     const [search, setSearch]           = useState('')
     const [mobileOpen, setMobileOpen]   = useState(false)
     const [searchOpen, setSearchOpen]   = useState(false)
@@ -152,7 +152,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                     <span>🔐 Admin Preview Mode — customers see this page normally</span>
                     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                         <span style={{ opacity: 0.6 }}>Logged in as: {auth.user.name}</span>
-                        <a href="/ml-admin" style={{ color: 'white', textDecoration: 'none', opacity: 0.9 }}>← Back to Admin</a>
+                        <a href={`/${(page.props as any)?.adminPath ?? 'ml-admin'}`} style={{ color: 'white', textDecoration: 'none', opacity: 0.9 }}>← Back to Admin</a>
                     </div>
                 </div>
             )}
@@ -205,27 +205,41 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
             </div>
 
             {/* ── HEADER ── */}
-            <header className={`bg-white sticky top-0 z-50 transition-shadow duration-200 ${scrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.08)]' : 'border-b border-gray-200'}`}>
-                <div className="px-3 sm:px-6 lg:px-10 h-[54px] sm:h-[70px] flex items-center gap-2 sm:gap-3">
+            <header className={`sticky top-0 z-50 transition-shadow duration-200 overflow-hidden ${scrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.08)]' : 'border-b'}`}
+                style={{ background: 'var(--color-header-bg, #ffffff)', borderColor: 'var(--color-header-border, #e5e7eb)', color: 'var(--color-header-text, #0a0a0a)' }}>
+                <style>{`
+                    @media (max-width: 1023px) {
+                        .ml-header-row {
+                            display: grid !important;
+                            grid-template-columns: 40px 1fr 40px;
+                            align-items: center;
+                        }
+                        .ml-header-logo {
+                            justify-self: center !important;
+                        }
+                    }
+                `}</style>
+                <div className="ml-header-row px-3 sm:px-6 lg:px-10 h-[58px] sm:h-[72px] flex items-center gap-2 sm:gap-3 overflow-hidden">
 
                     {/* Mobile menu toggle */}
-                    <button className="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-gray-600"
+                    <button className="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]"
                         onClick={() => { setMobileOpen(!mobileOpen); setSearchOpen(false) }}>
                         {mobileOpen ? <IconX size={22} /> : <IconMenu size={22} />}
                     </button>
 
-                    {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 no-underline">
-                        <div className="w-[34px] h-[34px] sm:w-[46px] sm:h-[46px] rounded-[calc(var(--radius,12px))] overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100"
-                            style={{ background: 'var(--color-dark-bg)' }}>
+                    {/* Logo — fixed height, natural width so it never gets squeezed into a square.
+                        Centered on mobile via the grid above; left-aligned as normal on desktop. */}
+                    <Link href="/" className="ml-header-logo flex items-center gap-1.5 sm:gap-2 flex-shrink-0 no-underline min-w-0">
+                        <div className="h-[38px] sm:h-[50px] flex-shrink-0 flex items-center justify-center overflow-hidden" style={{ height: 38, maxHeight: 38 }}>
                             {logoUrl
-                                ? <img src={logoUrl} alt={siteName} className="w-full h-full object-contain" />
-                                : <span className="font-manrope font-black text-lg sm:text-xl" style={{ color: 'var(--color-primary)' }}>{siteName[0]}</span>
+                                ? <img src={logoUrl} alt={siteName} className="h-full w-auto max-w-[130px] sm:max-w-[200px] object-contain"
+                                    style={{ height: '100%', maxHeight: 38, width: 'auto', maxWidth: 130, objectFit: 'contain', display: 'block' }} />
+                                : <span className="font-manrope font-black text-xl sm:text-2xl" style={{ color: 'var(--color-primary)' }}>{siteName[0]}</span>
                             }
                         </div>
-                        <div>
-                            <div className="font-manrope font-black text-[13px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none" style={{ color: 'var(--color-dark-bg)' }}>{siteName}</div>
-                            {tagline && <div className="text-[7px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5" style={{ color: 'var(--color-primary)' }}>{tagline}</div>}
+                        <div className="min-w-0">
+                            <div className="font-manrope font-black text-[15px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none truncate" style={{ color: 'var(--color-header-text, var(--color-dark-bg))' }}>{siteName}</div>
+                            {tagline && <div className="text-[8px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5 truncate" style={{ color: 'var(--color-primary)' }}>{tagline}</div>}
                         </div>
                     </Link>
 
@@ -241,13 +255,13 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                     </form>
 
                     {/* Mobile search toggle */}
-                    <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-gray-600"
+                    <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]"
                         onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false) }}>
                         <IconSearch size={20} />
                     </button>
 
-                    {/* Wishlist */}
-                    <Link href="/wishlist" className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-gray-600"
+                    {/* Wishlist — mobile already has this in the bottom nav bar */}
+                    <Link href="/wishlist" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]"
                         title="My Wishlist">
                         <IconHeart size={21}/>
                         {wishlistCount > 0 && (
@@ -258,8 +272,8 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                         )}
                     </Link>
 
-                    {/* Cart */}
-                    <Link href="/cart" className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-gray-600">
+                    {/* Cart — mobile already has this in the bottom nav bar */}
+                    <Link href="/cart" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]">
                         <IconShoppingCart size={21} />
                         {cartCount > 0 && (
                             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1"
@@ -269,16 +283,16 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                         )}
                     </Link>
 
-                    {/* Dark mode toggle */}
-                    <button onClick={toggleDark} className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-gray-600"
+                    {/* Dark mode toggle — desktop only, keeps mobile header compact */}
+                    <button onClick={toggleDark} className="flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]"
                         title={darkMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
                         {darkMode === 'dark' ? <IconSun size={19} /> : <IconMoon size={19} />}
                     </button>
 
                     {/* Desktop right links */}
                     <div className="hidden lg:flex items-center gap-1 ml-1">
-                        <Link href="/about"   className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline"><IconInfoCircle size={16} /> About</Link>
-                        <Link href="/contact" className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline"><IconMessageCircle size={16} /> Contact</Link>
+                        <Link href="/about"   className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline"><IconInfoCircle size={16} /> About</Link>
+                        <Link href="/contact" className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline"><IconMessageCircle size={16} /> Contact</Link>
                         {auth?.user ? (
                             <Link href="/account"
                                 className="flex items-center gap-2 h-[38px] pl-2 pr-3 rounded-[10px] text-[13px] font-semibold hover:bg-gray-50 transition-all no-underline"
@@ -291,7 +305,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                             </Link>
                         ) : (
                             <Link href="/login"
-                                className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-all no-underline">
+                                className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline">
                                 <IconUser size={16} /> Login
                             </Link>
                         )}
@@ -312,7 +326,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
             </header>
 
             {/* ── DESKTOP NAV ── */}
-            <nav className="hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[70px] z-40" ref={dropdownRef}>
+            <nav className="hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[72px] z-40" ref={dropdownRef}>
                 <div className="px-6 lg:px-10 flex items-stretch h-[46px]">
                     {navItems.map(link => {
                         const hasChildren = (link.children?.length ?? 0) > 0
@@ -372,6 +386,9 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                             <Link href="/cart"    onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline">
                                 <IconShoppingCart size={18} /> Cart {cartCount > 0 && <span className="ml-auto text-[11px] font-black px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--color-primary)' }}>{cartCount}</span>}
                             </Link>
+                            <button onClick={() => { toggleDark(); setMobileOpen(false) }} className="w-full flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 border-none bg-transparent cursor-pointer text-left">
+                                {darkMode === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />} {darkMode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                            </button>
                         </div>
             {showWhatsapp && whatsapp && (
                             <div className="px-5 py-4">
@@ -411,7 +428,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
 
                 {/* Main footer */}
                 <div style={{ padding: 'clamp(40px,5vw,56px) clamp(20px,5vw,48px) 32px', maxWidth: 1400, margin: '0 auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'clamp(24px,4vw,48px)', marginBottom: 40 }}>
+                    <div className="grid grid-cols-2 lg:grid-cols-4" style={{ gap: 'clamp(24px,4vw,48px)', marginBottom: 40 }}>
 
                         {/* Brand */}
                         <div>
@@ -505,7 +522,7 @@ export default function StorefrontLayout({ children, auth, settings }: Props) {
                 </a>
             )}
             {/* ── Floating UI — above bottom nav ── */}
-            <FloatingCart settings={settings ?? {}} />
+            {!hideFloatingCart && <FloatingCart settings={settings ?? {}} />}
             <ChatWidget settings={settings ?? {}} auth={auth} />
         </div>
     )

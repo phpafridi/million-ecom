@@ -75,9 +75,9 @@ function ImageUploadField({ label, w, h, hint, current, onFile }: {
                     <img src={preview} alt="" className="max-h-full max-w-full object-contain" />
                 </div>
             )}
-            <label className="flex items-center gap-2.5 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary, #00c8ff)] rounded-xl px-4 py-2.5 cursor-pointer transition-colors">
+            <label className="flex items-center gap-2.5 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary,#00c8ff)] rounded-xl px-4 py-2.5 cursor-pointer transition-colors">
                 <input type="file" accept="image/*" className="hidden" onChange={handle} />
-                <IconUpload size={16} className="text-[var(--color-primary, #00c8ff)] flex-shrink-0" />
+                <IconUpload size={16} className="text-[var(--color-primary,#00c8ff)] flex-shrink-0" />
                 <span className="text-[12px] sm:text-[12.5px] text-gray-500">Upload {w}×{h}px image</span>
             </label>
             {err && <p className="text-[11.5px] text-red-500 mt-1">{err}</p>}
@@ -119,7 +119,7 @@ export default function SeoIndex({ seo }: Props) {
                         </Field>
                         <Field label="Meta Description" hint="Shown under your title in search results (max 160 chars)" error={errors.meta_description}>
                             <textarea value={data.meta_description} onChange={e => setData('meta_description', e.target.value)} rows={3} maxLength={160}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[13px] sm:text-[13.5px] outline-none focus:border-[var(--color-primary, #00c8ff)] resize-none transition-all" />
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[13px] sm:text-[13.5px] outline-none focus:border-[var(--color-primary,#00c8ff)] resize-none transition-all" />
                             <div className="text-[11px] text-gray-400 mt-1">{data.meta_description.length}/160</div>
                         </Field>
                         <Field label="Meta Keywords" hint="Comma-separated keywords (less important for modern SEO, still supported)">
@@ -131,33 +131,33 @@ export default function SeoIndex({ seo }: Props) {
                         </Field>
                     </Section>
 
-                    <Section title="Indexing & Crawling" icon={<IconRobot size={18} className="text-[var(--color-primary, #00c8ff)]" />}>
+                    <Section title="Indexing & Crawling" icon={<IconRobot size={18} className="text-[var(--color-primary,#00c8ff)]" />}>
                         <label className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl cursor-pointer">
                             <div>
                                 <div className="text-[13px] font-semibold text-gray-800">Allow search engines to index this site</div>
                                 <div className="text-[11.5px] text-gray-400 mt-0.5">Turn off only if the site is in maintenance or staging mode</div>
                             </div>
                             <button type="button" onClick={() => setData('seo_indexing_enabled', data.seo_indexing_enabled === '1' ? '0' : '1')}
-                                className={`w-11 h-6 rounded-full transition-all relative flex-shrink-0 border-none cursor-pointer ${data.seo_indexing_enabled === '1' ? 'bg-[var(--color-primary, #00c8ff)]' : 'bg-gray-300'}`}>
+                                className={`w-11 h-6 rounded-full transition-all relative flex-shrink-0 border-none cursor-pointer ${data.seo_indexing_enabled === '1' ? 'bg-[var(--color-primary,#00c8ff)]' : 'bg-gray-300'}`}>
                                 <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${data.seo_indexing_enabled === '1' ? 'left-5.5' : 'left-0.5'}`} style={{ left: data.seo_indexing_enabled === '1' ? 22 : 2 }} />
                             </button>
                         </label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer"
-                                className="flex items-center justify-between p-3.5 border border-gray-200 rounded-xl hover:border-[var(--color-primary, #00c8ff)] transition-all no-underline group">
+                                className="flex items-center justify-between p-3.5 border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] transition-all no-underline group">
                                 <div>
                                     <div className="text-[13px] font-semibold text-gray-800">View Sitemap</div>
                                     <div className="text-[11.5px] text-gray-400">/sitemap.xml — auto-generated</div>
                                 </div>
-                                <IconExternalLink size={16} className="text-gray-400 group-hover:text-[var(--color-primary, #00c8ff)]" />
+                                <IconExternalLink size={16} className="text-gray-400 group-hover:text-[var(--color-primary,#00c8ff)]" />
                             </a>
                             <a href="/robots.txt" target="_blank" rel="noopener noreferrer"
-                                className="flex items-center justify-between p-3.5 border border-gray-200 rounded-xl hover:border-[var(--color-primary, #00c8ff)] transition-all no-underline group">
+                                className="flex items-center justify-between p-3.5 border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] transition-all no-underline group">
                                 <div>
                                     <div className="text-[13px] font-semibold text-gray-800">View robots.txt</div>
                                     <div className="text-[11.5px] text-gray-400">/robots.txt — auto-generated</div>
                                 </div>
-                                <IconExternalLink size={16} className="text-gray-400 group-hover:text-[var(--color-primary, #00c8ff)]" />
+                                <IconExternalLink size={16} className="text-gray-400 group-hover:text-[var(--color-primary,#00c8ff)]" />
                             </a>
                         </div>
                     </Section>
@@ -166,14 +166,14 @@ export default function SeoIndex({ seo }: Props) {
                         <Field label="Custom HTML / Analytics Scripts" hint="Paste Google Analytics, Meta Pixel, or other tracking scripts here. Inserted into every page's <head>.">
                             <textarea value={data.custom_head_scripts} onChange={e => setData('custom_head_scripts', e.target.value)} rows={5}
                                 placeholder="<script>...</script>"
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary, #00c8ff)] resize-none transition-all" />
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary,#00c8ff)] resize-none transition-all" />
                         </Field>
                     </Section>
                 </div>
 
                 {/* Right col — images */}
                 <div className="space-y-5">
-                    <Section title="Favicon & Social Image" icon={<IconWorld size={18} className="text-[var(--color-primary, #00c8ff)]" />}>
+                    <Section title="Favicon & Social Image" icon={<IconWorld size={18} className="text-[var(--color-primary,#00c8ff)]" />}>
                         <ImageUploadField label="Favicon" w={64} h={64} hint="Square icon shown in browser tabs"
                             current={seo.favicon_url} onFile={f => setData('favicon', f)} />
                         <ImageUploadField label="Social Share Image (OG)" w={1200} h={630} hint="Shown when your link is shared on Facebook, Twitter, WhatsApp"

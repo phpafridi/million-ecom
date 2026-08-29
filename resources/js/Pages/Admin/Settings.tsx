@@ -162,7 +162,7 @@ export default function Settings({ settings }: Props) {
                     <Section title="Store Information" icon="🏪">
                         <div className="grid grid-cols-2 gap-4">
                             <Field label="Store Name">
-                                <input className={inputCls} value={data.site_name}  onChange={e => setData('site_name', e.target.value)} placeholder="Tijar Store" />
+                                <input className={inputCls} value={data.site_name}  onChange={e => setData('site_name', e.target.value)} placeholder="Our Store" />
                             </Field>
                             <Field label="Tagline">
                                 <input className={inputCls} value={data.site_tagline} onChange={e => setData('site_tagline', e.target.value)} placeholder="Your Online Store" />
@@ -303,7 +303,7 @@ export default function Settings({ settings }: Props) {
                     {/* SEO */}
                     <Section title="SEO" icon="🔍">
                         <Field label="Meta Title">
-                            <input className={inputCls} value={data.meta_title} onChange={e => setData('meta_title', e.target.value)} placeholder="Tijar Store — Best Online Shop" />
+                            <input className={inputCls} value={data.meta_title} onChange={e => setData('meta_title', e.target.value)} placeholder="Our Store — Best Online Shop" />
                         </Field>
                         <Field label="Meta Description">
                             <textarea className={textareaCls} rows={3} value={data.meta_description} onChange={e => setData('meta_description', e.target.value)} placeholder="Your online store description for Google search results." />
@@ -582,19 +582,31 @@ export default function Settings({ settings }: Props) {
                 {/* RIGHT — logo upload + image reference */}
                 <div className="space-y-5">
                     <Section title="Store Logo" icon="🖼️">
-                        <ImageUploadField label="Logo (200×200px, PNG preferred)" current={settings.logo_url} onFile={f => setData('logo', f)} />
+                        <ImageUploadField label="Logo (landscape, up to 400×120px — transparent PNG, padding auto-trimmed)" current={settings.logo_url} onFile={f => setData('logo', f)} />
+                        <div className="col-span-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12px] text-blue-700">
+                            The logo box has no background — it sits directly on your header color. Use a transparent PNG so it looks correct on any header color you choose in Theme settings.
+                        </div>
+                        {settings.logo_url && (
+                            <div className="mt-1">
+                                <div className="text-[11px] font-semibold text-gray-500 mb-2">Header preview (on your current navbar color)</div>
+                                <div className="w-16 h-16 rounded-xl flex items-center justify-center p-2 border border-gray-200"
+                                    style={{ background: 'var(--color-navbar-bg,#ffffff)' }}>
+                                    <img src={settings.logo_url} alt="logo preview" className="w-full h-full object-contain" />
+                                </div>
+                            </div>
+                        )}
                     </Section>
 
                     <div className="bg-white rounded-2xl border border-gray-100 p-5">
                         <h3 className="font-bold text-[14px] text-gray-800 mb-4">📐 Image Size Reference</h3>
                         <div className="space-y-3 text-[12.5px]">
                             {[
-                                { label:'Logo',              size:'200×200px',   hint:'Square, transparent PNG' },
-                                { label:'Hero Slide',        size:'1400×460px',  hint:'Full-width slider' },
-                                { label:'Full Banner',       size:'1400×380px',  hint:'Homepage wide banner' },
-                                { label:'Category Image',    size:'300×300px',   hint:'Square thumbnail' },
-                                { label:'Category Banner',   size:'1400×280px',  hint:'Category page header' },
-                                { label:'Product Image',     size:'800×800px',   hint:'Square, white background' },
+                                { label:'Logo',              size:'400×120px',   hint:'Landscape icon+wordmark, transparent — padding auto-trimmed' },
+                                { label:'Hero Slide',        size:'1920×1080px', hint:'Full-width slider, subject centered' },
+                                { label:'Full Banner',       size:'1920×520px',  hint:'Homepage wide banner, subject centered' },
+                                { label:'Category Image',    size:'900×1080px',  hint:'Nearly square, subject centered (square on desktop, 3:4 on mobile)' },
+                                { label:'Category Banner',   size:'1920×380px',  hint:'Category page header' },
+                                { label:'Product Image',     size:'800×1067px',  hint:'Portrait 3:4, white background' },
                             ].map(s => (
                                 <div key={s.label} className="flex items-start gap-2">
                                     <IconCheck size={13} className="flex-shrink-0 mt-0.5" style={{ color:'var(--color-primary)' }}/>

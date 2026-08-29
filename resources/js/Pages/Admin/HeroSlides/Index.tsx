@@ -31,7 +31,7 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
         setImgErr('')
         const img = new Image()
         img.onload = () => {
-            if (img.width < 1000) { setImgErr(`Too small: ${img.width}×${img.height}px. Need ~1400×460px`); return }
+            if (img.width < 1600) { setImgErr(`Too small: ${img.width}×${img.height}px. Need at least 1920×1080px for a sharp banner`); return }
             setPreview(URL.createObjectURL(f))
             setData('image', f)
         }
@@ -55,7 +55,7 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
                 <form onSubmit={submit} className="p-5 space-y-4">
                     <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12px] text-blue-700 flex items-start gap-2">
                         <IconInfoCircle size={14} className="flex-shrink-0 mt-0.5 text-blue-500" />
-                        Image: <strong>1400×460px</strong> — wide landscape banner image
+                        Image: <strong>1920×1080px</strong> — wide landscape banner image (subject centered — the site auto-crops edges to fit each screen size)
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {[
@@ -65,14 +65,14 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
                             <div key={f.key}>
                                 <label className="block text-[13px] font-semibold text-gray-700 mb-1">{f.label}</label>
                                 <input value={data[f.key]} onChange={e => setData(f.key, e.target.value)} placeholder={f.placeholder}
-                                    className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary, #00c8ff)]" />
+                                    className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary,#00c8ff)]" />
                             </div>
                         ))}
                     </div>
                     <div>
                         <label className="block text-[13px] font-semibold text-gray-700 mb-1">Sub-headline (cyan)</label>
                         <input value={data.description} onChange={e => setData('description', e.target.value)} placeholder="STANDARD"
-                            className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary, #00c8ff)]" />
+                            className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary,#00c8ff)]" />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                         {[
@@ -84,7 +84,7 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
                                 <label className="block text-[13px] font-semibold text-gray-700 mb-1">{f.label}</label>
                                 <input type={f.type ?? 'text'} value={data[f.key]} onChange={e => setData(f.key, f.type === 'number' ? +e.target.value : e.target.value)}
                                     placeholder={f.placeholder} min={f.type === 'number' ? 0 : undefined} max={f.type === 'number' ? 99 : undefined}
-                                    className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary, #00c8ff)]" />
+                                    className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary,#00c8ff)]" />
                             </div>
                         ))}
                     </div>
@@ -92,27 +92,27 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
                         <div>
                             <label className="block text-[13px] font-semibold text-gray-700 mb-1">CTA Button Text</label>
                             <input value={data.cta_text} onChange={e => setData('cta_text', e.target.value)}
-                                className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary, #00c8ff)]" />
+                                className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary,#00c8ff)]" />
                         </div>
                         <div>
                             <label className="block text-[13px] font-semibold text-gray-700 mb-1">CTA Link</label>
                             <input value={data.cta_url} onChange={e => setData('cta_url', e.target.value)} placeholder="/products/slug"
-                                className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary, #00c8ff)]" />
+                                className="w-full h-10 px-3 border-2 border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary,#00c8ff)]" />
                         </div>
                     </div>
 
                     {/* Image upload */}
                     {preview && <img src={preview} className="w-full h-28 object-cover rounded-xl border border-gray-200" alt="preview" />}
-                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary, #00c8ff)] rounded-xl px-4 py-3 cursor-pointer transition-colors">
+                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary,#00c8ff)] rounded-xl px-4 py-3 cursor-pointer transition-colors">
                         <input type="file" accept="image/*" className="hidden" onChange={handleImg} />
-                        <IconUpload size={17} className="text-[var(--color-primary, #00c8ff)]" />
-                        <span className="text-[13px] text-gray-500">Upload slide image (1400×460px)</span>
+                        <IconUpload size={17} className="text-[var(--color-primary,#00c8ff)]" />
+                        <span className="text-[13px] text-gray-500">Upload slide image (1920×1080px)</span>
                     </label>
                     {imgErr && <p className="text-[12px] text-red-500">{imgErr}</p>}
 
                     <label className="flex items-center gap-3 cursor-pointer">
                         <button type="button" onClick={() => setData('is_active', !data.is_active)}
-                            className={`w-10 h-5 rounded-full transition-all relative border-none cursor-pointer ${data.is_active ? 'bg-[var(--color-primary, #00c8ff)]' : 'bg-gray-200'}`}>
+                            className={`w-10 h-5 rounded-full transition-all relative border-none cursor-pointer ${data.is_active ? 'bg-[var(--color-primary,#00c8ff)]' : 'bg-gray-200'}`}>
                             <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${data.is_active ? 'left-5' : 'left-0.5'}`} />
                         </button>
                         <span className="text-[13px] font-semibold text-gray-700">Active</span>
@@ -120,7 +120,7 @@ function SlideForm({ slide, onClose }: { slide?: HeroSlide; onClose: () => void 
 
                     <div className="flex gap-3 pt-2">
                         <button type="submit" disabled={processing}
-                            className="flex-1 h-11 bg-[var(--color-primary, #00c8ff)] hover:bg-[var(--color-primary-dark, #00b0e0)] text-[var(--color-dark-bg, #0a0e1a)] font-black text-[13px] rounded-xl border-none cursor-pointer disabled:opacity-60">
+                            className="flex-1 h-11 bg-[var(--color-primary,#00c8ff)] hover:bg-[var(--color-primary-dark,#00b0e0)] text-[var(--color-dark-bg,#0a0e1a)] font-black text-[13px] rounded-xl border-none cursor-pointer disabled:opacity-60">
                             {processing ? 'Saving…' : slide ? 'Update Slide' : 'Create Slide'}
                         </button>
                         <button type="button" onClick={onClose}
@@ -145,27 +145,27 @@ export default function HeroSlidesIndex({ slides }: Props) {
             <div className="flex items-center justify-between mb-5">
                 <p className="text-[13px] text-gray-500">{slides.length} slides</p>
                 <button onClick={() => setEditing('new')}
-                    className="flex items-center gap-2 bg-[var(--color-primary, #00c8ff)] hover:bg-[var(--color-primary-dark, #00b0e0)] text-[var(--color-dark-bg, #0a0e1a)] font-black text-[13px] px-5 h-10 rounded-xl border-none cursor-pointer">
+                    className="flex items-center gap-2 bg-[var(--color-primary,#00c8ff)] hover:bg-[var(--color-primary-dark,#00b0e0)] text-[var(--color-dark-bg,#0a0e1a)] font-black text-[13px] px-5 h-10 rounded-xl border-none cursor-pointer">
                     <IconPlus size={17} /> Add Slide
                 </button>
             </div>
             <div className="space-y-3">
                 {slides.map(s => (
-                    <div key={s.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex items-stretch group hover:border-[var(--color-primary, #00c8ff)]/30 transition-colors">
+                    <div key={s.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex items-stretch group hover:border-[var(--color-primary,#00c8ff)]/30 transition-colors">
                         <div className="w-40 flex-shrink-0 bg-gray-50 overflow-hidden">
                             {s.image ? <img src={s.image} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-[12px] text-gray-400">No image</div>}
                         </div>
                         <div className="flex-1 px-5 py-4 min-w-0 flex items-center justify-between gap-4">
                             <div>
-                                <div className="text-[10.5px] text-[var(--color-primary, #00c8ff)] font-bold uppercase tracking-wider mb-0.5">{s.title}</div>
-                                <div className="font-manrope font-bold text-[15px] text-gray-900">{s.subtitle} <span className="text-[var(--color-primary, #00c8ff)]">{s.description}</span></div>
+                                <div className="text-[10.5px] text-[var(--color-primary,#00c8ff)] font-bold uppercase tracking-wider mb-0.5">{s.title}</div>
+                                <div className="font-manrope font-bold text-[15px] text-gray-900">{s.subtitle} <span className="text-[var(--color-primary,#00c8ff)]">{s.description}</span></div>
                                 <div className="text-[12px] text-gray-400 mt-0.5">{s.price} · {s.discount_pct}% off · → {s.cta_url}</div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                                 <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${s.is_active ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
                                     {s.is_active ? 'Active' : 'Hidden'}
                                 </span>
-                                <button onClick={() => setEditing(s)} className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary, #00c8ff)] hover:text-[var(--color-primary, #00c8ff)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all">
+                                <button onClick={() => setEditing(s)} className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all">
                                     <IconPencil size={14} />
                                 </button>
                                 <button onClick={() => confirm('Delete this slide?') && router.delete(`${ap}/hero-slides/${s.id}`)}

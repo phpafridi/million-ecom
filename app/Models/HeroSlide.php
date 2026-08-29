@@ -14,8 +14,9 @@ class HeroSlide extends Model
     public function getImageAttribute(): ?string
     {
         if (!$this->image_path) return null;
-        if (str_starts_with($this->image_path, 'http')) return $this->image_path;
-        return asset('uploads/' . $this->image_path);
+        if (str_starts_with($this->image_path, 'http')) return $this->image_path; // legacy rows
+        if (str_starts_with($this->image_path, '/'))     return $this->image_path; // current format
+        return asset('uploads/' . $this->image_path); // very old bare-relative rows
     }
 
     public function scopeActive($q) { return $q->where('is_active', true)->orderBy('sort_order'); }

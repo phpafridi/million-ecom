@@ -1,17 +1,24 @@
 import { Head, useForm, Link, usePage } from '@inertiajs/react'
-import { IconMail, IconLock, IconLogin } from '@tabler/icons-react'
+import { IconMail, IconLock, IconLogin, IconShieldLock } from '@tabler/icons-react'
 
-interface Props { settings?: Record<string, string> }
+interface Props { settings?: Record<string, string>; isAdmin?: boolean }
 
-export default function Login({ settings }: Props) {
+export default function Login({ settings, isAdmin = false }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         email: '', password: '', remember: false,
     })
-    const siteName = settings?.site_name ?? 'Tijar Store'
-    const tagline  = settings?.site_tagline ?? 'Admin Panel'
-    const initial  = siteName[0]?.toUpperCase() ?? 'T'
+    const siteName   = settings?.site_name ?? 'Our Store'
+    const tagline    = settings?.site_tagline ?? 'Admin Panel'
+    const initial    = siteName[0]?.toUpperCase() ?? 'O'
+    const adminPath  = settings?.admin_path || 'ml-admin'
 
-    function submit(e: React.FormEvent) { e.preventDefault(); post('/login') }
+    // Genuinely separate endpoints — not the same /login with a header guess
+    // bolted on. Which form renders (and which URL it posts to) is decided
+    // entirely by which route matched on the server.
+    function submit(e: React.FormEvent) {
+        e.preventDefault()
+        post(isAdmin ? `/${adminPath}/login` : '/login')
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4" style={{ background:'var(--color-body-bg, #f0f2f5)' }}>
@@ -20,16 +27,27 @@ export default function Login({ settings }: Props) {
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-lg"
-                            style={{ background:'var(--color-dark-bg, #0a0e1a)' }}>
-                            <span className="font-manrope font-black text-xl" style={{ color:'var(--color-primary, #00c8ff)' }}>{initial}</span>
-                        </div>
-                        <div className="text-left">
-                            <div className="font-manrope font-black text-2xl tracking-wider leading-none" style={{ color:'var(--color-dark-bg, #0a0e1a)' }}>{siteName.toUpperCase()}</div>
-                            <div className="text-[10px] font-bold tracking-[.16em] uppercase mt-0.5" style={{ color:'var(--color-primary, #00c8ff)' }}>{tagline}</div>
-                        </div>
+                        {settings?.logo_url ? (
+                            <img src={settings.logo_url} alt={siteName} className="h-12 w-auto object-contain" style={{ maxWidth: 220 }} />
+                        ) : (
+                            <>
+                                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-lg"
+                                    style={{ background:'var(--color-dark-bg, #0a0e1a)' }}>
+                                    <span className="font-manrope font-black text-xl" style={{ color:'var(--color-primary, #00c8ff)' }}>{initial}</span>
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-manrope font-black text-2xl tracking-wider leading-none" style={{ color:'var(--color-dark-bg, #0a0e1a)' }}>{siteName.toUpperCase()}</div>
+                                    <div className="text-[10px] font-bold tracking-[.16em] uppercase mt-0.5" style={{ color:'var(--color-primary, #00c8ff)' }}>{tagline}</div>
+                                </div>
+                            </>
+                        )}
                     </div>
-                    <p className="text-gray-500 text-sm mt-3">Sign in to your admin account</p>
+                    <p className="text-gray-500 text-sm mt-3">
+                        {isAdmin
+                            ? <span className="inline-flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-primary,#00c8ff)' }}><IconShieldLock size={14}/> Staff sign in</span>
+                            : 'Sign in to your account'
+                        }
+                    </p>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -66,12 +84,14 @@ export default function Login({ settings }: Props) {
                             {processing ? 'Signing in…' : 'Sign In'}
                         </button>
                     </form>
-                    <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-                        <p className="text-sm text-gray-500">
-                            Don't have an account?{' '}
-                            <Link href="/register" className="font-semibold no-underline" style={{ color:'var(--color-primary,#00c8ff)' }}>Create one</Link>
-                        </p>
-                    </div>
+                    {!isAdmin && (
+                        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+                            <p className="text-sm text-gray-500">
+                                Don't have an account?{' '}
+                                <Link href="/register" className="font-semibold no-underline" style={{ color:'var(--color-primary,#00c8ff)' }}>Create one</Link>
+                            </p>
+                        </div>
+                    )}
                 </div>
                 <p className="text-center text-xs text-gray-400 mt-5">
                     <Link href="/" className="hover:underline no-underline text-gray-400">← Back to store</Link>

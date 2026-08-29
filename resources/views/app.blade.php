@@ -15,12 +15,15 @@
         'dark_bg2'     => $s['theme_dark_bg2']      ?? '#111111',
         'body_bg'      => $s['theme_body_bg']       ?? '#FAFAFA',
         'radius'       => ($s['theme_border_radius'] ?? '8') . 'px',
-        'topbar_bg'    => $s['topbar_bg']           ?? '#0a0a0a',
-        'navbar_bg'    => $s['navbar_bg']           ?? '#ffffff',
-        'navbar_text'  => $s['navbar_text_color']   ?? '#111111',
-        'navbar_border'=> $s['navbar_border_color'] ?? '#e5e7eb',
-        'subnav_bg'    => $s['subnav_bg']           ?? '#ffffff',
-        'logo_box_bg'  => $s['logo_box_bg']         ?? '#0a0a0a',
+        'topbar_bg'    => $s['topbar_bg'] ?? $s['theme_topbar_bg'] ?? '#0a0a0a',
+        'navbar_bg'    => $s['theme_nav_bg']        ?? '#ffffff',
+        'navbar_text'  => $s['theme_nav_text']      ?? '#111111',
+        'navbar_border'=> $s['theme_nav_border']    ?? '#e5e7eb',
+        'subnav_bg'    => $s['theme_nav_bg']        ?? '#ffffff',
+        'logo_box_bg'  => $s['theme_dark_bg']       ?? '#0a0a0a',
+        'header_bg'    => $s['theme_header_bg']     ?? '#ffffff',
+        'header_text'  => $s['theme_header_text']   ?? '#0a0a0a',
+        'header_border'=> $s['theme_header_border'] ?? '#e5e7eb',
     ];
 
     $seo       = $page['props']['seo'] ?? [];
@@ -32,6 +35,7 @@
     $canonical = $seo['url']         ?? url()->current();
     $ogType    = $seo['type']        ?? 'website';
     $favicon   = $s['favicon_url']   ?? null;
+    $logoUrl   = $s['logo_url']      ?? null;
     $schema    = $seo['schema']      ?? null;
     $robots    = ($s['seo_indexing_enabled'] ?? '1') === '1' ? 'index,follow' : 'noindex,nofollow';
     $customJs  = $s['custom_head_scripts'] ?? '';
@@ -125,6 +129,9 @@
             --color-navbar-border: {{ $t['navbar_border'] }};
             --color-subnav-bg:     {{ $t['subnav_bg'] }};
             --color-logo-box-bg:   {{ $t['logo_box_bg'] }};
+            --color-header-bg:     {{ $t['header_bg'] }};
+            --color-header-text:   {{ $t['header_text'] }};
+            --color-header-border: {{ $t['header_border'] }};
         }
         *, *::before, *::after { box-sizing: border-box; }
         /* Mobile optimizations */
@@ -139,6 +146,60 @@
         button, a { touch-action: manipulation; }
         html, body { overflow-x: hidden !important; max-width: 100%; width: 100%; margin: 0; padding: 0; }
         body { background: var(--color-body-bg); }
+
+        /* ── Splash / Preloader ────────────────────────────────────── */
+        #app-splash {
+            position: fixed; inset: 0; z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--color-dark-bg, #0a0a0a);
+            transition: opacity .45s ease, visibility .45s ease;
+        }
+        #app-splash.splash-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-mark {
+            position: relative;
+            width: 180px; height: 180px;
+            display: flex; align-items: center; justify-content: center;
+            animation: splashPulse 1.8s ease-in-out infinite;
+        }
+        .splash-mark img {
+            max-width: 80%; max-height: 80%; width: auto; height: auto; object-fit: contain;
+            filter: drop-shadow(0 2px 16px rgba(201,168,76,0.4));
+        }
+        .splash-mark .splash-letter {
+            font-family: 'Manrope', -apple-system, sans-serif;
+            font-weight: 900; font-size: 34px; letter-spacing: 1px;
+            color: var(--color-primary, #C9A84C);
+        }
+        .splash-ring {
+            position: absolute; inset: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--color-primary, #C9A84C);
+            animation: splashSpin 1s linear infinite;
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201,168,76,0.15); }
+            50%      { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(201,168,76,0); }
+        }
+        @keyframes splashSpin { to { transform: rotate(360deg); } }
+        .splash-brand {
+            position: absolute; bottom: 46px; left: 0; right: 0;
+            text-align: center;
+            font-family: 'Manrope', -apple-system, sans-serif;
+            font-weight: 800; font-size: 12px; letter-spacing: 3px;
+            color: rgba(255,255,255,0.35); text-transform: uppercase;
+        }
+
+        /* ── Skeleton shimmer (used by resources/js/Components/ui/Skeleton.tsx) ── */
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
+            background-size: 400% 100%;
+            animation: skeletonShimmer 1.4s ease infinite;
+        }
+        @keyframes skeletonShimmer {
+            0%   { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
     </style>
 
     @if($customJs)
@@ -148,11 +209,53 @@
     @viteReactRefresh
     @vite(['resources/js/app.tsx'])
     @inertiaHead
+    <style>
+        .banner-desktop { display: none !important; }
+        .banner-mobile  { display: flex !important; flex-direction: column; gap: 12px; }
+        @media (min-width: 768px) {
+            .banner-desktop { display: grid !important; gap: 12px; grid-template-columns: 340px 1fr; grid-template-rows: 220px 228px; }
+            .banner-mobile  { display: none !important; }
+        }
+    </style>
 </head>
 <body class="antialiased">
     @if($gtmId)
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtmId }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     @endif
+
+    {{-- First-load splash screen. Hidden automatically once Inertia mounts the page. --}}
+    <div id="app-splash">
+        <div class="splash-mark">
+            <div class="splash-ring"></div>
+            @if($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ $siteName }}">
+            @else
+                <span class="splash-letter">{{ mb_substr($siteName, 0, 1) }}</span>
+            @endif
+        </div>
+        <div class="splash-brand">{{ $siteName }}</div>
+    </div>
+    <script>
+        (function () {
+            function hideSplash() {
+                var el = document.getElementById('app-splash');
+                if (!el) return;
+                el.classList.add('splash-hide');
+                setTimeout(function () { el.remove(); }, 500);
+            }
+            // Hide as soon as Inertia has painted the first page,
+            // with a small minimum so it doesn't just flash on fast connections.
+            var minShow = new Promise(function (r) { setTimeout(r, 350); });
+            var ready = new Promise(function (r) {
+                if (document.readyState === 'complete') return r();
+                window.addEventListener('load', r, { once: true });
+            });
+            Promise.all([minShow, ready]).then(hideSplash);
+            // Safety net in case something above never fires
+            setTimeout(hideSplash, 4000);
+        })();
+    </script>
+
     @inertia
 </body>
 </html>

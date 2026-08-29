@@ -5,26 +5,43 @@ use Illuminate\Database\Eloquent\Model;
 class Banner extends Model
 {
     protected $fillable = [
-        'title','subtitle','cta_text','link','position',
-        'image_path','video_url','is_active'
+        'title','subtitle','link','cta_text','position','is_active','sort_order',
+        'badge','image_path','mobile_image_path','video_url','media_type',
     ];
 
-    protected $casts    = ['is_active' => 'boolean'];
-    protected $appends  = ['image','video'];
+    protected $appends = ['image','mobile_image','video'];
 
-    // ── Image URL accessor ────────────────────────────────────────────
-    public function getImageAttribute(): ?string
+    // Handles all 3 formats a stored path can be in:
+    //   - absolute URL with the domain baked in (legacy rows from before this fix)
+    //   - root-relative "/uploads/..." (current format — portable across domains)
+    //   - bare relative "folder/file.webp" (very old rows, pre-dating asset() usage)
+    private static function resolveUrl(?string $path): ?string
     {
-        if (!$this->image_path) return null;
-        if (str_starts_with($this->image_path, 'http')) return $this->image_path;
-        return asset('uploads/' . $this->image_path);
+        if (!$path) return null;
+        if (str_starts_with($path, 'http')) return $path;
+        if (str_starts_with($path, '/'))     return $path;
+        return asset('uploads/' . $path);
     }
 
-    // ── Video URL accessor ────────────────────────────────────────────
+    public function getImageAttribute(): ?string
+    {
+        return self::resolveUrl($this->image_path);
+    }
+
+    public function getMobileImageAttribute(): ?string
+    {
+        // Use mobile-specific path if set, otherwise fall back to desktop image
+        $path = null;
+        try {
+            $path = $this->mobile_image_path;
+        } catch (\Exception $e) {
+            // Column may not exist yet if migration hasn't run
+        }
+        return self::resolveUrl($path ?? $this->image_path);
+    }
+
     public function getVideoAttribute(): ?string
     {
-        if (!$this->video_url) return null;
-        if (str_starts_with($this->video_url, 'http')) return $this->video_url;
-        return asset('uploads/' . $this->video_url);
+        return self::resolveUrl($this->video_url);
     }
 }

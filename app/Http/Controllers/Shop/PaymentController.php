@@ -448,7 +448,7 @@ class PaymentController extends Controller
         $order->update(['notes' => trim(($order->notes ?? '') . " [RZ:{$rzOrderId}]")]);
 
         // Render an HTML page with Razorpay checkout.js (loaded from their CDN - no npm needed)
-        $storeName = \App\Models\Setting::get('site_name', 'Tijar Store');
+        $storeName = \App\Models\Setting::get('site_name', 'Our Store');
         $callbackUrl = route('payment.razorpay.success', $order->id);
         $cancelUrl   = route('payment.razorpay.cancel', $order->id);
 
@@ -590,7 +590,7 @@ HTML);
                     'phone_number' => $order->customer_phone,
                 ],
                 'customizations'  => [
-                    'title'       => \App\Models\Setting::get('site_name', 'Tijar Store'),
+                    'title'       => \App\Models\Setting::get('site_name', 'Our Store'),
                     'description' => 'Order #' . $order->id,
                 ],
                 'meta'            => ['order_id' => $order->id],

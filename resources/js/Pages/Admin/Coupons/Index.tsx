@@ -5,7 +5,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 
 interface Coupon {
     id: number; code: string; type: string; value: number
-    min_order: number; max_discount: number | null; usage_limit: number | null
+    min_order: number; max_discount: number | null; usage_limit: number | null; per_user_limit: number | null
     used_count: number; is_active: boolean; expires_at: string | null; description: string | null
 }
 interface Props { coupons: Coupon[] }
@@ -20,6 +20,7 @@ function CouponForm({ coupon, onClose }: { coupon?: Coupon; onClose: () => void 
         min_order: coupon?.min_order ?? '',
         max_discount: coupon?.max_discount ?? '',
         usage_limit: coupon?.usage_limit ?? '',
+        per_user_limit: coupon?.per_user_limit ?? '',
         is_active: coupon?.is_active ?? true,
         expires_at: coupon?.expires_at ? coupon.expires_at.substring(0,10) : '',
         description: coupon?.description ?? '',
@@ -71,6 +72,12 @@ function CouponForm({ coupon, onClose }: { coupon?: Coupon; onClose: () => void 
                         <div>
                             <label className="block text-[13px] font-semibold text-gray-700 mb-1">Usage Limit</label>
                             <input type="number" value={data.usage_limit} onChange={e => setData('usage_limit', e.target.value)} min="1" placeholder="Unlimited" className={inputCls} />
+                            <p className="text-[11px] text-gray-400 mt-1">Total times this code can be used, across all customers combined</p>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-semibold text-gray-700 mb-1">Limit Per Customer</label>
+                            <input type="number" value={data.per_user_limit} onChange={e => setData('per_user_limit', e.target.value)} min="1" placeholder="Unlimited" className={inputCls} />
+                            <p className="text-[11px] text-gray-400 mt-1">How many times one customer can reuse this code (e.g. 1 = one-time-only per person)</p>
                         </div>
                         <div>
                             <label className="block text-[13px] font-semibold text-gray-700 mb-1">Expires On</label>

@@ -34,7 +34,7 @@ class PromoVideoController extends Controller
             if ($old) Storage::delete($old);
             $path = $request->file('video')->store('promo', 'uploads');
             Setting::set('promo_video_path', $path);
-            Setting::set('promo_video_url', asset('uploads/' . $path));
+            Setting::set('promo_video_url', '/uploads/' . $path);
         }
 
         foreach (['video_title','video_tag','video_cta'] as $k) {

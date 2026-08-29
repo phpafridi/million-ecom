@@ -149,15 +149,25 @@ export default function AdminLayout({ children, title }: { children: React.React
     const Sidebar = () => (
         <div className="flex flex-col h-full">
             {/* Brand */}
-            <div className="flex items-center gap-3 px-4 h-16 border-b border-white/8 flex-shrink-0">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[14px] flex-shrink-0"
-                    style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
-                    {initial}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="font-manrope font-black text-white text-[13px] leading-none truncate">{siteName}</div>
-                    <div className="text-[9px] text-white/35 font-semibold uppercase tracking-widest mt-0.5">Admin Panel</div>
-                </div>
+            <div className="flex items-center gap-2.5 px-4 h-16 border-b border-white/8 flex-shrink-0">
+                {props.settings?.logo_url ? (
+                    // Real logo already carries the brand — show it alone, no
+                    // competing text squeezed in next to it.
+                    <div className="h-9 flex-1 min-w-0 flex items-center overflow-hidden">
+                        <img src={props.settings.logo_url} alt={siteName} className="h-full w-auto object-contain" style={{ maxHeight: 36, maxWidth: '100%' }} />
+                    </div>
+                ) : (
+                    <>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[14px] flex-shrink-0"
+                            style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
+                            {initial}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="font-manrope font-black text-white text-[13px] leading-none truncate">{siteName}</div>
+                            <div className="text-[9px] text-white/35 font-semibold uppercase tracking-widest mt-0.5">Admin Panel</div>
+                        </div>
+                    </>
+                )}
                 <button onClick={() => setMobileOpen(false)}
                     className="lg:hidden text-white/40 hover:text-white border-none bg-transparent cursor-pointer p-1">
                     <IconX size={17} />

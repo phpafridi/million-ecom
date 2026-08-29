@@ -283,7 +283,8 @@ export default function ProductEdit({ product, categories, isCreate = false }: P
                                 <IconUpload size={24} className="text-gray-400 group-hover:text-[var(--color-primary)] transition-colors"/>
                             </div>
                             <div className="text-[14px] font-semibold text-gray-700 mb-1">Click to upload product images</div>
-                            <div className="text-[12.5px] text-gray-400">PNG, JPG, WebP — up to 5MB each — multiple allowed</div>
+                            <div className="text-[12.5px] text-gray-400 mb-1">PNG, JPG, WebP — up to 5MB each — multiple allowed</div>
+                            <div className="text-[11.5px] text-blue-500 font-semibold">📐 Best size: 800×1067px (portrait 3:4) — white or plain background</div>
                         </label>
                     </div>
 

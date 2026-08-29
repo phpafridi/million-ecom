@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 
@@ -9,7 +9,8 @@ const PC:Record<string,string> = { urgent:'#EF4444', high:'#F59E0B', normal:'#3B
 const SC:Record<string,string> = { open:'#F59E0B', in_progress:'#3B82F6', resolved:'#10B981', closed:'#6B7280' }
 
 export default function SupportIndex({ tickets, stats }:Props) {
-    const ap = '/ml-admin'
+    const { props: __p } = usePage<{ adminPath?: string }>()
+    const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [search, setSearch] = useState('')
 
     function changeStatus(id:number, status:string){

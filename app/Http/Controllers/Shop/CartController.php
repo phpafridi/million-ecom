@@ -176,6 +176,10 @@ class CartController extends Controller
         $subtotal = $this->cartItems()->sum('subtotal');
         if ($subtotal < $coupon->min_order)
             return back()->with('coupon_error', 'Minimum order of Rs ' . number_format($coupon->min_order) . ' required.');
+        // Logged-in users can be checked now; guests get the final check at
+        // checkout once their email is known.
+        if (auth()->check() && $coupon->reachedPerUserLimit(auth()->id(), auth()->user()->email))
+            return back()->with('coupon_error', 'You\'ve already used this coupon the maximum number of times.');
         $discount = $coupon->calculateDiscount($subtotal);
         session(['coupon_code' => $code, 'coupon_discount' => $discount]);
         return back()->with('coupon_success', 'Coupon applied! You save Rs ' . number_format($discount));
@@ -218,7 +222,14 @@ class CartController extends Controller
         $couponDiscount = (float)session('coupon_discount', 0);
         if ($couponCode) {
             $coupon = Coupon::active()->where('code', $couponCode)->first();
-            if (!$coupon || !$coupon->isValid()) { $couponCode = null; $couponDiscount = 0; }
+            if (!$coupon || !$coupon->isValid()) {
+                $couponCode = null; $couponDiscount = 0;
+            } elseif ($coupon->reachedPerUserLimit(auth()->id(), $data['email'] ?? $user?->email ?? null)) {
+                // Per-customer limit enforced here (final safety check, using the
+                // email just entered) since a guest's email isn't known yet at
+                // the "apply coupon" step on the cart page.
+                $couponCode = null; $couponDiscount = 0;
+            }
         }
 
         // Loyalty points discount
@@ -261,7 +272,7 @@ class CartController extends Controller
 
         if ($request->hasFile('payment_proof')) {
             $path = $request->file('payment_proof')->store('payment-proofs', 'uploads');
-            $order->update(['payment_proof' => asset('uploads/' . $path)]);
+            $order->update(['payment_proof' => '/uploads/' . $path]);
         }
 
         $order->load('items.product');
@@ -286,12 +297,21 @@ class CartController extends Controller
         // Clear cart
         CartItem::where('session_id', $this->sessionId())->delete();
 
-        // Send all notifications
-        try {
-            (new OrderNotificationService())->notifyNewOrder($order->fresh());
-        } catch (\Throwable $e) {
-            \Log::error('Notification failed: ' . $e->getMessage());
-        }
+        // Send all notifications — deferred to run AFTER the HTTP response is
+        // already sent to the browser. Previously this ran inline and blocked
+        // the whole checkout on 1-2 real SMTP round-trips (plus WhatsApp/SMS
+        // API calls if enabled) before the customer ever saw the confirmation
+        // page. Using afterResponse() means the redirect happens immediately;
+        // the emails/WhatsApp/SMS still send, just invisibly in the background
+        // within the same request lifecycle — no queue worker needed.
+        $orderForNotify = $order->fresh();
+        dispatch(function () use ($orderForNotify) {
+            try {
+                (new OrderNotificationService())->notifyNewOrder($orderForNotify);
+            } catch (\Throwable $e) {
+                \Log::error('Notification failed: ' . $e->getMessage());
+            }
+        })->afterResponse();
 
         $gatewayCode = $data['gateway'];
         if (in_array($gatewayCode, ['cod', 'bank_transfer'])) {

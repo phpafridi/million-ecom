@@ -38,13 +38,13 @@ class HandleInertiaRequests extends Middleware
         $navCategories = Cache::remember('nav_categories', 1800, function () {
             try {
                 return Category::active()->navVisible()->topLevel()
-                    ->with(['activeChildren' => fn($q) => $q->select('id','name','slug','parent_id','sort_order')])
+                    ->with(['children' => fn($q) => $q->where('is_active', true)->select('id','name','slug','parent_id','sort_order')])
                     ->orderBy('nav_order')->orderBy('sort_order')
                     ->get(['id','name','slug','nav_order','sort_order'])
                     ->map(fn($c) => [
                         'label'    => $c->name,
                         'href'     => "/shop?category={$c->slug}",
-                        'children' => $c->activeChildren->map(fn($ch) => [
+                        'children' => $c->children->map(fn($ch) => [
                             'label' => $ch->name,
                             'href'  => "/shop?category={$ch->slug}",
                         ])->values(),
@@ -140,12 +140,14 @@ class HandleInertiaRequests extends Middleware
                 'dark_bg2'      => $settings['theme_dark_bg2']      ?? '#111111',
                 'body_bg'       => $settings['theme_body_bg']       ?? '#f5f5f5',
                 'border_radius' => $settings['theme_border_radius'] ?? '12',
-                'topbar_bg'     => $settings['topbar_bg']           ?? '#0a0a0a',
-                'topbar_text'   => $settings['topbar_text']         ?? '#ffffff',
-                'nav_bg'        => $settings['nav_bg']              ?? '#ffffff',
-                'nav_text'      => $settings['nav_text']            ?? '#111111',
-                'header_bg'     => $settings['header_bg']           ?? '#0a0a0a',
-                'header_text'   => $settings['header_text']         ?? '#ffffff',
+                'topbar_bg'     => $settings['theme_topbar_bg']     ?? '#0a0a0a',
+                'topbar_text'   => $settings['theme_topbar_text']   ?? 'rgba(255,255,255,0.7)',
+                'nav_bg'        => $settings['theme_nav_bg']        ?? '#ffffff',
+                'nav_text'      => $settings['theme_nav_text']      ?? '#111111',
+                'nav_border'    => $settings['theme_nav_border']    ?? '#e5e7eb',
+                'header_bg'     => $settings['theme_header_bg']     ?? '#ffffff',
+                'header_text'   => $settings['theme_header_text']   ?? '#0a0a0a',
+                'header_border' => $settings['theme_header_border'] ?? '#e5e7eb',
             ],
         ]);
     }

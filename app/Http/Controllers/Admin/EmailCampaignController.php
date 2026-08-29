@@ -96,7 +96,7 @@ class EmailCampaignController extends Controller
         $settings = Setting::allKeyed();
         $html     = $this->buildHtml($data['body'], [
             'name'       => 'Test User',
-            'store_name' => $settings['site_name'] ?? 'Tijar Store',
+            'store_name' => $settings['site_name'] ?? 'Our Store',
             'store_url'  => url('/'),
         ], $settings);
 
@@ -124,7 +124,7 @@ class EmailCampaignController extends Controller
         ]);
 
         $settings  = Setting::allKeyed();
-        $storeName = $settings['site_name'] ?? 'Tijar Store';
+        $storeName = $settings['site_name'] ?? 'Our Store';
         $fromEmail = $settings['email']     ?? config('mail.from.address');
         $storeUrl  = url('/');
 
@@ -187,7 +187,7 @@ class EmailCampaignController extends Controller
         $content = implode('', $lines);
         $primary = $settings['dark_bg'] ?? '#0a0e1a';
         $accent  = $settings['primary'] ?? '#00c8ff';
-        $name    = $settings['site_name'] ?? 'Tijar Store';
+        $name    = $settings['site_name'] ?? 'Our Store';
         $initial = strtoupper(substr($name, 0, 1));
         $url     = $vars['store_url'];
 

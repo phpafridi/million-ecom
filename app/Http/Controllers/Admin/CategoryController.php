@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -36,19 +37,25 @@ class CategoryController extends Controller
             'is_active'    => 'boolean',
             'show_in_nav'  => 'boolean',
             'color'        => 'nullable|string|max:20',
-            'icon'         => 'nullable|string|max:10',
-            'image'        => 'nullable|image|max:5120',
-            'banner_image' => 'nullable|image|max:5120',
+            'icon'               => 'nullable|string|max:10',
+            'image'              => 'nullable|image|max:5120',
+            'mobile_image'       => 'nullable|image|max:5120',
+            'banner_image'       => 'nullable|image|max:5120',
+            'mobile_banner_image'=> 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('categories', 'uploads');
-            $data['image'] = asset('uploads/' . $path);
-        }
+            $data['image'] = ImageService::process($request->file('image'), 'categories', 'category');
+        } else { unset($data['image']); }
+        if ($request->hasFile('mobile_image')) {
+            $data['mobile_image'] = ImageService::process($request->file('mobile_image'), 'categories/mobile', 'banner_promo');
+        } else { unset($data['mobile_image']); }
         if ($request->hasFile('banner_image')) {
-            $path = $request->file('banner_image')->store('categories/banners', 'uploads');
-            $data['banner_image'] = asset('uploads/' . $path);
-        }
+            $data['banner_image'] = ImageService::process($request->file('banner_image'), 'categories/banners', 'category_banner');
+        } else { unset($data['banner_image']); }
+        if ($request->hasFile('mobile_banner_image')) {
+            $data['mobile_banner_image'] = ImageService::process($request->file('mobile_banner_image'), 'categories/mobile-banners', 'banner_sm');
+        } else { unset($data['mobile_banner_image']); }
 
         if (empty($data['parent_id'])) $data['parent_id'] = null;
 
@@ -59,27 +66,41 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $data = $request->validate([
-            'name'         => 'string|max:255',
-            'slug'         => "string|unique:categories,slug,{$category->id}",
-            'description'  => 'nullable|string',
-            'parent_id'    => 'nullable|exists:categories,id',
-            'sort_order'   => 'integer|min:0',
-            'nav_order'    => 'integer|min:0',
-            'is_active'    => 'boolean',
-            'show_in_nav'  => 'boolean',
-            'color'        => 'nullable|string|max:20',
-            'icon'         => 'nullable|string|max:10',
-            'image'        => 'nullable|image|max:5120',
-            'banner_image' => 'nullable|image|max:5120',
+            'name'               => 'string|max:255',
+            'slug'               => "string|unique:categories,slug,{$category->id}",
+            'description'        => 'nullable|string',
+            'parent_id'          => 'nullable|exists:categories,id',
+            'sort_order'         => 'integer|min:0',
+            'nav_order'          => 'integer|min:0',
+            'is_active'          => 'boolean',
+            'show_in_nav'        => 'boolean',
+            'color'              => 'nullable|string|max:20',
+            'icon'               => 'nullable|string|max:10',
+            'image'              => 'nullable|image|max:5120',
+            'mobile_image'       => 'nullable|image|max:5120',
+            'banner_image'       => 'nullable|image|max:5120',
+            'mobile_banner_image'=> 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('categories', 'uploads');
-            $data['image'] = asset('uploads/' . $path);
+            $data['image'] = ImageService::process($request->file('image'), 'categories', 'category');
+        } else {
+            unset($data['image']); // don't overwrite existing image if no new file uploaded
+        }
+        if ($request->hasFile('mobile_image')) {
+            $data['mobile_image'] = ImageService::process($request->file('mobile_image'), 'categories/mobile', 'banner_promo');
+        } else {
+            unset($data['mobile_image']);
         }
         if ($request->hasFile('banner_image')) {
-            $path = $request->file('banner_image')->store('categories/banners', 'uploads');
-            $data['banner_image'] = asset('uploads/' . $path);
+            $data['banner_image'] = ImageService::process($request->file('banner_image'), 'categories/banners', 'category_banner');
+        } else {
+            unset($data['banner_image']);
+        }
+        if ($request->hasFile('mobile_banner_image')) {
+            $data['mobile_banner_image'] = ImageService::process($request->file('mobile_banner_image'), 'categories/mobile-banners', 'banner_sm');
+        } else {
+            unset($data['mobile_banner_image']);
         }
 
         if (array_key_exists('parent_id', $data) && empty($data['parent_id'])) {

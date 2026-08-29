@@ -12,7 +12,8 @@ class AdminMiddleware
         $user = $request->user();
 
         if (!$user) {
-            return redirect('/login')->with('error', 'Please login to continue.');
+            $adminPath = \App\Models\Setting::get('admin_path', 'ml-admin');
+            return redirect("/{$adminPath}/login")->with('error', 'Please login to continue.');
         }
 
         if (!in_array($user->role, ['admin', 'staff'])) {

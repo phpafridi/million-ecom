@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react'
+import { Head, router, useForm, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { IconSend, IconArrowLeft } from '@tabler/icons-react'
 
@@ -6,7 +6,8 @@ interface Reply { id:number; message:string; is_staff:boolean; replier_name:stri
 interface Props { ticket:any; replies:Reply[] }
 
 export default function SupportShow({ ticket, replies }:Props) {
-    const ap = '/ml-admin'
+    const { props: __p } = usePage<{ adminPath?: string }>()
+    const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const { data, setData, post, processing, reset } = useForm({ message:'' })
     function send(e:React.FormEvent){
         e.preventDefault(); post(`${ap}/support/${ticket.id}/reply`, { onSuccess:()=>reset() }) }

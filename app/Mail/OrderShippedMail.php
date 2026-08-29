@@ -23,7 +23,7 @@ class OrderShippedMail extends Mailable
         $s = Setting::allKeyed();
         return new Content(view: 'emails.order-shipped', with: [
             'order'          => $this->order->load('items'),
-            'storeName'      => $s['site_name']      ?? 'Tijar Store',
+            'storeName'      => $s['site_name']      ?? 'Our Store',
             'primaryColor'   => $s['dark_bg']         ?? '#0a0e1a',
             'accentColor'    => $s['primary']          ?? '#00c8ff',
             'whatsapp'       => $s['whatsapp_number']  ?? '',

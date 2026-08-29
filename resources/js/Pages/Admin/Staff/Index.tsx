@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 import { IconPlus, IconEdit, IconTrash, IconCheck, IconX, IconShield } from '@tabler/icons-react'
@@ -8,7 +8,8 @@ interface Role { label:string; description:string; color:string; permissions:str
 interface Props { staff:Staff[]; roles:Record<string,Role> }
 
 export default function StaffIndex({ staff, roles }:Props) {
-    const ap = '/ml-admin'
+    const { props: __p } = usePage<{ adminPath?: string }>()
+    const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [adding, setAdding]   = useState(false)
     const [editing, setEditing] = useState<Staff|null>(null)
     const [form, setForm]       = useState({ name:'', email:'', password:'', staff_role:'support' })

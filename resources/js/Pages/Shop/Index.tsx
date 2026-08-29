@@ -100,8 +100,8 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                                     <label className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-gray-50 cursor-pointer group">
                                         <div className="flex items-center gap-2.5">
                                             <input type="radio" name="cat" value="" checked={!filters.category}
-                                                onChange={() => apply({ category: undefined })} className="accent-[var(--color-primary, #00c8ff)] w-4 h-4 cursor-pointer" />
-                                            <span className="text-[13px] font-semibold text-gray-700 group-hover:text-[var(--color-primary, #00c8ff)]">All</span>
+                                                onChange={() => apply({ category: undefined })} className="accent-[var(--color-primary,#00c8ff)] w-4 h-4 cursor-pointer" />
+                                            <span className="text-[13px] font-semibold text-gray-700 group-hover:text-[var(--color-primary,#00c8ff)]">All</span>
                                         </div>
                                         <span className="text-[11px] text-gray-400">{products.total}</span>
                                     </label>
@@ -136,10 +136,10 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                                 <div className="space-y-0.5">
                                     {PRICES.map((r, i) => (
                                         <label key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-gray-50 cursor-pointer group">
-                                            <input type="radio" name="price" className="accent-[var(--color-primary, #00c8ff)] w-4 h-4 cursor-pointer"
+                                            <input type="radio" name="price" className="accent-[var(--color-primary,#00c8ff)] w-4 h-4 cursor-pointer"
                                                 checked={filters.max_price === r.max}
                                                 onChange={() => { apply({ max_price: r.max }); setSidebarOpen(false) }} />
-                                            <span className="text-[13px] font-semibold text-gray-700 group-hover:text-[var(--color-primary, #00c8ff)]">{r.label}</span>
+                                            <span className="text-[13px] font-semibold text-gray-700 group-hover:text-[var(--color-primary,#00c8ff)]">{r.label}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -161,7 +161,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                     {/* Sort + filter bar */}
                     <div className="bg-white border border-gray-100 rounded-2xl flex items-center flex-wrap px-3 sm:px-4 py-2.5 mb-4 gap-2 sm:gap-3">
                         <button onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden flex items-center gap-2 text-[13px] font-semibold text-gray-600 hover:text-[var(--color-primary, #00c8ff)] border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer transition-colors flex-shrink-0">
+                            className="lg:hidden flex items-center gap-2 text-[13px] font-semibold text-gray-600 hover:text-[var(--color-primary,#00c8ff)] border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer transition-colors flex-shrink-0">
                             <IconAdjustmentsHorizontal size={16} /> Filter
                         </button>
                         <span className="text-[12.5px] sm:text-[13px] text-gray-500 flex-shrink-0">
@@ -171,7 +171,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                             {SORTS.map(s => (
                                 <button key={s.value} onClick={() => { setSort(s.value); apply({ sort: s.value }) }}
                                     className={`px-2.5 sm:px-3 py-1.5 rounded-[10px] text-[11px] sm:text-[12px] font-semibold transition-all border-none cursor-pointer whitespace-nowrap
-                                        ${sort === s.value ? 'bg-[var(--color-primary, #00c8ff)] text-[var(--color-dark-bg, #0a0e1a)]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                                        ${sort === s.value ? 'bg-[var(--color-primary,#00c8ff)] text-[var(--color-dark-bg,#0a0e1a)]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                                     {s.label}
                                 </button>
                             ))}
@@ -221,7 +221,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                         <div className="flex items-center justify-center gap-2 mt-6">
                             {products.current_page > 1 && (
                                 <button onClick={() => apply({ page: products.current_page - 1 })}
-                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary, #00c8ff)] hover:text-[var(--color-primary, #00c8ff)] bg-white cursor-pointer transition-all">
+                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] bg-white cursor-pointer transition-all">
                                     ← Prev
                                 </button>
                             )}
@@ -230,7 +230,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                             </span>
                             {products.current_page < products.last_page && (
                                 <button onClick={() => apply({ page: products.current_page + 1 })}
-                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary, #00c8ff)] hover:text-[var(--color-primary, #00c8ff)] bg-white cursor-pointer transition-all">
+                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] bg-white cursor-pointer transition-all">
                                     Next →
                                 </button>
                             )}

@@ -56,10 +56,10 @@ export default function PromoVideoIndex({ current_video, video_title, video_tag,
                             </div>
                         )}
 
-                        <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary, #00c8ff)] rounded-xl px-4 py-4 cursor-pointer transition-colors">
+                        <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary,#00c8ff)] rounded-xl px-4 py-4 cursor-pointer transition-colors">
                             <input type="file" accept="video/mp4,video/webm" className="hidden"
                                 onChange={e => setData('video', e.target.files?.[0] ?? null)} />
-                            <IconUpload size={20} className="text-[var(--color-primary, #00c8ff)] flex-shrink-0" />
+                            <IconUpload size={20} className="text-[var(--color-primary,#00c8ff)] flex-shrink-0" />
                             <div>
                                 <div className="text-[13.5px] font-semibold text-gray-700">{data.video ? data.video.name : 'Click to upload video'}</div>
                                 <div className="text-[12px] text-gray-400">MP4 or WebM, max 50MB, portrait orientation</div>

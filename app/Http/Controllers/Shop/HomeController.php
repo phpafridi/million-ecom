@@ -17,7 +17,7 @@ class HomeController extends Controller
 
         $topCategories = Category::active()
             ->whereNull('parent_id')
-            ->with(['activeChildren'])
+            ->with(['children' => fn($q) => $q->where('is_active', true)])
             ->orderBy('nav_order')
             ->orderBy('sort_order')
             ->get();
@@ -30,7 +30,7 @@ class HomeController extends Controller
 
         $categoryProducts = [];
         foreach ($topCategories as $cat) {
-            $childIds = $cat->activeChildren->pluck('id')->toArray();
+            $childIds = $cat->children->pluck('id')->toArray();
             $allIds   = array_merge([$cat->id], $childIds);
             $categoryProducts[$cat->slug] = Product::active()
                 ->whereIn('category_id', $allIds)

@@ -98,11 +98,13 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
         : [{ id: 0, url: '/images/placeholder.jpg', thumb: '/images/placeholder.jpg' }]
 
     const hasVariants   = (product.variant_attributes?.length ?? 0) > 0
-    // Attributes that have values but haven't been selected yet
-    // We check values?.length so even if is_required is null/false (DB bug), we still validate
+    // Only attributes explicitly marked "Required" in admin block Add to Cart.
+    // is_required now persists correctly (was a DB schema bug before) — default
+    // to treating it as required only when the flag is genuinely missing (old
+    // products saved before the fix), so nothing that worked before breaks.
     const missingRequired = hasVariants
         ? (product.variant_attributes ?? []).filter((a: any) =>
-            (a.values?.length ?? 0) > 0 && !selectedValues[a.id]
+            (a.values?.length ?? 0) > 0 && !selectedValues[a.id] && (a.is_required ?? true)
           )
         : []
     const rawPrice      = selectedVariant?.price         ?? product.price
@@ -158,8 +160,23 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
             }
             return
         }
-        // Block if all selected but no matching variant found
-        if (hasVariants && !selectedVariant && Object.keys(selectedValues).length > 0) {
+        // Block if every required attribute is selected but still no matching
+        // variant exists (only meaningful once nothing required is missing —
+        // an unselected *optional* attribute shouldn't trigger a false "out of
+        // stock" here).
+        //
+        // Important: only block when this product actually HAS variant SKU
+        // records to search through. If no ProductVariant rows exist at all
+        // (i.e. the admin only defined Size/Color as selectable labels but
+        // never created per-combination stock records), there's nothing to
+        // "match" — that's a normal setup, not an out-of-stock combination.
+        // Falling through lets the sale proceed using the base product's own
+        // price/stock instead of wrongly blocking a valid purchase.
+        const hasVariantStockRecords = (product.variants?.length ?? 0) > 0
+        const allRequiredSelected = (product.variant_attributes ?? []).every((a: any) =>
+            (a.values?.length ?? 0) === 0 || !(a.is_required ?? true) || selectedValues[a.id]
+        )
+        if (hasVariantStockRecords && hasVariants && !selectedVariant && allRequiredSelected && Object.keys(selectedValues).length > 0) {
             alert('This combination is out of stock. Please try different options.')
             return
         }
@@ -200,7 +217,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
     const currentImgUrl = selectedVariant?.image ?? imgs[activeImg]?.url ?? '/images/placeholder.jpg'
 
     return (
-        <StorefrontLayout auth={auth} settings={settings}>
+        <StorefrontLayout auth={auth} settings={settings} hideFloatingCart>
             <Head title={product.name} />
 
             {/* ── Lightbox ── */}
@@ -270,7 +287,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                 </div>
             </div>
 
-            <div className="px-4 sm:px-8 lg:px-12 py-6 max-w-[1400px] mx-auto">
+            <div className="px-4 sm:px-8 lg:px-12 py-6 pb-24 lg:pb-6 max-w-[1400px] mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
 
                     {/* ═══ LEFT — IMAGE GALLERY ═══════════════════════════════════════ */}
@@ -278,7 +295,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
 
                         {/* Vertical thumbnails — desktop */}
                         {imgs.length > 1 && (
-                            <div className="hidden lg:flex flex-col gap-2.5 w-[72px] flex-shrink-0">
+                            <div className="ml-thumbs-desktop flex-col gap-2.5 w-[72px] flex-shrink-0">
                                 {imgs.map((img, i) => (
                                     <button key={img.id} onClick={() => setActiveImg(i)}
                                         className="relative w-[72px] h-[72px] rounded-xl overflow-hidden border-2 bg-gray-50 flex-shrink-0 cursor-pointer transition-all hover:opacity-100"
@@ -356,7 +373,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
 
                             {/* Mobile thumbnails */}
                             {imgs.length > 1 && (
-                                <div className="flex lg:hidden gap-2 overflow-x-auto pb-1">
+                                <div className="ml-thumbs-mobile gap-2 overflow-x-auto pb-1">
                                     {imgs.map((img, i) => (
                                         <button key={img.id} onClick={() => setActiveImg(i)}
                                             className="w-16 h-16 rounded-xl overflow-hidden border-2 bg-gray-50 flex-shrink-0 cursor-pointer transition-all"
@@ -433,8 +450,8 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                     <span className="text-[12px] font-black text-gray-800 uppercase tracking-widest">
                                         {attr.name.replace(/\d+$/, '').replace(/_/g, ' ')}
                                     </span>
-                                    {/* Always show asterisk if attribute has values */}
-                                    {(attr.values?.length ?? 0) > 0 && (
+                                    {/* Red asterisk only for attributes actually marked Required in admin */}
+                                    {(attr.values?.length ?? 0) > 0 && (attr.is_required ?? true) && (
                                         <span className="text-red-500 text-[13px]">*</span>
                                     )}
                                     {/* Show selected value */}
@@ -497,7 +514,8 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                 <div className="grid grid-cols-2 gap-2.5">
                                     <button onClick={addToCart}
                                         disabled={adding}
-                                        className="col-span-2 flex items-center justify-center gap-2.5 h-[54px] font-black text-[14px] rounded-2xl transition-all border-none cursor-pointer hover:opacity-90 disabled:opacity-70"
+                                        className={`col-span-2 flex items-center justify-center gap-2.5 h-[54px] font-black text-[14px] rounded-2xl transition-all border-none cursor-pointer disabled:cursor-not-allowed
+                                            ${missingRequired.length > 0 ? 'opacity-60 grayscale' : 'hover:opacity-90 disabled:opacity-70'}`}
                                         style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
                                         <IconShoppingCart size={20} />
                                         {adding
@@ -722,6 +740,53 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                     </div>
                 )}
             </div>
+
+            {/* ═══ MOBILE STICKY BUY BAR — the real Add to Cart button lives further up
+                the page; on mobile this reuses the exact same handler/state so it never
+                falls out of sync, and saves a scroll-to-top on a long product page.
+                Uses a plain CSS media query (not a Tailwind lg:hidden class) so it can
+                never silently fail to hide on desktop the way Tailwind's responsive
+                classes have elsewhere in this app. ═══ */}
+            <style>{`
+                .ml-sticky-buybar { display: none; }
+                .ml-thumbs-desktop { display: none; }
+                .ml-thumbs-mobile { display: flex; }
+                @media (max-width: 1023px) {
+                    .ml-sticky-buybar { display: flex; }
+                }
+                @media (min-width: 1024px) {
+                    .ml-thumbs-desktop { display: flex; }
+                    .ml-thumbs-mobile { display: none; }
+                }
+            `}</style>
+            {activeStock > 0 && (
+                <div className="ml-sticky-buybar" style={{
+                    position: 'fixed', left: 0, right: 0,
+                    bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))',
+                    zIndex: 9975, background: 'white', borderTop: '1px solid #E5E7EB',
+                    boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
+                    padding: '10px 14px', alignItems: 'center', gap: 12,
+                }}>
+                    <div style={{ minWidth: 0, flexShrink: 0 }}>
+                        <div className="font-black" style={{ fontSize: 16, color: 'var(--color-dark-bg)', whiteSpace: 'nowrap' }}>{fmt(rawPrice)}</div>
+                        {rawCompare > rawPrice && (
+                            <div style={{ fontSize: 11, color: '#9CA3AF', textDecoration: 'line-through' }}>{fmt(rawCompare)}</div>
+                        )}
+                    </div>
+                    <button onClick={addToCart} disabled={adding}
+                        className={`flex-1 flex items-center justify-center gap-2 h-[46px] font-black text-[13.5px] rounded-xl border-none cursor-pointer transition-all disabled:cursor-not-allowed
+                            ${missingRequired.length > 0 ? 'opacity-60 grayscale' : 'disabled:opacity-70'}`}
+                        style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
+                        <IconShoppingCart size={17} />
+                        {adding
+                            ? 'Adding…'
+                            : missingRequired.length > 0
+                                ? `Select ${missingRequired[0]?.name?.replace(/\d+$/, '') || 'Option'}`
+                                : 'Add to Cart'
+                        }
+                    </button>
+                </div>
+            )}
         </StorefrontLayout>
     )
 }

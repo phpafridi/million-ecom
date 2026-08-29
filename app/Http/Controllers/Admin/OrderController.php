@@ -234,7 +234,7 @@ class OrderController extends Controller
         $order->load('items');
         $html = view('pdf.invoice', [
             'order'      => $order,
-            'storeName'  => Setting::get('site_name', 'Tijar Store'),
+            'storeName'  => Setting::get('site_name', 'Our Store'),
             'storePhone' => Setting::get('phone', ''),
             'storeEmail' => Setting::get('email', ''),
         ])->render();

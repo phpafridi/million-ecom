@@ -18,6 +18,17 @@ Route::post('/logout',  [LoginController::class, 'destroy'])->name('logout')->mi
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register',[RegisterController::class, 'store'])->name('register.store')->middleware('throttle:10,1');
 
+// ── ADMIN LOGIN — a genuinely separate route, not the same public /login
+// endpoint with header-sniffing bolted on. This is what makes the stricter
+// admin-tier rate limiting actually enforceable (route-based, not spoofable
+// via an absent/faked Referer header) and stops customer-role accounts and
+// admin-role accounts from ever successfully authenticating through the
+// wrong entry point.
+try { $adminLoginPath = Setting::get('admin_path', 'ml-admin'); }
+catch (\Throwable $e) { $adminLoginPath = 'ml-admin'; }
+Route::get("/{$adminLoginPath}/login",  [LoginController::class, 'showAdmin'])->name('admin.login');
+Route::post("/{$adminLoginPath}/login", [LoginController::class, 'storeAdmin'])->name('admin.login.store')->middleware('throttle:5,1');
+
 // ── SEO
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('seo.robots');

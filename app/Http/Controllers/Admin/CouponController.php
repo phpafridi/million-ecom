@@ -47,6 +47,7 @@ class CouponController extends Controller
             'min_order'     => 'nullable|numeric|min:0',
             'max_discount'  => 'nullable|numeric|min:0',
             'usage_limit'   => 'nullable|integer|min:1',
+            'per_user_limit'=> 'nullable|integer|min:1',
             'is_active'     => 'boolean',
             'expires_at'    => 'nullable|date',
             'description'   => 'nullable|string|max:200',

@@ -20,7 +20,7 @@ class ProductController extends Controller
         if ($request->category) {
             $category = Category::where('slug', $request->category)->first();
             if ($category) {
-                $childIds = $category->activeChildren?->pluck('id')->toArray() ?? [];
+                $childIds = $category->children()->where('is_active', true)->pluck('id')->toArray();
                 $allIds   = array_merge([$category->id], $childIds);
                 $query->whereIn('category_id', $allIds);
             }
@@ -59,7 +59,7 @@ class ProductController extends Controller
             ->whereHas('product', fn($q) => $q->where('is_active', true)
                 ->when($category, fn($q) => $q->whereIn('category_id',
                     array_merge([$category?->id ?? 0],
-                        $category?->activeChildren?->pluck('id')->toArray() ?? [])))
+                        $category ? $category->children()->where('is_active', true)->pluck('id')->toArray() : [])))
             )->get()
             ->groupBy(fn($a) => strtoupper(preg_replace('/\d+$/', '', $a->name)))
             ->map(fn($g, $n) => [
@@ -69,7 +69,7 @@ class ProductController extends Controller
 
         // Load categories with children
         $categories = Category::active()->whereNull('parent_id')
-            ->with(['activeChildren' => fn($q) => $q->orderBy('sort_order')])
+            ->with(['children' => fn($q) => $q->where('is_active', true)->orderBy('sort_order')])
             ->orderBy('sort_order')->get();
 
         // Build active filters (including attr_ filters)

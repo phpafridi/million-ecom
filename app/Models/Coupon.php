@@ -17,6 +17,28 @@ class Coupon extends Model
         return true;
     }
 
+    // How many times this coupon has already been used by a given customer —
+    // matched by user_id when logged in, falling back to email for guest
+    // checkouts. Only counts orders that weren't cancelled.
+    public function timesUsedBy(?int $userId, ?string $email): int
+    {
+        if (!$userId && !$email) return 0;
+        return \App\Models\Order::where('coupon_code', $this->code)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($q) use ($userId, $email) {
+                if ($userId) $q->where('user_id', $userId);
+                if ($userId && $email) $q->orWhere('customer_email', $email);
+                if (!$userId && $email) $q->where('customer_email', $email);
+            })
+            ->count();
+    }
+
+    public function reachedPerUserLimit(?int $userId, ?string $email): bool
+    {
+        if (!$this->per_user_limit) return false;
+        return $this->timesUsedBy($userId, $email) >= $this->per_user_limit;
+    }
+
     public function calculateDiscount(float $subtotal): float {
         if ($subtotal < $this->min_order) return 0;
         $discount = match($this->type) {

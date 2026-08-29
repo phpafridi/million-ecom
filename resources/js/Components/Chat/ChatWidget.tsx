@@ -139,17 +139,20 @@ export default function ChatWidget({ settings, auth }: Props) {
                 /* MOBILE overrides — above bottom nav, left of Login tab */
                 @media (max-width: 1023px) {
                     .ml-chat-btn {
-                        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 10px);
-                        right: 16px;
-                        width: 46px;
-                        height: 46px;
+                        /* Sits low, near the Login icon — the cart FAB (when
+                           present) is a same-size icon stacked directly above
+                           it, so there's no wide bar to avoid anymore. */
+                        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 10px) !important;
+                        right: 16px !important;
+                        width: 46px !important;
+                        height: 46px !important;
                     }
                     .ml-chat-win {
                         /* full-width sheet on mobile */
-                        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 66px);
-                        right: 8px;
-                        left: 8px;
-                        width: auto;
+                        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 66px) !important;
+                        right: 8px !important;
+                        left: 8px !important;
+                        width: auto !important;
                         height: clamp(360px, 60vh, 520px);
                         border-radius: 16px;
                     }

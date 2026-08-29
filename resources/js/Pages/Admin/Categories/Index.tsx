@@ -2,6 +2,12 @@ import { Head, router, useForm, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import { IconPlus, IconPencil, IconTrash, IconX, IconUpload, IconChevronRight, IconChevronDown, IconGripVertical } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import { DualImageUpload } from '@/Components/Admin/ImageUpload'
+
+const CAT_IMAGE_DESKTOP  = { w: 900,  h: 1080, label: 'Category Image (Desktop)',  hint: 'Nearly square — shown as a square card on desktop grid' }
+const CAT_IMAGE_MOBILE   = { w: 600,  h: 600,  label: 'Category Image (Mobile)',   hint: 'Square — shown as a 3:4 portrait card on mobile scroll' }
+const CAT_BANNER_DESKTOP = { w: 1920, h: 380,  label: 'Category Banner (Desktop)', hint: 'Wide landscape — shown between product sections on desktop' }
+const CAT_BANNER_MOBILE  = { w: 900,  h: 540,  label: 'Category Banner (Mobile)',  hint: 'Landscape 5:3 — shown on mobile. Falls back to desktop banner if not set' }
 
 interface Category {
     id: number; name: string; slug: string; description?: string
@@ -17,41 +23,7 @@ interface Props {
     allCategories: { id: number; name: string; slug: string; parent_id: number | null }[]
 }
 
-function ImageUpload({ label, w, h, hint, current, onFile }: {
-    label: string; w: number; h: number; hint: string
-    current?: string | null; onFile: (f: File) => void
-}) {
-    const [preview, setPreview] = useState<string | null>(current ?? null)
-    const [drag, setDrag] = useState(false)
 
-    function pick(file: File) {
-        setPreview(URL.createObjectURL(file))
-        onFile(file)
-    }
-
-    return (
-        <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-1">{label}</label>
-            <p className="text-[11.5px] text-gray-400 mb-2">{w}×{h}px — {hint}</p>
-            {preview && (
-                <div className="relative mb-2">
-                    <img src={preview} className="h-16 rounded-xl object-cover border border-gray-200 w-full" alt="" />
-                    <button type="button" onClick={() => setPreview(null)}
-                        className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center border-none cursor-pointer text-[10px]">✕</button>
-                </div>
-            )}
-            <label className={`flex items-center gap-2.5 border-2 border-dashed rounded-xl px-4 py-3 cursor-pointer transition-colors
-                ${drag ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'border-gray-200 hover:border-[var(--color-primary)]'}`}
-                onDragOver={e => { e.preventDefault(); setDrag(true) }}
-                onDragLeave={() => setDrag(false)}
-                onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if(f) pick(f) }}>
-                <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if(f) pick(f) }} />
-                <IconUpload size={15} style={{ color:'var(--color-primary)' }} />
-                <span className="text-[12px] text-gray-500">{preview ? 'Replace image' : 'Click or drag image here'}</span>
-            </label>
-        </div>
-    )
-}
 
 function CatForm({ cat, allCategories, onClose }: {
     cat?: Category; allCategories: Props['allCategories']; onClose: () => void
@@ -60,20 +32,21 @@ function CatForm({ cat, allCategories, onClose }: {
     const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing, errors } = useForm<any>({
-        _method:      cat ? 'PUT' : 'POST',
-        name:         cat?.name        ?? '',
-        slug:         cat?.slug        ?? '',
-        description:  cat?.description ?? '',
-        parent_id:    cat?.parent_id   ?? '',
-        // Position = sort_order internally, but shown as simple "Position" to admin
-        sort_order:   cat?.sort_order  ?? 0,
-        nav_order:    cat?.nav_order   ?? 0,
-        is_active:    cat?.is_active   ?? true,
-        show_in_nav:  cat?.show_in_nav ?? true,
-        color:        cat?.color       ?? '',
-        icon:         cat?.icon        ?? '',
-        image:        null as File | null,
-        banner_image: null as File | null,
+        _method:             cat ? 'PUT' : 'POST',
+        name:                cat?.name        ?? '',
+        slug:                cat?.slug        ?? '',
+        description:         cat?.description ?? '',
+        parent_id:           cat?.parent_id   ?? '',
+        sort_order:          cat?.sort_order  ?? 0,
+        nav_order:           cat?.nav_order   ?? 0,
+        is_active:           cat?.is_active   ?? true,
+        show_in_nav:         cat?.show_in_nav ?? true,
+        color:               cat?.color       ?? '',
+        icon:                cat?.icon        ?? '',
+        image:               null as File | null,
+        mobile_image:        null as File | null,
+        banner_image:        null as File | null,
+        mobile_banner_image: null as File | null,
     })
 
     function slugify(s: string) {
@@ -196,11 +169,25 @@ function CatForm({ cat, allCategories, onClose }: {
                     </div>
 
                     {/* Images */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <ImageUpload label="Category Image" w={300} h={300} hint="Square icon shown in category grid"
-                            current={cat?.image} onFile={f => setData('image', f)} />
-                        <ImageUpload label="Category Banner" w={1400} h={280} hint="Wide banner shown between product sections on homepage"
-                            current={cat?.banner_image} onFile={f => setData('banner_image', f)} />
+                    <div className="space-y-4">
+                        <DualImageUpload
+                            label="Category Card Image"
+                            desktopSpec={CAT_IMAGE_DESKTOP}
+                            mobileSpec={CAT_IMAGE_MOBILE}
+                            currentDesktop={cat?.image}
+                            currentMobile={cat?.mobile_image}
+                            onDesktopFile={f => setData('image', f)}
+                            onMobileFile={f => setData('mobile_image', f)}
+                        />
+                        <DualImageUpload
+                            label="Category Banner"
+                            desktopSpec={CAT_BANNER_DESKTOP}
+                            mobileSpec={CAT_BANNER_MOBILE}
+                            currentDesktop={cat?.banner_image}
+                            currentMobile={cat?.mobile_banner_image}
+                            onDesktopFile={f => setData('banner_image', f)}
+                            onMobileFile={f => setData('mobile_banner_image', f)}
+                        />
                     </div>
 
                     <div className="flex gap-3 pt-2 border-t border-gray-100">

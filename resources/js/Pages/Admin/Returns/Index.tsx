@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 
@@ -9,7 +9,8 @@ const SC:Record<string,string>={requested:'#F59E0B',approved:'#3B82F6',received:
 const fmt=(n:number)=>'Rs '+Number(n).toLocaleString('en-PK')
 
 export default function ReturnsIndex({ returns, stats }:Props) {
-    const ap='/ml-admin'
+    const { props: __p } = usePage<{ adminPath?: string }>()
+    const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Return|null>(null)
     const [form, setForm]       = useState({ status:'', admin_notes:'', refund_amount:'' })
 

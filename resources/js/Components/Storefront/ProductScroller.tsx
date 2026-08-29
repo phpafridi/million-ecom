@@ -191,20 +191,29 @@ export default function ProductScroller({
                         // width is auto — each child has fixed width
                     }}
                 >
-                    {items.map((p, i) => (
+                    {items.map((p, i) => {
+                        // If there are fewer products than the number of visible
+                        // slots (e.g. only 1 item in a 2-per-row mobile layout),
+                        // size cards against the actual item count instead of the
+                        // full "visible" count — otherwise a lone card sits at
+                        // ~50% width with a large dead gap next to it, which reads
+                        // as broken rather than intentional.
+                        const effectiveVisible = Math.min(visible, Math.max(items.length, 1))
+                        return (
                         <div key={(p as any)?.id ?? i}
                             style={{
                                 // Each card occupies exactly 1/visible of the wrapper
                                 // We use calc so it's responsive
                                 flexShrink: 0,
-                                width: `calc((100% - ${(visible - 1) * GAP}px) / ${visible})`,
+                                width: `calc((100% - ${(effectiveVisible - 1) * GAP}px) / ${effectiveVisible})`,
                             }}>
                             {loading || !p
                                 ? <ProductCardSkeleton />
                                 : <ProductCard product={p as Product} whatsapp={whatsapp} />
                             }
                         </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </div>
 

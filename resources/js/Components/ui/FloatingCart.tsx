@@ -1,22 +1,30 @@
 import { Link, usePage } from '@inertiajs/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { IconShoppingCart, IconX, IconArrowRight, IconCreditCard } from '@tabler/icons-react'
 
 interface Props { settings: Record<string, string> }
 
 export default function FloatingCart({ settings }: Props) {
-    const { props }           = usePage<{ cartCount?: number; cartTotal?: number }>()
-    const cartCount           = props.cartCount ?? 0
-    const cartTotal           = props.cartTotal ?? 0
-    const [dismissed, setDismiss] = useState(false)
-    const [visible, setVisible]   = useState(false)
+    const { props }     = usePage<{ cartCount?: number; cartTotal?: number }>()
+    const cartCount     = props.cartCount ?? 0
+    const cartTotal     = props.cartTotal ?? 0
+    const [open, setOpen] = useState(false)
+    const panelRef = useRef<HTMLDivElement>(null)
 
+    // Auto-close if the cart becomes empty (e.g. after checkout)
+    useEffect(() => { if (cartCount === 0) setOpen(false) }, [cartCount])
+
+    // Close when tapping outside the panel
     useEffect(() => {
-        if (cartCount > 0 && !dismissed) setVisible(true)
-        if (cartCount === 0) { setVisible(false); setDismiss(false) }
-    }, [cartCount, dismissed])
+        if (!open) return
+        const handler = (e: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false)
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [open])
 
-    if (!visible) return null
+    if (cartCount === 0) return null
 
     const bg  = settings?.cart_bubble_color || '#0a0a0a'
     const fmt = (n: number) => `Rs ${Math.round(n).toLocaleString('en-PK')}`
@@ -24,112 +32,121 @@ export default function FloatingCart({ settings }: Props) {
     return (
         <>
             <style>{`
-                @keyframes mlFCSlideUp {
-                    from { opacity:0; transform:translateX(-50%) translateY(24px) }
-                    to   { opacity:1; transform:translateX(-50%) translateY(0) }
+                @keyframes mlCartPop {
+                    from { opacity:0; transform:scale(0.85) }
+                    to   { opacity:1; transform:scale(1) }
                 }
-                .ml-fc {
+                @keyframes mlCartPanelIn {
+                    from { opacity:0; transform:translateY(12px) scale(0.96) }
+                    to   { opacity:1; transform:translateY(0) scale(1) }
+                }
+                .ml-cart-fab {
                     position: fixed;
-                    bottom: 28px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    z-index: 9980;
-                    display: flex;
-                    align-items: stretch;
-                    border-radius: 100px;
+                    z-index: 9985;
+                    width: 52px; height: 52px;
+                    border-radius: 50%;
+                    border: none;
+                    cursor: pointer;
+                    display: flex; align-items: center; justify-content: center;
+                    box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+                    animation: mlCartPop 0.3s cubic-bezier(.34,1.56,.64,1) both;
+                    right: 24px;
+                    bottom: 96px;
+                }
+                .ml-cart-badge {
+                    position: absolute; top: -4px; right: -4px;
+                    min-width: 20px; height: 20px; padding: 0 5px;
+                    border-radius: 10px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 11px; font-weight: 900;
+                }
+                .ml-cart-panel {
+                    position: fixed;
+                    z-index: 9985;
+                    width: 280px;
+                    border-radius: 18px;
                     overflow: hidden;
-                    box-shadow: 0 12px 44px rgba(0,0,0,0.30);
-                    animation: mlFCSlideUp 0.4s cubic-bezier(.34,1.56,.64,1) both;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+                    animation: mlCartPanelIn 0.2s cubic-bezier(.34,1.56,.64,1) both;
+                    right: 24px;
+                    bottom: 158px;
                 }
                 @media (max-width: 1023px) {
-                    .ml-fc {
-                        bottom: calc(56px + env(safe-area-inset-bottom,0px) + 10px);
-                        left: 12px;
-                        right: 12px;
-                        transform: none;
-                        border-radius: 16px;
-                        width: auto;
+                    .ml-cart-fab {
+                        right: 16px !important;
+                        bottom: calc(56px + env(safe-area-inset-bottom,0px) + 66px) !important;
+                        width: 46px !important; height: 46px !important;
+                    }
+                    .ml-cart-panel {
+                        right: 8px !important;
+                        left: 8px !important;
+                        width: auto !important;
+                        bottom: calc(56px + env(safe-area-inset-bottom,0px) + 118px) !important;
                     }
                 }
             `}</style>
 
-            <div className="ml-fc">
-
-                {/* Left — dark section: icon + count + total */}
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: 11,
-                    background: bg, padding: '12px 18px', flex: 1, minWidth: 0,
-                }}>
-                    <div style={{
-                        width: 36, height: 36, borderRadius: 9,
-                        background: 'rgba(255,255,255,0.12)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        position: 'relative', flexShrink: 0,
+            {/* Toggle button — sits directly above the chat bubble */}
+            <button className="ml-cart-fab" style={{ background: bg }} onClick={() => setOpen(v => !v)} aria-label="Cart">
+                {open
+                    ? <IconX size={20} color="white" />
+                    : <IconShoppingCart size={20} color="white" />
+                }
+                {!open && (
+                    <span className="ml-cart-badge" style={{
+                        background: 'var(--color-primary,#C9A84C)',
+                        color: 'var(--color-primary-text,#0a0a0a)',
+                        border: `2px solid ${bg}`,
                     }}>
-                        <IconShoppingCart size={18} color="white" />
-                        <span style={{
-                            position: 'absolute', top: -6, right: -6,
-                            background: 'var(--color-primary,#C9A84C)',
-                            color: 'var(--color-primary-text,#0a0a0a)',
-                            width: 18, height: 18, borderRadius: '50%',
-                            fontSize: 10, fontWeight: 900,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: `2px solid ${bg}`,
-                        }}>
-                            {cartCount > 9 ? '9+' : cartCount}
-                        </span>
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                        <div style={{ color: 'white', fontSize: 13, fontWeight: 800, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                            {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
+                        {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                )}
+            </button>
+
+            {/* Preview panel */}
+            {open && (
+                <div className="ml-cart-panel" ref={panelRef} style={{ background: '#161616' }}>
+                    <div style={{ padding: '18px 18px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                            <span style={{ color: 'white', fontWeight: 900, fontSize: 14.5 }}>
+                                Your Cart
+                            </span>
+                            <span style={{
+                                background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)',
+                                fontSize: 11, fontWeight: 800, padding: '3px 9px', borderRadius: 100,
+                            }}>
+                                {cartCount} item{cartCount !== 1 ? 's' : ''}
+                            </span>
                         </div>
+
                         {cartTotal > 0 && (
-                            <div style={{ color: 'var(--color-primary,#C9A84C)', fontSize: 11.5, fontWeight: 700, marginTop: 1 }}>
-                                {fmt(cartTotal)}
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+                                <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12.5, fontWeight: 600 }}>Subtotal</span>
+                                <span style={{ color: 'var(--color-primary,#C9A84C)', fontSize: 18, fontWeight: 900 }}>{fmt(cartTotal)}</span>
                             </div>
                         )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <Link href="/cart" onClick={() => setOpen(false)} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                background: 'rgba(255,255,255,0.08)', color: '#fff',
+                                padding: '11px 14px', borderRadius: 11,
+                                textDecoration: 'none', fontSize: 13, fontWeight: 800,
+                            }}>
+                                View Cart <IconArrowRight size={14} />
+                            </Link>
+                            <Link href="/cart" onClick={() => setOpen(false)} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                background: 'var(--color-primary,#C9A84C)', color: 'var(--color-primary-text,#0a0a0a)',
+                                padding: '11px 14px', borderRadius: 11,
+                                textDecoration: 'none', fontSize: 13, fontWeight: 900,
+                            }}>
+                                <IconCreditCard size={15} /> Checkout
+                            </Link>
+                        </div>
                     </div>
                 </div>
-
-                {/* View Cart — clearly visible white text on slightly lighter bg */}
-                <Link href="/cart" style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    background: 'rgba(255,255,255,0.18)',
-                    color: '#ffffff',
-                    padding: '0 16px',
-                    textDecoration: 'none',
-                    fontSize: 12.5, fontWeight: 800,
-                    whiteSpace: 'nowrap',
-                    borderLeft: '1px solid rgba(255,255,255,0.12)',
-                }}>
-                    View Cart <IconArrowRight size={13} />
-                </Link>
-
-                {/* Checkout — gold */}
-                <Link href="/cart" style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'var(--color-primary,#C9A84C)',
-                    color: 'var(--color-primary-text,#0a0a0a)',
-                    padding: '0 18px',
-                    textDecoration: 'none',
-                    fontSize: 13, fontWeight: 900,
-                    whiteSpace: 'nowrap',
-                }}>
-                    <IconCreditCard size={15} /> Checkout
-                </Link>
-
-                {/* Dismiss */}
-                <button onClick={() => setDismiss(true)} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: 40, flexShrink: 0,
-                    background: 'rgba(0,0,0,0.25)',
-                    border: 'none', color: 'rgba(255,255,255,0.7)',
-                    cursor: 'pointer', padding: 0,
-                }}>
-                    <IconX size={14} />
-                </button>
-
-            </div>
+            )}
         </>
     )
 }

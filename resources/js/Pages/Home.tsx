@@ -25,21 +25,20 @@ const TABS = [
     { key: 'featured', label: 'Featured' },
     { key: 'sale',     label: 'On Sale' },
     { key: 'top',      label: 'Top Rated' },
-    { key: 'new',      label: 'New Arrivals' },
 ]
 
 function SectionHeader({ eyebrow, title, viewAll }: { eyebrow: string; title: string; viewAll?: string }) {
     return (
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-                <div className="w-1 h-6 sm:h-7 bg-[var(--color-primary, #00c8ff)] rounded-sm flex-shrink-0" style={{ boxShadow: '0 0 8px rgba(0,200,255,0.4)' }} />
+                <div className="w-1 h-6 sm:h-7 bg-[var(--color-primary,#00c8ff)] rounded-sm flex-shrink-0" style={{ boxShadow: '0 0 8px rgba(0,200,255,0.4)' }} />
                 <div>
-                    <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary, #00c8ff)] uppercase tracking-[.12em]">{eyebrow}</div>
+                    <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary,#00c8ff)] uppercase tracking-[.12em]">{eyebrow}</div>
                     <h2 className="font-manrope font-black text-[18px] sm:text-[21px] text-gray-900 tracking-tight leading-snug">{title}</h2>
                 </div>
             </div>
             {viewAll && (
-                <Link href={viewAll} className="text-[12px] sm:text-[12.5px] font-bold text-[var(--color-primary, #00c8ff)] flex items-center gap-1 no-underline flex-shrink-0">
+                <Link href={viewAll} className="text-[12px] sm:text-[12.5px] font-bold text-[var(--color-primary,#00c8ff)] flex items-center gap-1 no-underline flex-shrink-0">
                     View all <IconArrowRight size={14} />
                 </Link>
             )}
@@ -196,8 +195,8 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                                     className="no-underline flex-shrink-0 block"
                                     style={{ width:'calc(50% - 6px)', scrollSnapAlign:'start' }}>
                                     <div className="relative overflow-hidden rounded-[18px] w-full" style={{ aspectRatio:'3/4' }}>
-                                        <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name}
-                                            className="w-full h-full object-cover block" loading="lazy" />
+                                        <img src={cat.mobile_image ?? cat.image ?? '/images/placeholder.jpg'} alt={cat.name}
+                                            className="w-full h-full object-cover block" style={{ objectPosition: 'center 20%' }} loading="lazy" />
                                         <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.05) 55%,transparent 100%)' }} />
                                         <span style={{ position:'absolute', bottom:0, left:0, right:0, padding:'10px 12px', color:'white', fontSize:13, fontWeight:700, lineHeight:1.2 }}>
                                             {cat.name}
@@ -218,7 +217,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                             <motion.div key={cat.id} initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} transition={{ delay:i*0.04 }}>
                                 <Link href={`/shop?category=${cat.slug}`}
                                     className="bg-white rounded-[13px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]">
-                                    <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" loading="lazy" />
+                                    <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" style={{ objectPosition: 'center 20%' }} loading="lazy" />
                                     <span className="block text-[11px] font-bold text-gray-900 py-2 px-1 truncate">{cat.name}</span>
                                 </Link>
                             </motion.div>
@@ -227,45 +226,42 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                 </div>
             </section>
 
-            {/* FULL-WIDTH HERO BANNER — admin-uploadable, sits between categories and the grid */}
-            {b('full_hero') && (
-                <motion.section className="px-4 sm:px-6 lg:px-10 pb-5 sm:pb-6"
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-60px' }}
-                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                DESKTOP BANNER GRID — only visible on screens ≥ 768px
+                Uses desktop images. Completely separate from mobile.
+            ════════════════════════════════════════════════════════════════ */}
+            <motion.section className="hidden md:block px-4 sm:px-6 lg:px-10 pb-5 sm:pb-6"
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
+
+                {/* Full-Width Hero — desktop only, sits above the 4-card grid */}
+                {b('full_hero') && (
                     <Link href={b('full_hero').link ?? '/shop'}
-                        className="relative block rounded-[16px] sm:rounded-[18px] overflow-hidden no-underline group"
+                        className="relative block rounded-[18px] overflow-hidden no-underline group mb-3"
                         style={{ height: 'clamp(220px, 32vw, 380px)' }}>
                         <img src={b('full_hero').image ?? '/images/placeholder.jpg'} alt={b('full_hero').title}
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" loading="lazy" />
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(7,11,20,0.15) 0%, rgba(7,11,20,0.55) 100%)' }} />
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
                             {b('full_hero').subtitle && (
-                                <span className="text-[11px] sm:text-[12px] font-bold text-white/70 uppercase tracking-[.2em] mb-2">{b('full_hero').subtitle}</span>
+                                <span className="text-[12px] font-bold text-white/70 uppercase tracking-[.2em] mb-2">{b('full_hero').subtitle}</span>
                             )}
-                            <h2 className="font-manrope font-black text-white leading-[1.05] tracking-tight mb-1"
-                                style={{ fontSize: 'clamp(22px, 4.5vw, 40px)' }}>
+                            <h2 className="font-manrope font-black text-white leading-[1.05] tracking-tight mb-1" style={{ fontSize: 'clamp(22px, 4.5vw, 40px)' }}>
                                 {b('full_hero').title}
                             </h2>
                             {b('full_hero').cta_text && (
-                                <span className="mt-4 inline-flex items-center bg-white text-[var(--color-dark-bg, #0a0e1a)] font-black rounded-full"
-                                    style={{ fontSize: 'clamp(11px, 1.4vw, 13px)', padding: 'clamp(8px, 1.2vw, 12px) clamp(18px, 2.4vw, 28px)' }}>
+                                <span className="mt-4 inline-flex items-center bg-white text-[var(--color-dark-bg,#0a0e1a)] font-black rounded-full" style={{ fontSize: 13, padding: '12px 28px' }}>
                                     {b('full_hero').cta_text}
                                 </span>
                             )}
                         </div>
                     </Link>
-                </motion.section>
-            )}
+                )}
 
-            {/* BANNER GRID */}
-            <motion.section className="px-4 sm:px-6 lg:px-10 pb-5 sm:pb-6"
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
-                <div className="hidden lg:grid gap-3" style={{ gridTemplateColumns: '340px 1fr', gridTemplateRows: '220px 228px' }}>
+                <div style={{ display:'grid', gap:12, gridTemplateColumns:'340px 1fr', gridTemplateRows:'220px 228px' }}>
                     {/* LEFT TALL CARD — use banner position 'promo' from Admin → Banners */}
                     {(() => {
                         const promo = b('promo') ?? b('featured') ?? (Object.keys(banners).length > 0 ? banners[Object.keys(banners)[0]] : null)
@@ -312,7 +308,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                                 )}
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(7,11,20,0.82))' }} />
                                 <div style={{ position: 'absolute', bottom: 14, left: 14, right: 14, zIndex: 10 }}>
-                                    {b(pos).subtitle && <div style={{ fontSize: 9.5, color: 'var(--color-primary, #00c8ff)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>{b(pos).subtitle}</div>}
+                                    {b(pos).subtitle && <div style={{ fontSize: 9.5, color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>{b(pos).subtitle}</div>}
                                     <h3 style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 900, fontSize: 15, color: '#fff', lineHeight: 1.2, marginBottom: 8 }}>{b(pos).title}</h3>
                                     <span style={{ display: 'inline-flex', background: '#fff', color: 'var(--color-dark-bg, #0a0e1a)', fontSize: 11, fontWeight: 800, padding: '5px 12px', borderRadius: 100 }}>{b(pos).cta_text}</span>
                                 </div>
@@ -336,51 +332,68 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                                 )}
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(7,11,20,0.88), rgba(7,11,20,0.4), transparent)' }} />
                                 <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: 20, zIndex: 10, maxWidth: 300 }}>
-                                    {b('wide_bottom').subtitle && <div style={{ fontSize: 9.5, color: 'var(--color-primary, #00c8ff)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 8 }}>{b('wide_bottom').subtitle}</div>}
+                                    {b('wide_bottom').subtitle && <div style={{ fontSize: 9.5, color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 8 }}>{b('wide_bottom').subtitle}</div>}
                                     <h3 style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 900, fontSize: 20, color: '#fff', lineHeight: 1.15, marginBottom: 12 }}>{b('wide_bottom').title}</h3>
-                                    <Link href={b('wide_bottom').link ?? '/shop'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary, #00c8ff)', color: 'var(--color-dark-bg, #0a0e1a)', fontSize: 12, fontWeight: 800, padding: '8px 16px', borderRadius: 100, textDecoration: 'none' }}>{b('wide_bottom').cta_text}</Link>
+                                    <Link href={b('wide_bottom').link ?? '/shop'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-dark-bg, #0a0e1a)', fontSize: 12, fontWeight: 800, padding: '8px 16px', borderRadius: 100, textDecoration: 'none' }}>{b('wide_bottom').cta_text}</Link>
                                 </div>
                             </>
                         ) : <div className="w-full h-full bg-gray-200 animate-pulse" />}
                     </div>
                 </div>
-
-                {/* Mobile banner stack */}
-                <div className="lg:hidden space-y-3">
-                    {(() => {
-                        const promo = b('promo') ?? b('featured') ?? (Object.keys(banners).length > 0 ? banners[Object.keys(banners)[0]] : null)
-                        return promo ? (
-                            <Link href={promo.link ?? '/shop'} className="relative rounded-[16px] overflow-hidden block no-underline" style={{ height: 200, background: 'var(--color-dark-bg,#0a0e1a)' }}>
-                                {promo.video ? (
-                                    <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover">
-                                        <source src={promo.video} type="video/mp4"/>
-                                    </video>
-                                ) : promo.image ? (
-                                    <img src={promo.image} alt={promo.title ?? ''} className="absolute inset-0 w-full h-full object-cover"/>
-                                ) : null}
-                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)' }}/>
-                                <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                                    {promo.subtitle && <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{color:'var(--color-primary)'}}>{promo.subtitle}</div>}
-                                    <div className="font-manrope font-black text-[16px] text-white mb-2">{promo.title}</div>
-                                    {promo.cta_text && <span className="inline-flex items-center gap-2 text-[12px] font-black py-2 px-4 rounded-full" style={{background:'var(--color-primary)',color:'var(--color-primary-text,#0a0a0a)'}}>{promo.cta_text}</span>}
-                                </div>
-                            </Link>
-                        ) : null
-                    })()}
-                    <div className="grid grid-cols-2 gap-3">
-                        {(['small_top_1', 'small_top_2'] as const).map(pos => b(pos) && (
-                            <Link key={pos} href={b(pos).link ?? '/shop'} className="relative rounded-[14px] overflow-hidden block no-underline group" style={{ height: 140 }}>
-                                <img src={b(pos).image ?? '/images/placeholder.jpg'} alt={b(pos).title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent, rgba(7,11,20,0.82))' }} />
-                                <div className="absolute bottom-3 left-3 right-3 z-10">
-                                    <div className="font-manrope font-black text-[13px] text-white leading-[1.2] mb-1.5">{b(pos).title}</div>
-                                    <span className="bg-white text-[var(--color-dark-bg, #0a0e1a)] text-[10px] font-black px-2.5 py-1 rounded-full">{b(pos).cta_text}</span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
             </motion.section>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                MOBILE BANNER CARDS — only visible on screens < 768px
+                3 cards: 1 full-width top + 2 side by side below.
+                Uses mobile_image (square). Completely separate from desktop.
+            ════════════════════════════════════════════════════════════════ */}
+            <motion.section className="md:hidden px-4 pb-4 space-y-3"
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
+
+                {/* All 3 banners — full width, stacked one per row, same fixed
+                    aspect ratio so every card is visibly the same size
+                    regardless of what shape each source image happens to be. */}
+                {(['full_hero', 'promo', 'small_top_1'] as const).map(pos => b(pos) && (
+                    <Link key={pos} href={b(pos).link ?? '/shop'} className="block rounded-[16px] overflow-hidden no-underline relative"
+                        style={{ aspectRatio: '16/9', background: '#f1f1f1' }}>
+                        {b(pos).video
+                            ? <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover"><source src={b(pos).video} type="video/mp4"/></video>
+                            : <img src={b(pos).mobile_image ?? b(pos).image ?? ''} alt={b(pos).title ?? ''} className="absolute inset-0 w-full h-full object-cover"/>
+                        }
+                    </Link>
+                ))}
+
+            </motion.section>
+
+            {/* NEW ARRIVALS — shown ahead of Featured so fresh stock gets first visibility */}
+            <ProductScroller
+                eyebrow="Just Landed"
+                title="New Arrivals"
+                viewAllHref="/shop?sort=newest"
+                products={newProducts}
+                whatsapp={whatsapp}
+                loading={!loaded}
+            />
+
+            {/* ── Section divider — separates New Arrivals from Featured without
+                needing a banner image. Pure CSS, auto-matches the active theme. ── */}
+            <div className="px-4 sm:px-6 lg:px-10 my-6 sm:my-8">
+                <div className="flex items-center gap-4 sm:gap-6 max-w-[1400px] mx-auto">
+                    <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primary, #C9A84C) 60%, var(--color-primary, #C9A84C))' }} />
+                    <div className="flex items-center gap-2 flex-shrink-0 px-4 py-2 rounded-full border"
+                        style={{ borderColor: 'var(--color-primary, #C9A84C)', background: 'rgba(201,168,76,0.08)' }}>
+                        <span className="text-[13px] sm:text-[15px]">✨</span>
+                        <span className="font-manrope font-black text-[10px] sm:text-[11.5px] uppercase tracking-[0.15em]" style={{ color: 'var(--color-dark-bg, #0a0a0a)' }}>
+                            Fresh Drops <span style={{ color: 'var(--color-primary, #C9A84C)' }}>Meet</span> Fan Favorites
+                        </span>
+                        <span className="text-[13px] sm:text-[15px]">✨</span>
+                    </div>
+                    <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primary, #C9A84C) 60%, var(--color-primary, #C9A84C))' }} />
+                </div>
+            </div>
 
             {/* FEATURED — horizontal scroller with tabs */}
             <section className="px-4 sm:px-6 lg:px-10 pb-1">
@@ -389,7 +402,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                         {TABS.map(t => (
                             <button key={t.key} onClick={() => setTab(t.key)}
                                 className={`px-2.5 sm:px-3.5 py-1.5 rounded-[8px] text-[11px] sm:text-[12px] font-semibold transition-all border-none cursor-pointer
-                                    ${tab === t.key ? 'bg-white text-[var(--color-primary, #00c8ff)] shadow-sm' : 'text-gray-500 bg-transparent'}`}>
+                                    ${tab === t.key ? 'bg-white text-[var(--color-primary,#00c8ff)] shadow-sm' : 'text-gray-500 bg-transparent'}`}>
                                 {t.label}
                             </button>
                         ))}
@@ -418,8 +431,12 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                             <Link href={`/shop?category=${cat.slug}`}
                                 className="relative block rounded-[16px] sm:rounded-[18px] overflow-hidden no-underline group"
                                 style={{ height: 'clamp(160px, 22vw, 260px)' }}>
+                                {/* Mobile uses mobile_banner_image if set, desktop always uses banner_image */}
                                 <img src={cat.banner_image} alt={cat.name}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] hidden sm:block" loading="lazy" />
+                                <img src={cat.mobile_banner_image ?? cat.banner_image} alt={cat.name}
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03] sm:hidden"
+                                    style={{ objectPosition: 'center 30%' }} loading="lazy" />
                                 <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(7,11,20,0.78) 0%, rgba(7,11,20,0.3) 55%, transparent)' }} />
                                 <div className="absolute top-1/2 -translate-y-1/2 left-5 sm:left-10 z-10">
                                     <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.16em] mb-1.5 block" style={{ color: 'var(--color-primary)' }}>{cat.name}</span>
@@ -460,9 +477,9 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05] absolute inset-0" />
                             <div className="absolute inset-0" style={{ background: 'linear-gradient(120deg, rgba(7,11,20,0.88) 25%, rgba(7,11,20,0.4) 65%, transparent)' }} />
                             <div className="absolute left-4 sm:left-5 bottom-4 sm:bottom-5 z-10">
-                                {b(pos).subtitle && <div className="text-[9.5px] text-[var(--color-primary, #00c8ff)] font-bold uppercase tracking-[.1em] mb-1.5">{b(pos).subtitle}</div>}
+                                {b(pos).subtitle && <div className="text-[9.5px] text-[var(--color-primary,#00c8ff)] font-bold uppercase tracking-[.1em] mb-1.5">{b(pos).subtitle}</div>}
                                 <h3 className="font-manrope font-black text-[16px] sm:text-[18px] text-white leading-[1.2] mb-2.5">{b(pos).title}</h3>
-                                <span className="inline-flex items-center gap-1.5 bg-[var(--color-primary, #00c8ff)] text-[var(--color-dark-bg, #0a0e1a)] text-[11px] sm:text-[11.5px] font-black px-3 sm:px-3.5 py-1.5 rounded-full">
+                                <span className="inline-flex items-center gap-1.5 bg-[var(--color-primary,#00c8ff)] text-[var(--color-dark-bg,#0a0e1a)] text-[11px] sm:text-[11.5px] font-black px-3 sm:px-3.5 py-1.5 rounded-full">
                                     {b(pos).cta_text} <IconArrowRight size={12} />
                                 </span>
                             </div>
@@ -485,7 +502,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                 <div className="grid grid-cols-3 sm:grid-cols-6 bg-white rounded-[14px] border border-gray-200 overflow-hidden">
                     {(settings?.brands_items ?? 'Apple|Samsung|Sony|Dell|LG|ASUS')
                         .split('|').filter(Boolean).map((br: string) => (
-                        <div key={br} className="flex items-center justify-center h-14 sm:h-[68px] border-r border-gray-100 last:border-r-0 font-manrope font-black text-[14px] sm:text-[17px] text-gray-300 hover:text-[var(--color-primary, #00c8ff)] hover:bg-[var(--color-primary-soft, #f0fbff)] transition-all cursor-pointer">{br.trim()}</div>
+                        <div key={br} className="flex items-center justify-center h-14 sm:h-[68px] border-r border-gray-100 last:border-r-0 font-manrope font-black text-[14px] sm:text-[17px] text-gray-300 hover:text-[var(--color-primary,#00c8ff)] hover:bg-[var(--color-primary-soft,#f0fbff)] transition-all cursor-pointer">{br.trim()}</div>
                     ))}
                 </div>
             </motion.section>

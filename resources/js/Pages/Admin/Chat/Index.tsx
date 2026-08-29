@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState, useEffect, useRef } from 'react'
 import { IconSend, IconX, IconPlus, IconTrash, IconRobot, IconMessageCircle } from '@tabler/icons-react'
@@ -9,7 +9,8 @@ interface Message { id:number; sender_type:string; message:string; message_type:
 interface Props { sessions:Session[]; faqs:Faq[]; stats:{waiting:number;my_active:number;today:number;avg_rating:number} }
 
 export default function ChatAdmin({ sessions, faqs, stats }:Props) {
-    const ap = '/ml-admin'
+    const { props: __p } = usePage<{ adminPath?: string }>()
+    const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [active, setActive]   = useState<Session|null>(null)
     const [msgs, setMsgs]       = useState<Message[]>([])
     const [input, setInput]     = useState('')

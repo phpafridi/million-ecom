@@ -96,9 +96,8 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         foreach ($product->productImages as $img) {
-            if (!str_starts_with($img->path, 'http')) {
-                Storage::disk('uploads')->delete($img->path);
-            }
+            $diskPath = \App\Services\ImageService::diskPath($img->path);
+            if ($diskPath) Storage::disk('uploads')->delete($diskPath);
         }
         $product->delete();
         return back()->with('success', 'Product deleted.');

@@ -20,7 +20,7 @@ class NewOrderAdminMail extends Mailable
         $adminPath= $s['admin_path'] ?? 'tijar-admin';
         return new Content(view: 'emails.new-order-admin', with: [
             'order'     => $this->order->load('items'),
-            'storeName' => $s['site_name'] ?? 'Tijar Store',
+            'storeName' => $s['site_name'] ?? 'Our Store',
             'adminUrl'  => url($adminPath),
         ]);
     }
