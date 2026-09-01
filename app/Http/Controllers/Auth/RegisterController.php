@@ -37,6 +37,13 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Welcome email failed: ' . $e->getMessage());
+        }
+
         return redirect('/');
     }
 }

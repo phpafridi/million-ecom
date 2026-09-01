@@ -32,9 +32,17 @@ class ChatController extends Controller
         $fresh    = DB::table('chat_sessions')->where('session_id', $sessionId)->first();
 
         return response()->json([
-            'session_id' => $sessionId,
-            'status'     => $fresh->status,
-            'messages'   => $messages,
+            'session_id'  => $sessionId,
+            // The numeric database ID — needed separately from session_id
+            // (the UUID string) because that's what ChatMessageSent
+            // actually broadcasts on (chat.{numeric id}), matching what the
+            // admin panel listens on. The customer widget was previously
+            // given no way to know this numeric ID at all, so it could only
+            // ever subscribe to the wrong channel (chat.{uuid}) — a
+            // channel nothing was ever broadcasting to.
+            'id'          => $sid,
+            'status'      => $fresh->status,
+            'messages'    => $messages,
         ])->cookie('chat_session', $sessionId, 60 * 24 * 7);
     }
 
@@ -77,6 +85,7 @@ class ChatController extends Controller
         $session = DB::table('chat_sessions')->where('session_id', $request->session_id)->first();
         if (!$session) return response()->json(['error' => 'Not found'], 404);
         DB::table('chat_sessions')->where('id', $session->id)->update(['status' => 'waiting', 'updated_at' => now()]);
+        broadcast(new \App\Events\ChatWaitingCountChanged());
         $wa  = Setting::get('whatsapp_number', '');
         $msg = "Connecting you with a live agent. Average wait: 2-5 minutes." . ($wa ? "\n\nFor faster help: WhatsApp +{$wa}" : '');
         $this->botMsg($session->id, $msg, 'system');
@@ -97,6 +106,7 @@ class ChatController extends Controller
         foreach (['human','agent','person','staff','real','talk to'] as $w) {
             if (str_contains($lower, $w)) {
                 DB::table('chat_sessions')->where('id', $session->id)->update(['status' => 'waiting', 'updated_at' => now()]);
+                broadcast(new \App\Events\ChatWaitingCountChanged());
                 $this->botMsg($session->id, "Connecting you with a live agent now. Please hold on...", 'system');
                 return;
             }
@@ -138,9 +148,11 @@ class ChatController extends Controller
     private function botMsg(int $sid, string $msg, string $type = 'text', array $opts = []): void
     {
         DB::table('chat_messages')->insert(['session_id' => $sid, 'sender_type' => 'bot', 'message' => $msg, 'message_type' => $type, 'options' => $opts ? json_encode($opts) : null, 'is_read' => false, 'created_at' => now(), 'updated_at' => now()]);
+        broadcast(new \App\Events\ChatMessageSent($sid, $msg, 'bot', now()->toISOString()));
     }
     private function visitorMsg(int $sid, string $msg): void
     {
         DB::table('chat_messages')->insert(['session_id' => $sid, 'sender_type' => 'visitor', 'sender_id' => auth()->id(), 'message' => $msg, 'message_type' => 'text', 'is_read' => false, 'created_at' => now(), 'updated_at' => now()]);
+        broadcast(new \App\Events\ChatMessageSent($sid, $msg, 'visitor', now()->toISOString()));
     }
 }

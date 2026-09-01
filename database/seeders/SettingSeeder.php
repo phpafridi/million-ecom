@@ -25,6 +25,8 @@ class SettingSeeder extends Seeder
             'whatsapp_enabled'       => '0',
             'whatsapp_notify_on'     => 'processing,shipped,delivered,cancelled',
             'sms_enabled'            => '0',
+            'sms_notify_on'          => 'shipped,delivered',
+            'firewall_whitelist'     => '',
             'theme_primary'          => '#C9A84C',
             'theme_primary_dark'     => '#b8923e',
             'theme_primary_text'     => '#0a0a0a',

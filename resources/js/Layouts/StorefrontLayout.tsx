@@ -3,6 +3,7 @@ import React from 'react'
 import { Link, router, usePage } from '@inertiajs/react'
 import ChatWidget from '@/Components/Chat/ChatWidget'
 import FloatingCart from '@/Components/ui/FloatingCart'
+import { getFloatOffset } from '@/utils/floatingButtons'
 import {
     IconSearch, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram, IconUser,
     IconMenu, IconX, IconChevronDown, IconPhone,
@@ -59,7 +60,14 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
 
     const siteName = settings?.site_name ?? 'Tijar'
     const phone    = settings?.phone     ?? ''
-    const whatsapp = settings?.whatsapp_number ?? ''
+    // Only treat it as a real number if it actually looks like one — the
+    // stored value was found to literally contain "Pakistan" (a country
+    // name typed in by mistake), producing a broken wa.me link where
+    // WhatsApp's own redirect tried to interpret it as a username instead
+    // of a phone number. Backend validation now prevents saving something
+    // like that again, but this guards against whatever's already stored.
+    const rawWhatsapp = settings?.whatsapp_number ?? ''
+    const whatsapp = /^\+?[0-9]{7,15}$/.test(rawWhatsapp) ? rawWhatsapp : ''
     const logoUrl  = settings?.logo_url  ?? null
     const tagline  = settings?.site_tagline ?? ''
 
@@ -238,8 +246,8 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                             }
                         </div>
                         <div className="min-w-0">
-                            <div className="font-manrope font-black text-[15px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none truncate" style={{ color: 'var(--color-header-text, var(--color-dark-bg))' }}>{siteName}</div>
-                            {tagline && <div className="text-[8px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5 truncate" style={{ color: 'var(--color-primary)' }}>{tagline}</div>}
+                            <div className="font-manrope font-black text-[15px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none truncate" style={{ color: settings?.header_title_color || 'var(--color-header-text, var(--color-dark-bg))' }}>{siteName}</div>
+                            {tagline && <div className="text-[8px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5 truncate" style={{ color: settings?.header_subtitle_color || 'var(--color-primary)' }}>{tagline}</div>}
                         </div>
                     </Link>
 
@@ -247,7 +255,8 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     <form onSubmit={doSearch} className="hidden lg:flex flex-1 max-w-[500px] h-[44px] border-2 rounded-[12px] overflow-hidden transition-shadow"
                         style={{ borderColor: 'var(--color-primary)' }}>
                         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products, brands…"
-                            className="flex-1 border-none outline-none px-4 text-[13.5px] text-gray-800 placeholder:text-gray-400" />
+                            className="flex-1 border-none outline-none px-4 text-[13.5px] placeholder:text-gray-400"
+                            style={{ color: settings?.search_text_color || 'var(--color-header-text, #1f2937)', background: 'var(--color-header-bg, #ffffff)' }} />
                         <button type="submit" className="px-5 font-black text-[13px] flex items-center gap-2 flex-shrink-0 border-none cursor-pointer"
                             style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
                             <IconSearch size={16} /> Search
@@ -316,7 +325,9 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                 {searchOpen && (
                     <div className="lg:hidden px-4 pb-3 border-t border-gray-100 pt-2">
                         <form onSubmit={doSearch} className="flex border-2 rounded-xl overflow-hidden h-10" style={{ borderColor: 'var(--color-primary)' }}>
-                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" autoFocus className="flex-1 px-4 text-[13.5px] outline-none border-none" />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" autoFocus
+                                className="flex-1 px-4 text-[13.5px] outline-none border-none"
+                                style={{ color: settings?.search_text_color || 'var(--color-header-text, #1f2937)', background: 'var(--color-header-bg, #ffffff)' }} />
                             <button type="submit" className="px-4 border-none cursor-pointer" style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
                                 <IconSearch size={17} />
                             </button>
@@ -513,14 +524,22 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             <div className="lg:hidden" style={{ height: 56 }} />
 
 
-            {/* ── FLOATING WHATSAPP — only if enabled in settings ── */}
-            {showWhatsapp && whatsapp && (
-                <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                    className="fixed bottom-[72px] right-4 sm:bottom-6 sm:right-6 z-[9960] flex items-center justify-center bg-[#25D366] text-white rounded-full no-underline hover:scale-110 transition-transform"
-                    style={{ width: 54, height: 54, animation: 'wapulse 2.5s infinite', boxShadow: '0 4px 20px rgba(37,211,102,0.45)' }}>
-                    <IconBrandWhatsapp size={26} />
-                </a>
-            )}
+            {/* ── FLOATING WHATSAPP — own enable/position/size settings,
+                separate from the header WhatsApp links (show_whatsapp_button),
+                and now auto-stacks with Chat/Cart instead of overlapping them ── */}
+            {(() => {
+                const wa = getFloatOffset(settings, 'whatsapp', { chat: true, cart: true, whatsapp: false })
+                if (!wa.enabled || !whatsapp) return null
+                const sidePx = wa.side
+                const posStyle = wa.corner === 'left' ? { left: sidePx } : { right: sidePx }
+                return (
+                    <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
+                        className="fixed z-[9960] flex items-center justify-center bg-[#25D366] text-white rounded-full no-underline hover:scale-110 transition-transform"
+                        style={{ bottom: wa.bottom, ...posStyle, width: wa.diameter, height: wa.diameter, animation: 'wapulse 2.5s infinite', boxShadow: '0 4px 20px rgba(37,211,102,0.45)' }}>
+                        <IconBrandWhatsapp size={Math.round(wa.diameter * 0.48)} />
+                    </a>
+                )
+            })()}
             {/* ── Floating UI — above bottom nav ── */}
             {!hideFloatingCart && <FloatingCart settings={settings ?? {}} />}
             <ChatWidget settings={settings ?? {}} auth={auth} />

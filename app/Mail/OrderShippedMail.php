@@ -2,11 +2,12 @@
 namespace App\Mail;
 use App\Models\{Order, Setting};
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Bus\Queueable;
 
-class OrderShippedMail extends Mailable
+class OrderShippedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
     public function __construct(

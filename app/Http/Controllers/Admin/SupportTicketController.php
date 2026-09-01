@@ -21,10 +21,24 @@ class SupportTicketController extends Controller
             ->orderBy('support_tickets.created_at','desc')
             ->paginate(20);
 
+        // One query for all 4 counts instead of 4 separate COUNT queries.
+        $counts = DB::table('support_tickets')
+            ->selectRaw("
+                SUM(status = 'open') as open,
+                SUM(status = 'in_progress') as in_progress,
+                SUM(status = 'resolved') as resolved,
+                SUM(priority = 'urgent' AND status != 'closed') as urgent
+            ")->first();
+
         return Inertia::render('Admin/Support/Index', [
             'tickets' => $tickets,
             'staff'   => User::where(fn($q)=>$q->where('role','admin')->orWhere('is_staff',true))->get(['id','name']),
-            'stats'   => ['open'=>DB::table('support_tickets')->where('status','open')->count(),'in_progress'=>DB::table('support_tickets')->where('status','in_progress')->count(),'resolved'=>DB::table('support_tickets')->where('status','resolved')->count(),'urgent'=>DB::table('support_tickets')->where('priority','urgent')->where('status','!=','closed')->count()],
+            'stats'   => [
+                'open'        => (int) ($counts->open        ?? 0),
+                'in_progress' => (int) ($counts->in_progress ?? 0),
+                'resolved'    => (int) ($counts->resolved    ?? 0),
+                'urgent'      => (int) ($counts->urgent      ?? 0),
+            ],
         ]);
     }
 
@@ -41,7 +55,10 @@ class SupportTicketController extends Controller
         $ticket = DB::table('support_tickets')->where('id',$id)->first(); if (!$ticket) abort(404);
         DB::table('support_ticket_replies')->insert(['ticket_id'=>$id,'user_id'=>auth()->id(),'message'=>$data['message'],'is_staff'=>true,'created_at'=>now(),'updated_at'=>now()]);
         if ($ticket->status === 'open') DB::table('support_tickets')->where('id',$id)->update(['status'=>'in_progress','updated_at'=>now()]);
-        try { Mail::raw("Hi {$ticket->name},\n\nReply to ticket #{$ticket->ticket_number}:\n\n{$data['message']}\n\n— ".Setting::get('site_name','MILLIONAIRE')." Support", fn($m)=>$m->to($ticket->email)->subject("Re: {$ticket->subject} [#{$ticket->ticket_number}]")); } catch (\Throwable $e) {}
+        \App\Jobs\SendSupportReplyEmail::dispatch(
+            $ticket->email, $ticket->name, $ticket->subject, $ticket->ticket_number,
+            $data['message'], Setting::get('site_name', 'MILLIONAIRE')
+        );
         return back()->with('success','Reply sent.');
     }
 

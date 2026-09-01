@@ -3,13 +3,13 @@ import { useState } from 'react'
 import { IconArrowLeft, IconPhone, IconMail, IconMapPin, IconCreditCard, IconCheck, IconRefresh } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
 
-interface OrderItem { id: number; product_id: number; product_name: string; quantity: number; price: number; subtotal: number }
+interface OrderItem { id: number; product_id: number; product_name: string; variant_label?: string | null; quantity: number; price: number; subtotal: number }
 interface OrderReturn { id: number; quantity: number; reason: string; status: string; refund_amount: number; refund_method: string; created_at: string }
 interface Order {
     id: number; customer_name: string; customer_phone: string; customer_email: string | null
     customer_address: string; payment_method: string; payment_status: string; status: string
     return_status: string | null; notes: string | null; payment_proof: string | null
-    subtotal: number; shipping: number; total: number; created_at: string
+    subtotal: number; shipping: number; discount: number; coupon_code: string | null; total: number; created_at: string
     items: OrderItem[]; returns: OrderReturn[]
 }
 interface Props { order: Order }
@@ -90,7 +90,12 @@ export default function OrderShow({ order }: Props) {
                             <tbody>
                                 {order.items.map(item => (
                                     <tr key={item.id} className="border-b border-gray-50 last:border-0">
-                                        <td className="px-5 py-3.5 font-medium text-[13px] text-gray-900">{item.product_name}</td>
+                                        <td className="px-5 py-3.5 font-medium text-[13px] text-gray-900">
+                                            {item.product_name}
+                                            {item.variant_label && (
+                                                <span className="block text-[11.5px] font-normal text-gray-500 mt-0.5">{item.variant_label}</span>
+                                            )}
+                                        </td>
                                         <td className="px-5 py-3.5 text-[13px] text-gray-600">{item.quantity}</td>
                                         <td className="px-5 py-3.5 text-[13px] text-gray-600">{fmt(item.price)}</td>
                                         <td className="px-5 py-3.5 font-semibold text-[13px]" style={{ color:'var(--color-dark-bg)' }}>{fmt(item.subtotal)}</td>
@@ -100,6 +105,12 @@ export default function OrderShow({ order }: Props) {
                         </table>
                         <div className="px-5 py-4 border-t border-gray-100 space-y-2">
                             <div className="flex justify-between text-[13px] text-gray-600"><span>Subtotal</span><span>{fmt(order.subtotal)}</span></div>
+                            {order.discount > 0 && (
+                                <div className="flex justify-between text-[13px] text-green-600 font-semibold">
+                                    <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ''}</span>
+                                    <span>-{fmt(order.discount)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-[13px] text-gray-600"><span>Shipping</span><span>{order.shipping > 0 ? fmt(order.shipping) : 'Free'}</span></div>
                             <div className="flex justify-between text-[15px] font-black pt-2 border-t border-gray-100">
                                 <span>Total</span><span style={{ color:'var(--color-primary)' }}>{fmt(order.total)}</span>

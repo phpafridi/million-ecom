@@ -39,6 +39,7 @@
     $schema    = $seo['schema']      ?? null;
     $robots    = ($s['seo_indexing_enabled'] ?? '1') === '1' ? 'index,follow' : 'noindex,nofollow';
     $customJs  = $s['custom_head_scripts'] ?? '';
+    $siteVerification = $s['google_site_verification'] ?? '';
 
     // Tracking
     $gaId     = ($s['ga_enabled']          ?? '0') === '1' ? ($s['ga_measurement_id'] ?? '') : '';
@@ -62,6 +63,9 @@
     <title inertia>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDesc }}">
     <meta name="robots"      content="{{ $robots }}">
+    @if($siteVerification)
+    <meta name="google-site-verification" content="{{ $siteVerification }}">
+    @endif
     <link rel="canonical"    href="{{ $canonical }}">
 
     @if($metaKeys)

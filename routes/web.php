@@ -102,7 +102,7 @@ Route::post('/cart/coupon',    [Shop\CartController::class, 'applyCoupon'])->nam
 Route::delete('/cart/coupon',  [Shop\CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 Route::post('/cart/points/redeem', [Shop\CartController::class, 'redeemPoints'])->name('cart.points.redeem');
 Route::post('/cart/points/remove', [Shop\CartController::class, 'removePoints'])->name('cart.points.remove');
-Route::post('/cart/checkout',  [Shop\CartController::class, 'checkout'])->name('cart.checkout');
+Route::post('/cart/checkout',  [Shop\CartController::class, 'checkout'])->name('cart.checkout')->middleware('throttle:5,1');
 Route::get('/order/{id}/confirmed', function(int $id) {
     $order = \App\Models\Order::with('items')->find($id);
     if (!$order) abort(404);
@@ -118,6 +118,22 @@ Route::get('/order/{id}/confirmed', function(int $id) {
             'customer_phone' => $order->customer_phone,
             'tracking_token' => $order->tracking_token,
             'items_count'    => $order->items->count(),
+            // Previously only items_count (a bare number) was sent — no
+            // product names, no variant/size/color, no per-item price, and
+            // no discount/subtotal breakdown at all. The confirmation page
+            // is effectively the customer's receipt; it should actually
+            // show what they bought and what they were charged for it.
+            'items'          => $order->items->map(fn($i) => [
+                'product_name'  => $i->product_name,
+                'variant_label' => $i->variant_label ?? null,
+                'quantity'      => $i->quantity,
+                'price'         => $i->price,
+                'subtotal'      => $i->subtotal,
+            ]),
+            'subtotal'       => $order->subtotal,
+            'shipping'       => $order->shipping,
+            'discount'       => $order->discount,
+            'coupon_code'    => $order->coupon_code,
         ],
         'settings' => \App\Models\Setting::allKeyed(),
     ]);
@@ -127,11 +143,11 @@ Route::get('/order/payment-failed', fn() => redirect()->route('payment.failed'))
 
 // ── ORDER TRACKING
 Route::get('/track-order',   [Shop\OrderTrackingController::class, 'index'])->name('track.index');
-Route::post('/track-order',  [Shop\OrderTrackingController::class, 'track'])->name('track.search');
+Route::post('/track-order',  [Shop\OrderTrackingController::class, 'track'])->name('track.search')->middleware('throttle:10,1');
 Route::get('/track/{token}', [Shop\OrderTrackingController::class, 'show'])->name('track.show');
 
 // ── NEWSLETTER
-Route::post('/newsletter/subscribe',          [Shop\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::post('/newsletter/subscribe',          [Shop\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe')->middleware('throttle:3,10');
 Route::get('/newsletter/unsubscribe/{token}', [Shop\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 
 // ── WISHLIST
@@ -301,11 +317,15 @@ Route::middleware(['auth', 'admin'])  // Only admin role
     Route::get('backup/{id}/download',  [Admin\BackupController::class, 'download'])->name('backup.download');
     Route::delete('backup/{id}',        [Admin\BackupController::class, 'destroy'])->name('backup.destroy');
 
-    Route::get('whatsapp',  [Admin\WhatsAppController::class, 'index'])->name('whatsapp.index');
-    Route::post('whatsapp/send', [Admin\WhatsAppController::class, 'send'])->name('whatsapp.send');
+    // WhatsApp settings consolidated into the main Settings page — this
+    // controller only ever had two real capabilities: rendering this now-
+    // deleted duplicate settings page, and sendOrderNotification(), which
+    // was never actually called from anywhere in the app.
 
     Route::get('settings',  [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::get('branding',  [Admin\SettingController::class, 'branding'])->name('settings.branding');
+    Route::get('notifications', [Admin\SettingController::class, 'notifications'])->name('settings.notifications');
     Route::get('seo',  [Admin\SeoSettingController::class, 'index'])->name('seo.index');
 
     // Email Campaigns

@@ -21,19 +21,6 @@ class HandleInertiaRequests extends Middleware
             $settings = [];
         }
 
-        // Apply SMTP from DB if admin has configured it
-        if (!empty($settings['mail_host'])) {
-            config([
-                'mail.mailers.smtp.host'       => $settings['mail_host'],
-                'mail.mailers.smtp.port'       => (int)($settings['mail_port'] ?? 587),
-                'mail.mailers.smtp.username'   => $settings['mail_username'] ?? '',
-                'mail.mailers.smtp.password'   => $settings['mail_password'] ?? '',
-                'mail.mailers.smtp.encryption' => $settings['mail_encryption'] ?? 'tls',
-                'mail.from.address'            => $settings['mail_from_address'] ?? $settings['email'] ?? '',
-                'mail.from.name'               => $settings['mail_from_name'] ?? $settings['site_name'] ?? 'MILLIONAIRE',
-            ]);
-        }
-
         // ── Nav categories: cached 30min, cleared on category change ─
         $navCategories = Cache::remember('nav_categories', 1800, function () {
             try {
@@ -88,6 +75,21 @@ class HandleInertiaRequests extends Middleware
 
         $adminPath = $settings['admin_path'] ?? 'ml-admin';
 
+        // The real admin path was being sent to EVERY visitor on EVERY page
+        // — both as its own top-level prop and buried inside the general
+        // settings object — completely unconditionally. Anyone could view
+        // page source on the homepage and find the real hidden admin URL,
+        // making the entire point of having a non-default admin path
+        // pointless. Only actual staff/admin accounts have any legitimate
+        // use for this (building the "Back to Admin" link in the
+        // storefront header) — everyone else gets a generic placeholder.
+        $isStaffViewer = in_array($request->user()?->role, ['admin', 'staff']);
+        $sharedSettings = $settings;
+        if (!$isStaffViewer) {
+            unset($sharedSettings['admin_path']);
+        }
+        $sharedAdminPath = $isStaffViewer ? $adminPath : null;
+
         // Admin notifications (only for admin users - cached 2min)
         $adminNotifications = [];
         if ($request->user()?->role === 'admin') {
@@ -122,8 +124,8 @@ class HandleInertiaRequests extends Middleware
                 'tracking_result'    => session('tracking_result'),
                 'tracking_error'     => session('tracking_error'),
             ],
-            'settings'      => $settings,
-            'adminPath'     => $adminPath,
+            'settings'      => $sharedSettings,
+            'adminPath'     => $sharedAdminPath,
             'cartCount'     => $cartCount,
             'cartItems'     => $cartMapped->values(),
             'cartTotal'     => $cartTotal,

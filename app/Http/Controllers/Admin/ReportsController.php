@@ -38,13 +38,44 @@ class ReportsController extends Controller
 
     public function export(Request $request)
     {
-        $from   = $request->from ?? now()->startOfMonth()->toDateString();
-        $to     = $request->to   ?? now()->toDateString();
-        $orders = DB::table('orders')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->orderBy('id')->get();
-        $csv    = "Order ID,Customer,Phone,City,Status,Payment,Total,Date\n";
-        foreach ($orders as $o) {
-            $csv .= implode(',',[$o->id,'"'.($o->customer_name??'').'"',$o->customer_phone??'',$o->city??'',$o->status,$o->payment_method,$o->total,substr($o->created_at??'',0,10)])."\n";
+        // No date validation, no row limit, and the entire CSV was being
+        // built as one giant string in PHP memory before sending — an admin
+        // could request from year 2000 to 2099 and, with enough order
+        // volume, exhaust available memory on a single export request.
+        $request->validate([
+            'from' => 'nullable|date|before_or_equal:today',
+            'to'   => 'nullable|date|after_or_equal:from|before_or_equal:today',
+        ]);
+
+        $from = $request->from ?? now()->startOfMonth()->toDateString();
+        $to   = $request->to   ?? now()->toDateString();
+
+        if (\Carbon\Carbon::parse($from)->diffInDays(\Carbon\Carbon::parse($to)) > 365) {
+            return back()->withErrors(['error' => 'Export range cannot exceed 1 year.']);
         }
-        return response($csv,200,['Content-Type'=>'text/csv','Content-Disposition'=>"attachment; filename=orders-{$from}-to-{$to}.csv"]);
+
+        $filename = "orders-{$from}-to-{$to}.csv";
+
+        // Streamed and chunked instead of loading everything into memory at
+        // once — handles arbitrarily large order volumes safely.
+        return response()->streamDownload(function () use ($from, $to) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Order ID','Customer','Phone','City','Status','Payment','Total','Date']);
+
+            DB::table('orders')
+                ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+                ->orderBy('id')
+                ->chunk(500, function ($orders) use ($handle) {
+                    foreach ($orders as $o) {
+                        fputcsv($handle, [
+                            $o->id, $o->customer_name ?? '',
+                            $o->customer_phone ?? '', $o->city ?? '',
+                            $o->status, $o->payment_method,
+                            $o->total, substr($o->created_at ?? '', 0, 10),
+                        ]);
+                    }
+                });
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 }

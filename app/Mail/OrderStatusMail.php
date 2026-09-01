@@ -3,11 +3,12 @@ namespace App\Mail;
 
 use App\Models\{Order, Setting};
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Bus\Queueable;
 
-class OrderStatusMail extends Mailable
+class OrderStatusMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

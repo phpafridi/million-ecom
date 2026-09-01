@@ -4,7 +4,7 @@ import StorefrontLayout from '@/Layouts/StorefrontLayout'
 import { IconSearch, IconPackage, IconTruck, IconCheck, IconX, IconClock, IconMapPin, IconReceipt } from '@tabler/icons-react'
 
 interface TrackingStep { key: string; label: string; done: boolean; active: boolean }
-interface OrderItem { name: string; quantity: number; price: number; subtotal: number; image?: string }
+interface OrderItem { name: string; variant_label?: string | null; quantity: number; price: number; subtotal: number; image?: string }
 interface TrackingHistory { status: string; note?: string; created_by: string; date: string }
 
 interface TrackingResult {
@@ -196,6 +196,9 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-[13.5px] text-gray-800 truncate">{item.name}</p>
+                                                {item.variant_label && (
+                                                    <p className="text-gray-500 text-[11.5px] mt-0.5">{item.variant_label}</p>
+                                                )}
                                                 <p className="text-gray-400 text-[12px] mt-0.5">Qty: {item.quantity} × {fmt(item.price)}</p>
                                             </div>
                                             <p className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>

@@ -10,9 +10,21 @@ class WishlistController extends Controller
 {
     private function sid(): string { return session()->getId(); }
 
+    // For a logged-in customer, the wishlist belongs to their account —
+    // querying by session_id alone (the old behavior everywhere in this
+    // controller) meant the wishlist silently became invisible the moment
+    // their session regenerated on login, even though user_id was already
+    // being saved on each item. Guests still key off session_id as before.
+    private function scoped($query)
+    {
+        return auth()->check()
+            ? $query->where('user_id', auth()->id())
+            : $query->where('session_id', $this->sid());
+    }
+
     public function index()
     {
-        $items = Wishlist::where('session_id', $this->sid())
+        $items = $this->scoped(Wishlist::query())
             ->with(['product.productImages', 'product.category'])
             ->get()
             ->map(fn($w) => $w->product)
@@ -32,16 +44,21 @@ class WishlistController extends Controller
         $sid  = $this->sid();
 
         try {
-            $existing = Wishlist::where('session_id', $sid)
+            $existing = $this->scoped(Wishlist::query())
                 ->where('product_id', $data['product_id'])->first();
 
             if ($existing) {
                 $existing->delete();
-            } else {
+            } elseif (auth()->check()) {
                 // Use updateOrCreate to handle race conditions safely
                 Wishlist::updateOrCreate(
+                    ['user_id' => auth()->id(), 'product_id' => $data['product_id']],
+                    ['session_id' => $sid]
+                );
+            } else {
+                Wishlist::updateOrCreate(
                     ['session_id' => $sid, 'product_id' => $data['product_id']],
-                    ['user_id' => auth()->id()]
+                    ['user_id' => null]
                 );
             }
         } catch (\Throwable $e) {
@@ -58,14 +75,14 @@ class WishlistController extends Controller
     public function checkSingle(Request $request)
     {
         $productId = $request->validate(['product_id' => 'required|integer'])['product_id'];
-        $exists    = Wishlist::where('session_id', $this->sid())
+        $exists    = $this->scoped(Wishlist::query())
             ->where('product_id', $productId)->exists();
         return response()->json(['wishlisted' => $exists]);
     }
 
     public function checkAll()
     {
-        $ids = Wishlist::where('session_id', $this->sid())->pluck('product_id');
+        $ids = $this->scoped(Wishlist::query())->pluck('product_id');
         return response()->json(['ids' => $ids]);
     }
 }

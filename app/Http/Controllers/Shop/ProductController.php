@@ -27,7 +27,17 @@ class ProductController extends Controller
         }
 
         $term = $request->q ?? $request->search ?? '';
-        if ($term) { $query->where(fn($q) => $q->where('name','like',"%{$term}%")->orWhere('description','like',"%{$term}%")); }
+        if ($term) {
+            // Previously only checked name/description — searching
+            // "shirts" or "electronics" (a category name) returned
+            // nothing unless that exact word also happened to appear in
+            // a product's own name or description.
+            $query->where(function($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('description', 'like', "%{$term}%")
+                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$term}%"));
+            });
+        }
 
         if ($request->min_price) $query->where('price', '>=', $request->min_price);
         if ($request->max_price) $query->where('price', '<=', $request->max_price);

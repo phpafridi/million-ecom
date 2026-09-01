@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useEchoPublic } from '@laravel/echo-react'
 import { IconX, IconSend, IconRobot, IconHeadset } from '@tabler/icons-react'
+import { getFloatOffset } from '@/utils/floatingButtons'
 
 interface Message {
     id: number
@@ -20,6 +22,21 @@ export default function ChatWidget({ settings, auth }: Props) {
     const [messages, setMessages]     = useState<Message[]>([])
     const [input, setInput]           = useState('')
     const [sessionId, setSessionId]   = useState<string | null>(null)
+    // The numeric database ID — separate from sessionId (the UUID string
+    // used for the HTTP-based /chat/* endpoints). ChatMessageSent actually
+    // broadcasts on chat.{numeric id}, matching what the admin panel
+    // listens on — subscribing on the UUID instead (as this used to do)
+    // meant listening on a channel nothing was ever broadcasting to.
+    const [numericId, setNumericId]   = useState<number | null>(null)
+    // Mirrors numericId (and open, below) via a ref — the useEchoPublic
+    // callback was capturing a stale closure of numericId from an early
+    // render (before /chat/start resolved), permanently reading it as null
+    // even after the state genuinely updated and the subscription itself
+    // correctly moved to the right channel. Refs don't have this problem:
+    // .current is mutated in place, so the callback always sees the latest
+    // value instead of whatever was in scope when it was first created.
+    const numericIdRef = useRef<number | null>(null)
+    const openRef       = useRef(false)
     const [status, setStatus]         = useState('bot')
     const [lastId, setLastId]         = useState(0)
     const [agentName, setAgentName]   = useState<string | null>(null)
@@ -27,12 +44,14 @@ export default function ChatWidget({ settings, auth }: Props) {
     const [showRating, setShowRating] = useState(false)
     const [rating, setRating]         = useState(0)
     const bottomRef                   = useRef<HTMLDivElement>(null)
-    const pollRef                     = useRef<ReturnType<typeof setInterval>>()
 
     const chatColor = settings?.chat_bubble_color || 'var(--color-dark-bg, #0a0a0a)'
     const chatIcon  = settings?.chat_bubble_icon  || '💬'
     const siteName  = settings?.site_name         || 'MILLIONAIRE'
-    const wa        = settings?.whatsapp_number   || ''
+    // Own enable/position/size, auto-stacking with WhatsApp/Cart instead of
+    // the old hardcoded bottom:24px/right:24px that put it directly under
+    // the WhatsApp button with no coordination between the two.
+    const floatCfg = getFloatOffset(settings, 'chat', { chat: true, cart: true, whatsapp: false })
 
     const csrf = () => (document.querySelector('meta[name=csrf-token]') as HTMLInputElement)?.content || ''
 
@@ -41,39 +60,53 @@ export default function ChatWidget({ settings, auth }: Props) {
             const r = await fetch('/chat/start', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrf() } })
             const d = await r.json()
             setSessionId(d.session_id)
+            setNumericId(d.id ?? null)
             setMessages(d.messages || [])
             setStatus(d.status)
             if (d.messages?.length) setLastId(d.messages[d.messages.length - 1].id)
         } catch {}
     }
 
-    const poll = useCallback(async () => {
-        if (!sessionId) return
-        try {
-            const r = await fetch(`/chat/poll?session_id=${sessionId}&since=${lastId}`)
-            const d = await r.json()
-            if (d.messages?.length) {
-                setMessages(m => [...m, ...d.messages])
-                setLastId(d.messages[d.messages.length - 1].id)
-                if (!open) setUnread(u => u + d.messages.filter((m: Message) => m.sender_type !== 'visitor').length)
-            }
-            if (d.status) setStatus(d.status)
-            if (d.agent) setAgentName(d.agent)
-            if (d.status === 'closed') { setShowRating(true); clearInterval(pollRef.current) }
-        } catch {}
-    }, [sessionId, lastId, open])
-
     useEffect(() => {
         if (open && !sessionId) startChat()
         if (open) setUnread(0)
     }, [open])
 
-    useEffect(() => {
-        if (!sessionId) return
-        clearInterval(pollRef.current)
-        pollRef.current = setInterval(poll, 3000)
-        return () => clearInterval(pollRef.current)
-    }, [sessionId, poll])
+    // Real-time via Reverb/Echo. This project uses @laravel/echo-react,
+    // which is a hooks-based package (useEchoPublic) — NOT the traditional
+    // global `window.Echo` singleton this code was previously written
+    // against, which is why it silently fell back to polling regardless of
+    // Reverb's actual state before this fix.
+    //
+    // No backup polling interval anymore — this is pure real-time via the
+    // hook. If Reverb genuinely isn't running, chat won't receive live
+    // updates until the page is reloaded (which re-subscribes). That
+    // trade-off is intentional now: no unnecessary background requests at
+    // all once Reverb is confirmed working.
+    useEffect(() => { numericIdRef.current = numericId }, [numericId])
+    useEffect(() => { openRef.current = open }, [open])
+
+    useEchoPublic(numericId ? `chat.${numericId}` : 'chat.__none__', '.message.sent', (e: any) => {
+        // Confirmed via testing: this callback receives the correct event
+        // every time, but was reading numericId from a stale closure
+        // (always null) even after the real value updated — using the ref
+        // instead fixes it, since refs read the current value rather than
+        // whatever was captured when this closure was first created.
+        if (!numericIdRef.current) return
+        if (e.senderType !== 'visitor') {
+            setMessages(m => [...m, {
+                id: Date.now(),
+                message: e.message,
+                sender_type: e.senderType,
+                message_type: 'text',
+                created_at: e.createdAt,
+            }])
+            if (!openRef.current) setUnread(u => u + 1)
+        }
+        if (e.status) setStatus(e.status)
+        if (e.agentName) setAgentName(e.agentName)
+        if (e.status === 'closed') setShowRating(true)
+    })
 
     useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }) }, [messages])
 
@@ -98,6 +131,8 @@ export default function ChatWidget({ settings, auth }: Props) {
         await fetch('/chat/rate', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrf() }, body:JSON.stringify({ session_id:sessionId, rating }) })
         setShowRating(false)
     }
+
+    if (!floatCfg.enabled) return null
 
     return (
         <>
@@ -163,7 +198,11 @@ export default function ChatWidget({ settings, auth }: Props) {
             <button
                 className="ml-chat-btn"
                 onClick={() => setOpen(o => !o)}
-                style={{ background: open ? '#374151' : chatColor, fontSize: open ? 20 : 22 }}
+                style={{
+                    background: open ? '#374151' : chatColor, fontSize: open ? 20 : 22,
+                    bottom: floatCfg.bottom, width: floatCfg.diameter, height: floatCfg.diameter,
+                    ...(floatCfg.corner === 'left' ? { left: floatCfg.side, right: 'auto' } : { right: floatCfg.side, left: 'auto' }),
+                }}
             >
                 {open ? <IconX size={20} color="white" /> : <span>{chatIcon}</span>}
                 {!open && unread > 0 && (
@@ -175,7 +214,10 @@ export default function ChatWidget({ settings, auth }: Props) {
 
             {/* Chat Window */}
             {open && (
-                <div className="ml-chat-win">
+                <div className="ml-chat-win" style={{
+                    bottom: floatCfg.bottom + floatCfg.diameter + 12,
+                    ...(floatCfg.corner === 'left' ? { left: floatCfg.side, right: 'auto' } : { right: floatCfg.side, left: 'auto' }),
+                }}>
                     {/* Header */}
                     <div style={{ background:chatColor, padding:'13px 16px', display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
                         <div style={{ width:36, height:36, borderRadius:'50%', background:'var(--color-primary)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -189,7 +231,6 @@ export default function ChatWidget({ settings, auth }: Props) {
                                 {status === 'active' ? '🟢 Live' : status === 'waiting' ? '⏳ Connecting...' : '🤖 AI + Live agents'}
                             </p>
                         </div>
-                        {wa && <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" style={{ color:'#25D366', textDecoration:'none', fontSize:11, fontWeight:700 }}>WhatsApp</a>}
                         {/* Close on mobile */}
                         <button onClick={() => setOpen(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:4 }}>
                             <IconX size={18} />

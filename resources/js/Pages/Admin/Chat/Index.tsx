@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState, useEffect, useRef } from 'react'
+import { useEchoPublic } from '@laravel/echo-react'
 import { IconSend, IconX, IconPlus, IconTrash, IconRobot, IconMessageCircle } from '@tabler/icons-react'
 
 interface Session { id:number; visitor_name:string; visitor_email:string; status:string; agent_name:string; last_message:string; unread_count:number; created_at:string }
@@ -12,6 +13,11 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
     const { props: __p } = usePage<{ adminPath?: string }>()
     const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [active, setActive]   = useState<Session|null>(null)
+    // Same stale-closure fix as the customer widget — the useEchoPublic
+    // callback below was reading `active` from whatever render created the
+    // closure, not the current value, which could permanently miss updates
+    // after switching between chats. Ref always reads the live value.
+    const activeRef = useRef<Session|null>(null)
     const [msgs, setMsgs]       = useState<Message[]>([])
     const [input, setInput]     = useState('')
     const [lastId, setLastId]   = useState(0)
@@ -20,28 +26,42 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
     const [faqForm, setFaqForm] = useState(false)
     const [faq, setFaq]         = useState({ question:'', answer:'', category:'general', keywords:'' })
     const bottomRef = useRef<HTMLDivElement>(null)
-    const pollRef   = useRef<ReturnType<typeof setInterval>>()
     const csrf = ()=>(document.querySelector('meta[name=csrf-token]') as HTMLInputElement)?.content||''
 
-    useEffect(()=>{
-        const hb = setInterval(async()=>{ try{ const r=await fetch(`${ap}/chat/heartbeat`,{method:'POST',headers:{'X-CSRF-TOKEN':csrf()}}); const d=await r.json(); setWaiting(d.waiting) }catch{} },15000)
-        fetch(`${ap}/chat/heartbeat`,{method:'POST',headers:{'X-CSRF-TOKEN':csrf()}})
-        return ()=>clearInterval(hb)
-    },[])
+    // Heartbeat removed entirely — it wrote is_online/last_seen_at to the
+    // database every 15 seconds, but nothing anywhere in the app actually
+    // displays or acts on that data (verified — only a scheduled cleanup
+    // command reads it, to clear a value nothing shows). Its one genuinely
+    // useful function, the waiting-count, now arrives via a real broadcast
+    // instead — fired whenever a chat enters or leaves 'waiting' status.
+    useEchoPublic('admin-chat-waiting', '.waiting.changed', (e: any) => {
+        if (typeof e.waiting === 'number') setWaiting(e.waiting)
+    })
 
-    useEffect(()=>{
-        if(!active) return
-        clearInterval(pollRef.current)
-        pollRef.current = setInterval(async()=>{
-            try{
-                const r=await fetch(`${ap}/chat/sessions/${active.id}/poll?since=${lastId}`)
-                const d=await r.json()
-                if(d.messages?.length){ setMsgs(m=>[...m,...d.messages]); setLastId(d.messages[d.messages.length-1].id) }
-                setWaiting(d.unread_waiting??waiting)
-            }catch{}
-        },2500)
-        return ()=>clearInterval(pollRef.current)
-    },[active,lastId])
+    // Was polling every 2.5 seconds for new messages in whatever
+    // conversation the admin has open — more aggressive than the customer
+    // widget's old 15-second poll, and running for as long as an agent had
+    // any chat window open. Now uses the same ChatMessageSent broadcast
+    // already firing on this channel (customer widget listens on the exact
+    // same channel/event) — one real-time pipeline for both sides instead
+    // of two separate polling systems.
+    useEffect(() => { activeRef.current = active }, [active])
+
+    useEchoPublic(active ? `chat.${active.id}` : 'chat.__none__', '.message.sent', (e: any) => {
+        if (!activeRef.current) return
+        setMsgs(m => [...m, {
+            id: Date.now(),
+            sender_type: e.senderType,
+            message: e.message,
+            message_type: 'text',
+            created_at: e.createdAt,
+        }])
+        if (e.status === 'closed') {
+            // Reflect a customer-initiated close (e.g. they rated and ended
+            // the chat) without needing a poll to notice it.
+            router.reload({ only: ['sessions'] })
+        }
+    })
 
     useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:'smooth'}) },[msgs])
 
@@ -55,10 +75,32 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
         router.reload({only:['sessions']})
     }
 
+    // Clicking any chat that ISN'T waiting (already active, closed,
+    // historical) only ever set which session was "selected" — it never
+    // actually fetched that conversation's messages, so the message panel
+    // just stayed empty. join() isn't appropriate here since it also POSTs
+    // to claim the chat as this agent's — fine for accepting a new waiting
+    // chat, wrong for just viewing a closed one.
+    async function viewSession(s:Session){
+        setActive(s)
+        setMsgs([])
+        try {
+            const r = await fetch(`${ap}/chat/sessions/${s.id}/messages`)
+            const d = await r.json()
+            setMsgs(d.messages||[])
+            setLastId(d.messages?.length?d.messages[d.messages.length-1].id:0)
+        } catch {}
+    }
+
     async function sendReply(){
         if(!input.trim()||!active) return
         const msg=input.trim(); setInput('')
-        setMsgs(m=>[...m,{id:Date.now(),sender_type:'agent',message:msg,message_type:'text',created_at:new Date().toISOString()}])
+        // No longer adding this to local state immediately — that caused
+        // the message to show twice, since the broadcast (now confirmed
+        // fast and reliable) echoes it right back through the same
+        // useEchoPublic listener a moment later. Relying purely on the
+        // broadcast for display now, for both the agent's own messages and
+        // the visitor's.
         await fetch(`${ap}/chat/sessions/${active.id}/reply`,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({message:msg})})
     }
 
@@ -100,7 +142,7 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
                         <div className="p-4 border-b border-gray-100 font-black text-[14px] text-gray-800">Conversations {waiting>0&&<span className="ml-2 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{waiting} waiting</span>}</div>
                         {sessions.length===0&&<div className="p-8 text-center text-gray-400"><IconMessageCircle size={36} className="mx-auto mb-3 opacity-20"/><p className="font-bold text-[13px]">No active chats</p></div>}
                         {sessions.map(s=>(
-                            <div key={s.id} onClick={()=>s.status==='waiting'?join(s):setActive(s)} className={`p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors ${active?.id===s.id?'bg-blue-50':''}`}>
+                            <div key={s.id} onClick={()=>s.status==='waiting'?join(s):viewSession(s)} className={`p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors ${active?.id===s.id?'bg-blue-50':''}`}>
                                 <div className="flex items-center justify-between mb-1">
                                     <p className="font-bold text-[13px] text-gray-800">{s.visitor_name||'Visitor'}</p>
                                     <div className="flex items-center gap-1.5">

@@ -49,15 +49,24 @@ class BlockedIpController extends Controller
                 ->toArray();
         }
 
+        // One query for all 5 counts instead of 5 separate ones.
+        $counts = BlockedIp::selectRaw("
+            COUNT(*) as total,
+            SUM(is_active = 1) as active,
+            SUM(type = 'ddos') as ddos,
+            SUM(type = 'spam') as spam,
+            SUM(type = 'manual') as manual
+        ")->first();
+
         return Inertia::render('Admin/BlockedIps/Index', [
             'ips'        => $ips,
             'suspicious' => $suspicious,
             'stats'      => [
-                'total'   => BlockedIp::count(),
-                'active'  => BlockedIp::where('is_active',true)->count(),
-                'ddos'    => BlockedIp::where('type','ddos')->count(),
-                'spam'    => BlockedIp::where('type','spam')->count(),
-                'manual'  => BlockedIp::where('type','manual')->count(),
+                'total'   => (int) ($counts->total  ?? 0),
+                'active'  => (int) ($counts->active ?? 0),
+                'ddos'    => (int) ($counts->ddos   ?? 0),
+                'spam'    => (int) ($counts->spam   ?? 0),
+                'manual'  => (int) ($counts->manual ?? 0),
             ],
             'filters'    => $request->only(['search','type','status']),
         ]);

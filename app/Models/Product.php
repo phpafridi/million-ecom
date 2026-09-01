@@ -34,7 +34,27 @@ class Product extends Model
     // Scopes
     public function scopeActive($q)    { return $q->where('is_active', true); }
     public function scopeFeatured($q)  { return $q->where('is_featured', true); }
-    public function scopeOnSale($q)    { return $q->whereColumn('price', '<', 'compare_price'); }
+    public function scopeOnSale($q)
+    {
+        // The global flash sale (Settings: sale_enabled/sale_discount/
+        // sale_ends_at) is a site-wide % discount, not a per-product one —
+        // but this scope only ever checked each product's own price vs
+        // compare_price. During an active flash sale, the homepage's "On
+        // Sale" section would show zero products unless they *also*
+        // individually had a compare_price set, which defeats the purpose
+        // of a global sale entirely.
+        $enabled  = \App\Models\Setting::get('sale_enabled', '0') === '1';
+        $discount = (int) \App\Models\Setting::get('sale_discount', '0');
+        $endsAt   = \App\Models\Setting::get('sale_ends_at', '');
+        $active   = $enabled && $discount > 0
+            && (!$endsAt || now()->lt(\Carbon\Carbon::parse($endsAt)));
+
+        if ($active) {
+            // Every active product counts as "on sale" during a flash sale.
+            return $q;
+        }
+        return $q->whereColumn('price', '<', 'compare_price');
+    }
     public function scopeNew($q)       { return $q->where('is_new', true); }
     public function scopeLowStock($q)  {
         $threshold = (int) (\App\Models\Setting::get('low_stock_threshold', 5) ?? 5);

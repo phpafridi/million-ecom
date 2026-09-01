@@ -24,12 +24,18 @@ class OrderTrackingController extends Controller
 
         $query = strtoupper(trim($data['query']));
 
-        // Search by tracking token OR order ID OR phone
+        // Search by tracking token, order number, or phone — deliberately
+        // NOT by raw numeric order ID. That was searchable too before, and
+        // unlike a phone number (something the actual customer knows),
+        // sequential integers are trivially enumerable with zero customer
+        // knowledge required — id=1, id=2, id=3... would pull every order
+        // in the store. Phone search is kept for legitimate UX (customers
+        // who've lost their tracking link) and is already throttled at the
+        // route level (10 attempts/min per IP).
         $order = Order::with(['items.product.productImages', 'statusHistory'])
             ->where(function($q) use ($query) {
                 $q->where('tracking_token', $query)
                   ->orWhere('order_number', $query)
-                  ->orWhere('id', is_numeric($query) ? $query : 0)
                   ->orWhere('customer_phone', $query);
             })
             ->latest()
@@ -71,7 +77,10 @@ class OrderTrackingController extends Controller
             'id'             => $order->id,
             'tracking_token' => $order->tracking_token,
             'customer_name'  => $order->customer_name,
-            'customer_phone' => substr($order->customer_phone, 0, 4) . '****' . substr($order->customer_phone, -2),
+            // Only first 2 and last 1 digit shown now (was first 4 + last 2
+            // — on an 11-digit PK number that left only 5 digits actually
+            // hidden, not much of a mask at all).
+            'customer_phone' => substr($order->customer_phone, 0, 2) . str_repeat('*', max(strlen($order->customer_phone) - 3, 3)) . substr($order->customer_phone, -1),
             'status'         => $order->status,
             'payment_status' => $order->payment_status,
             'payment_method' => $order->payment_method,
@@ -88,11 +97,12 @@ class OrderTrackingController extends Controller
             ], $steps, array_keys($steps)),
             'cancelled' => $order->status === 'cancelled',
             'items' => $order->items->map(fn($item) => [
-                'name'     => $item->product_name,
-                'quantity' => $item->quantity,
-                'price'    => $item->price,
-                'subtotal' => $item->subtotal,
-                'image'    => $item->product?->productImages->first()?->url,
+                'name'          => $item->product_name,
+                'variant_label' => $item->variant_label ?? null,
+                'quantity'      => $item->quantity,
+                'price'         => $item->price,
+                'subtotal'      => $item->subtotal,
+                'image'         => $item->product?->productImages->first()?->url,
             ])->toArray(),
             'history' => $order->statusHistory->map(fn($h) => [
                 'status'     => $h->status,

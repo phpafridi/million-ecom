@@ -81,7 +81,7 @@ trait SeoHelper
     protected function homeSeo(array $settings, string $baseUrl): array
     {
         return [
-            'title'       => $settings['seo_title']       ?? (($settings['site_name'] ?? 'TijaaratX') . ' | Premium Fashion Pakistan'),
+            'title'       => $settings['seo_title']       ?? (($settings['site_name'] ?? config('app.name')) . ' | Premium Fashion Pakistan'),
             'description' => $settings['seo_description'] ?? 'Shop premium clothes, perfumes, shoes, watches and sunglasses. Fast delivery across Pakistan.',
             'image'       => $settings['seo_image']       ?? null,
             'url'         => $baseUrl,
@@ -89,7 +89,7 @@ trait SeoHelper
             'schema'      => [
                 '@context'    => 'https://schema.org',
                 '@type'       => 'Organization',
-                'name'        => $settings['site_name'] ?? 'TijaaratX',
+                'name'        => $settings['site_name'] ?? config('app.name'),
                 'url'         => $baseUrl,
                 'logo'        => !empty($settings['logo']) ? asset('storage/' . $settings['logo']) : null,
                 'contactPoint'=> [

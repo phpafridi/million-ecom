@@ -1,6 +1,5 @@
 import { Head, usePage, useForm } from '@inertiajs/react'
-import { useState } from 'react'
-import { IconUpload, IconInfoCircle, IconCheck } from '@tabler/icons-react'
+import { IconCheck } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
 
 interface Props { settings: Record<string, string> }
@@ -34,22 +33,6 @@ function Section({ title, icon, children }: { title: string; icon: string; child
         </div>
     )
 }
-
-function ImageUploadField({ label, current, onFile }: { label: string; current?: string; onFile: (f: File) => void }) {
-    const [preview, setPreview] = useState<string | null>(current ?? null)
-    return (
-        <div>
-            <label className="block text-[13px] font-semibold text-gray-700 mb-2">{label}</label>
-            {preview && <div className="mb-2 h-16 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden"><img src={preview} className="max-h-full max-w-full object-contain" alt=""/></div>}
-            <label className="flex items-center gap-2 border-2 border-dashed border-gray-200 hover:border-[var(--color-primary,#00c8ff)] rounded-xl px-4 py-3 cursor-pointer transition-colors">
-                <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { setPreview(URL.createObjectURL(f)); onFile(f) }}} />
-                <IconUpload size={16} className="text-[var(--color-primary,#00c8ff)]" />
-                <span className="text-[13px] text-gray-500">Click to upload image</span>
-            </label>
-        </div>
-    )
-}
-
 // ─────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
@@ -62,37 +45,14 @@ export default function Settings({ settings }: Props) {
         site_tagline:         settings.site_tagline         ?? 'Your Online Store',
         phone:                settings.phone                ?? '',
         email:                settings.email                ?? '',
-        admin_email:              settings.admin_email              ?? '',
-        mail_host:                settings.mail_host                ?? '',
-        mail_port:                settings.mail_port                ?? '587',
-        mail_username:            settings.mail_username            ?? '',
-        mail_password:            settings.mail_password            ?? '',
-        mail_encryption:          settings.mail_encryption          ?? 'tls',
-        mail_from_address:        settings.mail_from_address        ?? '',
-        mail_from_name:           settings.mail_from_name           ?? '',
-        email_notify_customer:    settings.email_notify_customer    ?? '1',
-        email_notify_admin:       settings.email_notify_admin       ?? '1',
-        email_notify_on:          settings.email_notify_on          ?? 'processing,shipped,delivered,cancelled',
-        whatsapp_enabled:         settings.whatsapp_enabled         ?? '0',
-        whatsapp_api_key:         settings.whatsapp_api_key         ?? '',
-        whatsapp_phone_id:        settings.whatsapp_phone_id        ?? '',
-        whatsapp_admin_phone:     settings.whatsapp_admin_phone     ?? '',
-        whatsapp_notify_customer: settings.whatsapp_notify_customer ?? '1',
-        whatsapp_notify_admin:    settings.whatsapp_notify_admin    ?? '1',
-        whatsapp_notify_on:       settings.whatsapp_notify_on       ?? 'processing,shipped,delivered,cancelled',
-        whatsapp_order_template:  settings.whatsapp_order_template  ?? '',
-        whatsapp_ship_template:   settings.whatsapp_ship_template   ?? '',
-        whatsapp_deliver_template:settings.whatsapp_deliver_template?? '',
-        whatsapp_cancel_template: settings.whatsapp_cancel_template ?? '',
-        sms_enabled:              settings.sms_enabled              ?? '0',
-        sms_provider:             settings.sms_provider             ?? '',
-        sms_api_key:              settings.sms_api_key              ?? '',
-        sms_api_secret:           settings.sms_api_secret           ?? '',
-        sms_api_url:              settings.sms_api_url              ?? '',
-        sms_sender_id:            settings.sms_sender_id            ?? '',
-        sms_notify_on:            settings.sms_notify_on            ?? '',
         address:              settings.address              ?? '',
         whatsapp_number:      settings.whatsapp_number      ?? '',
+        // Was only configurable from a separate, now-removed page and
+        // never actually saved (missing from the backend whitelist) —
+        // consolidated here since this is the one field from that page
+        // that's genuinely read elsewhere (the product page's "Ask on
+        // WhatsApp" message).
+        whatsapp_product_msg: settings.whatsapp_product_msg ?? 'Hi! I am interested in: {product_name} (Rs {price}). Can you provide more details?',
         shipping_fee:         settings.shipping_fee         ?? '0',
         delivery_threshold:      settings.delivery_threshold      ?? '0',
         low_stock_threshold:     settings.low_stock_threshold     ?? '5',
@@ -114,40 +74,24 @@ export default function Settings({ settings }: Props) {
         sale_bg:              settings.sale_bg              ?? '#991B1B',
         sale_text_color:      settings.sale_text_color      ?? '#ffffff',
         sale_discount:        settings.sale_discount        ?? '',
-        ticker_items:         settings.ticker_items         ?? '',
         facebook_url:         settings.facebook_url         ?? '',
         instagram_url:        settings.instagram_url        ?? '',
         twitter_url:          settings.twitter_url          ?? '',
         youtube_url:          settings.youtube_url          ?? '',
         messenger_url:        settings.messenger_url        ?? '',
-        meta_title:           settings.meta_title           ?? '',
-        meta_description:     settings.meta_description     ?? '',
+        // meta_title/meta_description removed — now exclusively managed on
+        // the dedicated SEO page. Leaving these in this form's data object
+        // would submit empty values on every Settings save and silently
+        // overwrite whatever was set via the SEO page, since both forms
+        // post to the same backend endpoint.
         product_contact_method: settings.product_contact_method ?? 'whatsapp',
         show_whatsapp_button:   settings.show_whatsapp_button   ?? '1',
         show_phone_button:      settings.show_phone_button      ?? '1',
-        trust_1_icon:  settings.trust_1_icon  ?? '🚚', trust_1_title: settings.trust_1_title ?? 'Free Delivery',  trust_1_sub: settings.trust_1_sub ?? 'On qualifying orders',
-        trust_2_icon:  settings.trust_2_icon  ?? '🛡️', trust_2_title: settings.trust_2_title ?? '100% Genuine',   trust_2_sub: settings.trust_2_sub ?? 'Verified products only',
-        trust_3_icon:  settings.trust_3_icon  ?? '↩️', trust_3_title: settings.trust_3_title ?? 'Easy Returns',   trust_3_sub: settings.trust_3_sub ?? '7-day hassle-free',
-        trust_4_icon:  settings.trust_4_icon  ?? '🎧', trust_4_title: settings.trust_4_title ?? '24/7 Support',   trust_4_sub: settings.trust_4_sub ?? 'We are here to help',
-        trust_5_icon:  settings.trust_5_icon  ?? '💬', trust_5_title: settings.trust_5_title ?? 'WhatsApp Us',    trust_5_sub: settings.trust_5_sub ?? 'Quick response',
-        trust_bar_bg:       settings.trust_bar_bg       ?? '#0a0e1a',
-        trust_icon_color:   settings.trust_icon_color   ?? '#00c8ff',
-        trust_title_color:  settings.trust_title_color  ?? '#ffffff',
-        trust_sub_color:    settings.trust_sub_color    ?? '#6b8aaa',
-        ticker_bg:          settings.ticker_bg          ?? '#ffffff',
-        ticker_live_bg:     settings.ticker_live_bg     ?? '#00c8ff',
-        ticker_live_text:   settings.ticker_live_text   ?? '#0a0e1a',
-        ticker_text_color:  settings.ticker_text_color  ?? '#6b7280',
-        brands_show:        settings.brands_show        ?? '1',
-        brands_title:       settings.brands_title       ?? 'Top Brands',
-        brands_subtitle:    settings.brands_subtitle    ?? 'Official Partners',
-        brands_items:       settings.brands_items       ?? 'Apple|Samsung|Sony|Dell|LG|ASUS',
-        logo: null as File | null,
     })
 
     function save(e: React.FormEvent) {
         e.preventDefault()
-        post(`${ap}/settings`, { forceFormData: true })
+        post(`${ap}/settings`)
     }
 
     return (
@@ -264,6 +208,9 @@ export default function Settings({ settings }: Props) {
                         <Field label="WhatsApp Number" hint="Include country code — no spaces or dashes">
                             <input className={inputCls} value={data.whatsapp_number} onChange={e => setData('whatsapp_number', e.target.value)} placeholder="923001234567" />
                         </Field>
+                        <Field label="Product Inquiry Message" hint="Pre-filled message when a customer asks about a specific product on WhatsApp. Use {product_name} and {price} as placeholders.">
+                            <textarea className={textareaCls} rows={2} value={data.whatsapp_product_msg} onChange={e => setData('whatsapp_product_msg', e.target.value)} placeholder="Hi! I am interested in: {product_name} (Rs {price}). Can you provide more details?" />
+                        </Field>
                         <Field label="Store Address">
                             <textarea className={textareaCls} rows={2} value={data.address} onChange={e => setData('address', e.target.value)} placeholder="Shop 12, Main Market, Karachi" />
                         </Field>
@@ -300,123 +247,11 @@ export default function Settings({ settings }: Props) {
                         </div>
                     </Section>
 
-                    {/* SEO */}
-                    <Section title="SEO" icon="🔍">
-                        <Field label="Meta Title">
-                            <input className={inputCls} value={data.meta_title} onChange={e => setData('meta_title', e.target.value)} placeholder="Our Store — Best Online Shop" />
-                        </Field>
-                        <Field label="Meta Description">
-                            <textarea className={textareaCls} rows={3} value={data.meta_description} onChange={e => setData('meta_description', e.target.value)} placeholder="Your online store description for Google search results." />
-                        </Field>
-                    </Section>
-
-                    {/* Trust Bar */}
-                    <Section title="Trust Bar & Ticker" icon="🛡️">
-                        <p className="text-[12.5px] text-gray-500">5 badges shown under the header. Set icon (emoji), title and sub-text for each badge.</p>
-                        <div className="space-y-2">
-                            {[1,2,3,4,5].map(n => (
-                                <div key={n} className="grid grid-cols-[48px_1fr_1.4fr] gap-2 items-center p-3 bg-gray-50 rounded-xl">
-                                    <input
-                                        value={data[`trust_${n}_icon`] ?? ''}
-                                        onChange={e => setData(`trust_${n}_icon`, e.target.value)}
-                                        className="h-10 text-center text-xl border-2 border-gray-200 rounded-xl outline-none focus:border-[var(--color-primary,#00c8ff)] bg-white"
-                                        placeholder="🚚"
-                                    />
-                                    <input
-                                        value={data[`trust_${n}_title`] ?? ''}
-                                        onChange={e => setData(`trust_${n}_title`, e.target.value)}
-                                        className={inputCls}
-                                        placeholder="Title e.g. Free Delivery"
-                                    />
-                                    <input
-                                        value={data[`trust_${n}_sub`] ?? ''}
-                                        onChange={e => setData(`trust_${n}_sub`, e.target.value)}
-                                        className={inputCls}
-                                        placeholder="e.g. Orders over Rs 5,000"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                        <Field label="Scrolling Ticker Text" hint="Separate each item with a | pipe character">
-                            <input className={inputCls} value={data.ticker_items} onChange={e => setData('ticker_items', e.target.value)} placeholder="Free shipping Rs 5000+|7-day returns|Verified products|24/7 support" />
-                        </Field>
-
-                        <div className="pt-4 border-t border-gray-100">
-                            <p className="text-[13px] font-bold text-gray-700 mb-3">Trust Bar Colors</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                {([
-                                    ['trust_bar_bg',      'Bar Background'],
-                                    ['trust_icon_color',  'Icon Accent Color'],
-                                    ['trust_title_color', 'Title Text Color'],
-                                    ['trust_sub_color',   'Sub Text Color'],
-                                ] as const).map(([key, label]) => (
-                                    <div key={key}>
-                                        <label className="block text-[11.5px] font-semibold text-gray-500 mb-1.5">{label}</label>
-                                        <div className="flex items-center gap-2">
-                                            <input type="color" value={data[key] || '#000000'}
-                                                onChange={e => setData(key, e.target.value)}
-                                                className="w-9 h-9 rounded-lg border-2 border-gray-200 cursor-pointer p-0.5 bg-white flex-shrink-0"/>
-                                            <input value={data[key] || ''} onChange={e => setData(key, e.target.value)}
-                                                className="flex-1 h-9 px-2 border border-gray-200 rounded-lg text-[11.5px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                                placeholder="#000000"/>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="pt-3 border-t border-gray-100">
-                            <p className="text-[13px] font-bold text-gray-700 mb-3">Ticker Bar Colors</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                {([
-                                    ['ticker_bg',        'Ticker Background'],
-                                    ['ticker_live_bg',   '"LIVE" Badge Color'],
-                                    ['ticker_live_text', '"LIVE" Text Color'],
-                                    ['ticker_text_color','Ticker Text Color'],
-                                ] as const).map(([key, label]) => (
-                                    <div key={key}>
-                                        <label className="block text-[11.5px] font-semibold text-gray-500 mb-1.5">{label}</label>
-                                        <div className="flex items-center gap-2">
-                                            <input type="color" value={data[key] || '#000000'}
-                                                onChange={e => setData(key, e.target.value)}
-                                                className="w-9 h-9 rounded-lg border-2 border-gray-200 cursor-pointer p-0.5 bg-white flex-shrink-0"/>
-                                            <input value={data[key] || ''} onChange={e => setData(key, e.target.value)}
-                                                className="flex-1 h-9 px-2 border border-gray-200 rounded-lg text-[11.5px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                                placeholder="#000000"/>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </Section>
-
-                    {/* Brands Bar */}
-                    <Section title="Brands Bar" icon="🏷️">
-                        <div className="flex items-center justify-between py-2 pb-4 border-b border-gray-100">
-                            <div>
-                                <div className="text-[13.5px] font-semibold text-gray-800">Show Brands Section</div>
-                                <div className="text-[12px] text-gray-400">Display on homepage</div>
-                            </div>
-                            <button type="button" onClick={() => setData('brands_show', data.brands_show === '1' ? '0' : '1')}
-                                className={`relative w-12 h-6 rounded-full border-none cursor-pointer transition-all ${data.brands_show === '1' ? 'bg-[var(--color-primary)]' : 'bg-gray-200'}`}>
-                                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${data.brands_show === '1' ? 'left-[26px]' : 'left-0.5'}`}/>
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Field label="Section Title">
-                                <input className={inputCls} value={data.brands_title} onChange={e => setData('brands_title', e.target.value)} placeholder="Top Brands"/>
-                            </Field>
-                            <Field label="Eyebrow Text">
-                                <input className={inputCls} value={data.brands_subtitle} onChange={e => setData('brands_subtitle', e.target.value)} placeholder="Official Partners"/>
-                            </Field>
-                        </div>
-                        <Field label="Brand Names" hint="Separate with | pipe character. e.g. Apple|Samsung|Sony|Dell">
-                            <input className={inputCls} value={data.brands_items} onChange={e => setData('brands_items', e.target.value)} placeholder="Apple|Samsung|Sony|Dell|LG|ASUS"/>
-                        </Field>
-                        <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl text-[12px] text-gray-500">
-                            Preview: {(data.brands_items || '').split('|').filter(Boolean).map((b: string) => b.trim()).join(' · ')}
-                        </div>
-                    </Section>
+                    {/* SEO section removed — was a bare-bones duplicate
+                        (just title + description, no character counters, no
+                        favicon/OG image, no indexing toggle, no keywords)
+                        competing with the dedicated SEO page, which is
+                        genuinely more complete. Use Admin → SEO instead. */}
 
                     {/* Contact method */}
                     <Section title="Product Contact Button" icon="💬">
@@ -436,140 +271,6 @@ export default function Settings({ settings }: Props) {
                         )}
                     </Section>
 
-                    {/* Email config info */}
-                    <Section title="Email / SMTP Settings" icon="📧">
-                        <div className="col-span-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12px] text-blue-700 mb-1">
-                            Configure SMTP here — overrides .env. Leave blank to use .env settings.
-                            Mailtrap: sandbox.smtp.mailtrap.io / port 2525 / TLS.
-                            Gmail: enable 2FA → Google Account → App Passwords.
-                        </div>
-                        <Field label="SMTP Host">
-                            <input className={inputCls} type="text" value={data.mail_host} onChange={e => setData('mail_host', e.target.value)} placeholder="sandbox.smtp.mailtrap.io" />
-                        </Field>
-                        <Field label="SMTP Port">
-                            <input className={inputCls} type="number" value={data.mail_port} onChange={e => setData('mail_port', e.target.value)} placeholder="587" />
-                        </Field>
-                        <Field label="SMTP Username">
-                            <input className={inputCls} type="text" value={data.mail_username} onChange={e => setData('mail_username', e.target.value)} placeholder="you@gmail.com" />
-                        </Field>
-                        <Field label="SMTP Password">
-                            <input className={inputCls} type="password" value={data.mail_password} onChange={e => setData('mail_password', e.target.value)} placeholder="••••••••" />
-                        </Field>
-                        <Field label="Encryption">
-                            <select className={inputCls} value={data.mail_encryption} onChange={e => setData('mail_encryption', e.target.value)}>
-                                <option value="tls">TLS (recommended)</option>
-                                <option value="ssl">SSL</option>
-                                <option value="">None</option>
-                            </select>
-                        </Field>
-                        <Field label="From Email">
-                            <input className={inputCls} type="email" value={data.mail_from_address} onChange={e => setData('mail_from_address', e.target.value)} placeholder="noreply@millionaire.pk" />
-                        </Field>
-                        <Field label="From Name">
-                            <input className={inputCls} type="text" value={data.mail_from_name} onChange={e => setData('mail_from_name', e.target.value)} placeholder="MILLIONAIRE" />
-                        </Field>
-                        <Field label="Admin Email" hint="Receives new order alerts">
-                            <input className={inputCls} type="email" value={data.admin_email} onChange={e => setData('admin_email', e.target.value)} placeholder="admin@millionaire.pk" />
-                        </Field>
-                    </Section>
-
-                    <Section title="Email Notification Rules" icon="✉️">
-                        <Field label="Notify Customer">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={data.email_notify_customer === '1'} onChange={e => setData('email_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">Send email to customer on status change</span>
-                            </label>
-                        </Field>
-                        <Field label="Notify Admin">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={data.email_notify_admin === '1'} onChange={e => setData('email_notify_admin', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">Send new order alert to admin</span>
-                            </label>
-                        </Field>
-                        <Field label="Send Email On" hint="Comma separated statuses">
-                            <input className={inputCls} type="text" value={data.email_notify_on} onChange={e => setData('email_notify_on', e.target.value)} placeholder="processing,shipped,delivered,cancelled" />
-                        </Field>
-                    </Section>
-
-                    <Section title="WhatsApp Business API" icon="💬">
-                        <div className="col-span-2 p-3 bg-green-50 border border-green-100 rounded-xl text-[12px] text-green-700 mb-1">
-                            Get API Key &amp; Phone ID from developers.facebook.com → WhatsApp → API Setup. Free: 1,000 msgs/month.
-                        </div>
-                        <Field label="Enable WhatsApp">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={data.whatsapp_enabled === '1'} onChange={e => setData('whatsapp_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">{data.whatsapp_enabled === '1' ? '✅ Enabled' : '❌ Disabled'}</span>
-                            </label>
-                        </Field>
-                        <Field label="Send WA On" hint="Comma separated statuses">
-                            <input className={inputCls} type="text" value={data.whatsapp_notify_on} onChange={e => setData('whatsapp_notify_on', e.target.value)} placeholder="processing,shipped,delivered,cancelled" />
-                        </Field>
-                        <Field label="API Key (Access Token)">
-                            <input className={inputCls} type="password" value={data.whatsapp_api_key} onChange={e => setData('whatsapp_api_key', e.target.value)} placeholder="EAAxxxxxxxxxxxxxxx" />
-                        </Field>
-                        <Field label="Phone Number ID">
-                            <input className={inputCls} type="text" value={data.whatsapp_phone_id} onChange={e => setData('whatsapp_phone_id', e.target.value)} placeholder="1234567890123456" />
-                        </Field>
-                        <Field label="Admin WhatsApp Number" hint="With country code, no + (e.g. 923001234567)">
-                            <input className={inputCls} type="text" value={data.whatsapp_admin_phone} onChange={e => setData('whatsapp_admin_phone', e.target.value)} placeholder="923001234567" />
-                        </Field>
-                        <Field label="Notify Customer">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={data.whatsapp_notify_customer === '1'} onChange={e => setData('whatsapp_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">WA message to customer on status change</span>
-                            </label>
-                        </Field>
-                        <div className="col-span-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-1">
-                            Message Templates — use: name, order_number, total, tracking_url in curly braces
-                        </div>
-                        <Field label="Order Placed Template">
-                            <textarea className={inputCls} rows={2} value={data.whatsapp_order_template} onChange={e => setData('whatsapp_order_template', e.target.value)} placeholder="Hi {name}! Order {order_number} confirmed. Total: {total}. Track: {tracking_url}" />
-                        </Field>
-                        <Field label="Shipped Template">
-                            <textarea className={inputCls} rows={2} value={data.whatsapp_ship_template} onChange={e => setData('whatsapp_ship_template', e.target.value)} placeholder="Hi {name}! Order {order_number} shipped! Track: {tracking_url}" />
-                        </Field>
-                        <Field label="Delivered Template">
-                            <textarea className={inputCls} rows={2} value={data.whatsapp_deliver_template} onChange={e => setData('whatsapp_deliver_template', e.target.value)} placeholder="Hi {name}! Order {order_number} delivered. Thank you!" />
-                        </Field>
-                        <Field label="Cancelled Template">
-                            <textarea className={inputCls} rows={2} value={data.whatsapp_cancel_template} onChange={e => setData('whatsapp_cancel_template', e.target.value)} placeholder="Hi {name}, order {order_number} was cancelled." />
-                        </Field>
-                    </Section>
-
-                    <Section title="SMS API (Optional — Future Use)" icon="📱">
-                        <div className="col-span-2 p-3 bg-gray-50 border border-gray-200 rounded-xl text-[12px] text-gray-500 mb-1">
-                            Supports Twilio, eOcean Pakistan, Zong, Ufone or custom API. Leave blank to disable SMS.
-                        </div>
-                        <Field label="Enable SMS">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={data.sms_enabled === '1'} onChange={e => setData('sms_enabled', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">{data.sms_enabled === '1' ? '✅ Enabled' : '❌ Disabled'}</span>
-                            </label>
-                        </Field>
-                        <Field label="Provider">
-                            <select className={inputCls} value={data.sms_provider} onChange={e => setData('sms_provider', e.target.value)}>
-                                <option value="">— Select Provider —</option>
-                                <option value="twilio">Twilio (International)</option>
-                                <option value="eocean">eOcean Pakistan</option>
-                                <option value="zong">Zong (CMPAK)</option>
-                                <option value="ufone">Ufone (PTML)</option>
-                                <option value="custom">Custom API URL</option>
-                            </select>
-                        </Field>
-                        <Field label="API Key">
-                            <input className={inputCls} type="password" value={data.sms_api_key} onChange={e => setData('sms_api_key', e.target.value)} placeholder="API Key / Account SID" />
-                        </Field>
-                        <Field label="API Secret" hint="Twilio Auth Token">
-                            <input className={inputCls} type="password" value={data.sms_api_secret} onChange={e => setData('sms_api_secret', e.target.value)} placeholder="Auth Token" />
-                        </Field>
-                        <Field label="Sender ID">
-                            <input className={inputCls} type="text" value={data.sms_sender_id} onChange={e => setData('sms_sender_id', e.target.value)} placeholder="MILLIONAIRE" />
-                        </Field>
-                        <Field label="Send SMS On">
-                            <input className={inputCls} type="text" value={data.sms_notify_on} onChange={e => setData('sms_notify_on', e.target.value)} placeholder="shipped,delivered" />
-                        </Field>
-                    </Section>
-
                     {/* Save button — also at bottom of left col for convenience */}
                     <button type="submit" disabled={processing}
                         className="w-full h-14 font-black text-[15px] rounded-xl border-none cursor-pointer disabled:opacity-60 flex items-center justify-center gap-3 transition-all hover:opacity-90"
@@ -581,233 +282,6 @@ export default function Settings({ settings }: Props) {
 
                 {/* RIGHT — logo upload + image reference */}
                 <div className="space-y-5">
-                    <Section title="Store Logo" icon="🖼️">
-                        <ImageUploadField label="Logo (landscape, up to 400×120px — transparent PNG, padding auto-trimmed)" current={settings.logo_url} onFile={f => setData('logo', f)} />
-                        <div className="col-span-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-[12px] text-blue-700">
-                            The logo box has no background — it sits directly on your header color. Use a transparent PNG so it looks correct on any header color you choose in Theme settings.
-                        </div>
-                        {settings.logo_url && (
-                            <div className="mt-1">
-                                <div className="text-[11px] font-semibold text-gray-500 mb-2">Header preview (on your current navbar color)</div>
-                                <div className="w-16 h-16 rounded-xl flex items-center justify-center p-2 border border-gray-200"
-                                    style={{ background: 'var(--color-navbar-bg,#ffffff)' }}>
-                                    <img src={settings.logo_url} alt="logo preview" className="w-full h-full object-contain" />
-                                </div>
-                            </div>
-                        )}
-                    </Section>
-
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                        <h3 className="font-bold text-[14px] text-gray-800 mb-4">📐 Image Size Reference</h3>
-                        <div className="space-y-3 text-[12.5px]">
-                            {[
-                                { label:'Logo',              size:'400×120px',   hint:'Landscape icon+wordmark, transparent — padding auto-trimmed' },
-                                { label:'Hero Slide',        size:'1920×1080px', hint:'Full-width slider, subject centered' },
-                                { label:'Full Banner',       size:'1920×520px',  hint:'Homepage wide banner, subject centered' },
-                                { label:'Category Image',    size:'900×1080px',  hint:'Nearly square, subject centered (square on desktop, 3:4 on mobile)' },
-                                { label:'Category Banner',   size:'1920×380px',  hint:'Category page header' },
-                                { label:'Product Image',     size:'800×1067px',  hint:'Portrait 3:4, white background' },
-                            ].map(s => (
-                                <div key={s.label} className="flex items-start gap-2">
-                                    <IconCheck size={13} className="flex-shrink-0 mt-0.5" style={{ color:'var(--color-primary)' }}/>
-                                    <div>
-                                        <span className="font-bold text-gray-700">{s.label}:</span>{' '}
-                                        <span className="text-gray-500">{s.size}</span>
-                                        <div className="text-[11px] text-gray-400">{s.hint}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-[11.5px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                            Upload images for Hero Slides, Banners, Categories and Products in their own admin sections.
-                        </p>
-                    </div>
-
-                    {/* Sticky save button on right col too */}
-                    
-                {/* ══ THEME COLORS ══════════════════════════════════════════ */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-                    <h3 className="font-black text-[15px] text-gray-800 mb-5 flex items-center gap-2">
-                        🎨 Theme Colors & Style
-                    </h3>
-
-                    {/* Live mini preview */}
-                    <div className="rounded-2xl overflow-hidden border border-gray-200 mb-5" style={{ fontSize: 0 }}>
-                        {/* Topbar preview */}
-                        <div className="flex items-center justify-between px-4 py-2" style={{ background: data.topbar_bg || '#0a0a0a' }}>
-                            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600 }}>+92 300 0000000</span>
-                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>Free delivery on orders over Rs 5,000</span>
-                        </div>
-                        {/* Nav preview */}
-                        <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
-                            <div className="font-black text-[14px]" style={{ color: data.theme_dark_bg || '#0a0a0a' }}>MILLIONAIRE</div>
-                            <div className="flex-1" />
-                            <div className="h-7 px-4 rounded-full text-white text-[11px] font-bold flex items-center" style={{ background: data.theme_primary || '#C9A84C' }}>Shop Now</div>
-                        </div>
-                        {/* Content preview */}
-                        <div className="px-4 py-4" style={{ background: data.theme_body_bg || '#FAFAFA' }}>
-                            <div className="flex gap-3">
-                                <div className="rounded-xl overflow-hidden flex-shrink-0" style={{ width: 80, background: '#f0f0f0' }}>
-                                    <div style={{ aspectRatio: '3/4', background: `linear-gradient(135deg, ${data.theme_primary || '#C9A84C'}22, ${data.theme_dark_bg || '#0a0a0a'}11)` }} />
-                                    <div className="p-2" style={{ background: 'white' }}>
-                                        <div className="text-[9px] font-bold" style={{ color: data.theme_primary || '#C9A84C' }}>CLOTHES</div>
-                                        <div className="text-[10px] font-black" style={{ color: data.theme_dark_bg || '#0a0a0a' }}>Rs 4,500</div>
-                                        <div className="mt-1 h-5 rounded flex items-center justify-center text-white text-[8px] font-bold" style={{ background: data.theme_dark_bg || '#0a0a0a' }}>Add to Cart</div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="text-[11px] font-black mb-2" style={{ color: data.theme_dark_bg || '#0a0a0a' }}>Live Preview</div>
-                                    <div className="flex gap-1.5 flex-wrap">
-                                        <span className="text-[9px] font-bold px-2 py-1 rounded-full text-white" style={{ background: data.theme_primary || '#C9A84C' }}>Primary</span>
-                                        <span className="text-[9px] font-bold px-2 py-1 rounded-full text-white" style={{ background: data.theme_accent || '#C9A84C' }}>Accent</span>
-                                        <span className="text-[9px] font-bold px-2 py-1 rounded-full text-white" style={{ background: data.theme_dark_bg || '#0a0a0a' }}>Dark</span>
-                                    </div>
-                                    <div className="mt-2 text-[9px] font-bold" style={{ color: '#6B7280' }}>Border radius: {data.theme_border_radius || 8}px</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Color pickers grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                        {/* Topbar background */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">Top Bar Background</label>
-                            <div className="flex items-center gap-2">
-                                <input type="color" value={data.topbar_bg || '#0a0a0a'}
-                                    onChange={e => setData('topbar_bg', e.target.value)}
-                                    className="h-10 w-14 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
-                                <input className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-[13px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                    value={data.topbar_bg || '#0a0a0a'}
-                                    onChange={e => setData('topbar_bg', e.target.value)}
-                                    placeholder="#0a0a0a" />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-1">The black announcement bar at very top</p>
-                        </div>
-
-                        {/* Primary color */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">Primary Color (Gold)</label>
-                            <div className="flex items-center gap-2">
-                                <input type="color" value={data.theme_primary || '#C9A84C'}
-                                    onChange={e => { setData('theme_primary', e.target.value) }}
-                                    className="h-10 w-14 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
-                                <input className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-[13px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                    value={data.theme_primary || '#C9A84C'}
-                                    onChange={e => setData('theme_primary', e.target.value)}
-                                    placeholder="#C9A84C" />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-1">Buttons, links, accents, nav highlights</p>
-                        </div>
-
-                        {/* Accent color */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">Accent Color (Sale badges)</label>
-                            <div className="flex items-center gap-2">
-                                <input type="color" value={data.theme_accent || '#C9A84C'}
-                                    onChange={e => setData('theme_accent', e.target.value)}
-                                    className="h-10 w-14 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
-                                <input className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-[13px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                    value={data.theme_accent || '#C9A84C'}
-                                    onChange={e => setData('theme_accent', e.target.value)}
-                                    placeholder="#e91e63" />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-1">Discount badges, sale labels, wishlist</p>
-                        </div>
-
-                        {/* Dark background */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">Dark Background</label>
-                            <div className="flex items-center gap-2">
-                                <input type="color" value={data.theme_dark_bg || '#0a0a0a'}
-                                    onChange={e => setData('theme_dark_bg', e.target.value)}
-                                    className="h-10 w-14 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
-                                <input className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-[13px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                    value={data.theme_dark_bg || '#0a0a0a'}
-                                    onChange={e => setData('theme_dark_bg', e.target.value)}
-                                    placeholder="#0a0a0a" />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-1">Hero slider, Add to Cart button, headings</p>
-                        </div>
-
-                        {/* Body background */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">Page Background</label>
-                            <div className="flex items-center gap-2">
-                                <input type="color" value={data.theme_body_bg || '#FAFAFA'}
-                                    onChange={e => setData('theme_body_bg', e.target.value)}
-                                    className="h-10 w-14 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
-                                <input className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-[13px] font-mono outline-none focus:border-[var(--color-primary)]"
-                                    value={data.theme_body_bg || '#FAFAFA'}
-                                    onChange={e => setData('theme_body_bg', e.target.value)}
-                                    placeholder="#FAFAFA" />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-1">Main page/body background color</p>
-                        </div>
-
-                        {/* Border radius */}
-                        <div>
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">
-                                Border Radius — {data.theme_border_radius || 8}px
-                            </label>
-                            <input type="range" min="0" max="24" value={data.theme_border_radius || '8'}
-                                onChange={e => setData('theme_border_radius', e.target.value)}
-                                className="w-full h-2 rounded-full accent-[var(--color-primary)] cursor-pointer" />
-                            <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                                <span>Sharp (0)</span>
-                                <span>Rounded (12)</span>
-                                <span>Pill (24)</span>
-                            </div>
-                            <div className="flex gap-2 mt-3">
-                                {[0,4,8,12,16,24].map(r => (
-                                    <button key={r} type="button"
-                                        onClick={() => setData('theme_border_radius', String(r))}
-                                        className="flex-1 h-8 text-[11px] font-bold cursor-pointer border transition-all"
-                                        style={{
-                                            borderRadius: r,
-                                            background: Number(data.theme_border_radius) === r ? 'var(--color-primary)' : 'white',
-                                            color: Number(data.theme_border_radius) === r ? 'var(--color-primary-text)' : '#6B7280',
-                                            borderColor: Number(data.theme_border_radius) === r ? 'var(--color-primary)' : '#E5E7EB',
-                                        }}>
-                                        {r}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Preset themes */}
-                        <div className="sm:col-span-2">
-                            <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-3">Quick Presets</label>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {[
-                                    { name: 'Millionaire Gold', primary: '#C9A84C', dark: '#0a0a0a', body: '#FAFAFA', accent: '#C9A84C' },
-                                    { name: 'Royal Black',      primary: '#ffffff', dark: '#000000', body: '#0a0a0a', accent: '#C9A84C' },
-                                    { name: 'Deep Blue',        primary: '#3B82F6', dark: '#0f172a', body: '#F8FAFC', accent: '#EF4444' },
-                                    { name: 'Forest Green',     primary: '#16A34A', dark: '#052e16', body: '#F0FDF4', accent: '#DC2626' },
-                                ].map(preset => (
-                                    <button key={preset.name} type="button"
-                                        onClick={() => {
-                                            setData('theme_primary', preset.primary)
-                                            setData('theme_accent', preset.accent)
-                                            setData('theme_dark_bg', preset.dark)
-                                            setData('theme_body_bg', preset.body)
-                                            setData('topbar_bg', preset.dark)
-                                        }}
-                                        className="p-3 rounded-xl border-2 border-gray-100 hover:border-gray-300 cursor-pointer text-left transition-all bg-white">
-                                        <div className="flex gap-1.5 mb-2">
-                                            <div className="w-5 h-5 rounded-full" style={{ background: preset.dark }} />
-                                            <div className="w-5 h-5 rounded-full" style={{ background: preset.primary }} />
-                                            <div className="w-5 h-5 rounded-full" style={{ background: preset.body, border: '1px solid #e5e7eb' }} />
-                                        </div>
-                                        <span className="text-[11px] font-bold text-gray-600">{preset.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                     <Section title="Flash Sale / Countdown Timer" icon="⚡">
                         <div className="col-span-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-[12px] text-amber-700 mb-1">
                             Show a countdown timer in the storefront header. Set end time and enable to activate.

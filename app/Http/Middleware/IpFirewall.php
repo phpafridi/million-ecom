@@ -23,19 +23,33 @@ class IpFirewall
         'logout',     // logout
     ];
 
-    // ── Always allow these IPs (add your office/home IP here) ────────
+    // ── Always allow these IPs — dynamically loaded (see whitelist()
+    // below) rather than hardcoded, since a hardcoded list here means your
+    // own VPS/office/home IP has no way to be added without editing this
+    // file. Without this, testing your own site (placing orders, uploading
+    // products) risks tripping the DDoS/spam thresholds below and locking
+    // yourself out of your own store. ────────────────────────────────
     const WHITELIST = [
         '127.0.0.1',
         '::1',
-        'localhost',
     ];
+
+    private function whitelist(): array
+    {
+        $fromEnv = array_filter(array_map('trim', explode(',', env('FIREWALL_WHITELIST', ''))));
+        $fromDb  = [];
+        try {
+            $fromDb = array_filter(array_map('trim', explode(',', \App\Models\Setting::get('firewall_whitelist', ''))));
+        } catch (\Throwable $e) { /* DB not ready yet */ }
+        return array_merge(self::WHITELIST, $fromEnv, $fromDb);
+    }
 
     public function handle(Request $request, Closure $next)
     {
         $ip = $request->ip();
 
         // 1. Whitelist — never block these
-        if (in_array($ip, self::WHITELIST)) {
+        if (in_array($ip, $this->whitelist())) {
             return $next($request);
         }
 

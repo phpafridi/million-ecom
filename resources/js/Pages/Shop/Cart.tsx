@@ -1,9 +1,9 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
     IconTrash, IconPlus, IconMinus, IconShoppingCart, IconArrowLeft,
     IconCheck, IconTruck, IconTag, IconUpload, IconX, IconAlertCircle,
-    IconCreditCard, IconBuildingBank, IconPhone, IconBrandWhatsapp
+    IconCreditCard, IconBuildingBank, IconPhone, IconBrandWhatsapp, IconLoader2
 } from '@tabler/icons-react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -21,6 +21,7 @@ interface Gateway {
 interface Props {
     items: CartItem[]; subtotal: number; shipping: number; total: number
     discount?: number; points_discount?: number; coupon_discount?: number
+    coupon_code?: string | null
     loyalty_points?: number; loyalty_value?: number; points_used?: number
     loyalty_enabled?: boolean; redeem_enabled?: boolean
     gateways: Gateway[]; settings: Record<string, string>; auth: any
@@ -29,12 +30,27 @@ interface Props {
 
 const FIELD_ERRORS: Record<string, string> = {}
 
-export default function Cart({ items, subtotal, shipping, total, discount=0, points_discount=0, coupon_discount=0, loyalty_points=0, loyalty_value=0, points_used=0, loyalty_enabled=true, redeem_enabled=true, user_profile, gateways, settings, auth }: Props) {
+export default function Cart({ items, subtotal, shipping, total, discount=0, points_discount=0, coupon_discount=0, coupon_code=null, loyalty_points=0, loyalty_value=0, points_used=0, loyalty_enabled=true, redeem_enabled=true, user_profile, gateways, settings, auth }: Props) {
     const [step, setStep] = useState<'cart' | 'checkout' | 'payment'>('cart')
     const [proofFile, setProofFile] = useState<File | null>(null)
     const [proofPreview, setProofPreview] = useState<string | null>(null)
     const [couponCode, setCouponCode] = useState('')
     const [couponLoading, setCouponLoading] = useState(false)
+    // The backend has always correctly sent success/error flash messages
+    // when applying a coupon — nothing on this page ever actually read or
+    // displayed them, so an invalid/expired code (or one that doesn't meet
+    // the minimum order amount) failed completely silently. The customer
+    // saw the loading state finish and then... nothing, with no way to know
+    // why.
+    const { props: pageProps } = usePage<{ flash?: { coupon_success?: string; coupon_error?: string } }>()
+    const [couponMsg, setCouponMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+    useEffect(() => {
+        if (pageProps.flash?.coupon_success) {
+            setCouponMsg({ type: 'success', text: pageProps.flash.coupon_success })
+        } else if (pageProps.flash?.coupon_error) {
+            setCouponMsg({ type: 'error', text: pageProps.flash.coupon_error })
+        }
+    }, [pageProps.flash?.coupon_success, pageProps.flash?.coupon_error])
     const fileRef = useRef<HTMLInputElement>(null)
     const fmt = (n: number) => `Rs ${n.toLocaleString('en-PK')}`
 
@@ -64,9 +80,18 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
         e.preventDefault()
         if (!couponCode.trim()) return
         setCouponLoading(true)
+        setCouponMsg(null)
         router.post('/cart/coupon', { code: couponCode }, {
             preserveScroll: true,
             onFinish: () => setCouponLoading(false)
+        })
+    }
+
+    function removeCoupon() {
+        setCouponLoading(true)
+        router.delete('/cart/coupon', {
+            preserveScroll: true,
+            onFinish: () => { setCouponLoading(false); setCouponCode('') }
         })
     }
 
@@ -468,15 +493,39 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                         <IconArrowLeft size={16}/> Back
                                     </button>
                                     <button type="submit" disabled={processing || gateways.length === 0}
-                                        className="flex-1 flex items-center justify-center gap-2 h-12 font-black text-[14px] rounded-xl border-none cursor-pointer disabled:opacity-60 transition-all"
+                                        className="flex-1 flex items-center justify-center gap-2 h-12 font-black text-[14px] rounded-xl border-none cursor-pointer disabled:opacity-90 transition-all"
                                         style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
-                                        <IconCheck size={18}/>
-                                        {isBankTransfer ? 'Continue to Upload Receipt →' : processing ? 'Placing Order…' : `Place Order — ${fmt(total)}`}
+                                        {processing
+                                            ? <IconLoader2 size={18} className="animate-spin" />
+                                            : <IconCheck size={18}/>
+                                        }
+                                        {isBankTransfer ? 'Continue to Upload Receipt →' : processing ? 'Placing Your Order…' : `Place Order — ${fmt(total)}`}
                                     </button>
                                 </div>
                             </form>
                         )}
                     </div>
+
+                    {/* Full-screen processing overlay — a disabled button with
+                        changed text alone doesn't read as "something is
+                        genuinely happening" on a slower connection; this
+                        gives clear, reassuring feedback instead of leaving
+                        the customer wondering if their click even registered. */}
+                    {processing && !isBankTransfer && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center" style={{ background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(3px)' }}>
+                            <div className="bg-white rounded-2xl px-10 py-9 flex flex-col items-center gap-4 shadow-2xl mx-4 max-w-[320px] text-center">
+                                <div className="relative w-14 h-14">
+                                    <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+                                    <div className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+                                        style={{ borderTopColor: 'var(--color-primary)', borderRightColor: 'var(--color-primary)' }}></div>
+                                </div>
+                                <div>
+                                    <p className="font-manrope font-black text-[15px] text-gray-900">Placing your order</p>
+                                    <p className="text-[12.5px] text-gray-500 mt-1">Just a moment — don't close this window</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Right: Order summary */}
                     <div>
@@ -523,16 +572,36 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                             {/* Coupon */}
                             {step === 'cart' && (
                                 <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <form onSubmit={applyCoupon} className="flex gap-2">
-                                        <input value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())}
-                                            placeholder="Coupon code" maxLength={30}
-                                            className="flex-1 h-9 px-3 border border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary)] uppercase"/>
-                                        <button type="submit" disabled={couponLoading || !couponCode.trim()}
-                                            className="h-9 px-3 font-bold text-[12px] rounded-xl border-none cursor-pointer disabled:opacity-50"
-                                            style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
-                                            {couponLoading ? '…' : 'Apply'}
-                                        </button>
-                                    </form>
+                                    {coupon_code ? (
+                                        // Was previously always showing the "apply" input even
+                                        // after a coupon was already applied — no indication a
+                                        // coupon was active, and no way to remove it at all.
+                                        <div className="flex items-center justify-between px-3 h-9 rounded-xl border-2" style={{ borderColor: 'var(--color-primary)', background: 'rgba(201,168,76,0.06)' }}>
+                                            <span className="text-[12.5px] font-bold text-green-700">✓ Coupon "{coupon_code}" applied</span>
+                                            <button type="button" onClick={removeCoupon} disabled={couponLoading}
+                                                className="text-[11px] font-bold text-red-500 bg-transparent border-none cursor-pointer disabled:opacity-50 underline">
+                                                {couponLoading ? '…' : 'Remove'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <form onSubmit={applyCoupon} className="flex gap-2">
+                                                <input value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                                                    placeholder="Coupon code" maxLength={30}
+                                                    className="flex-1 h-9 px-3 border border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary)] uppercase"/>
+                                                <button type="submit" disabled={couponLoading || !couponCode.trim()}
+                                                    className="h-9 px-3 font-bold text-[12px] rounded-xl border-none cursor-pointer disabled:opacity-50"
+                                                    style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
+                                                    {couponLoading ? '…' : 'Apply'}
+                                                </button>
+                                            </form>
+                                            {couponMsg && (
+                                                <p className={`text-[11.5px] font-semibold mt-2 ${couponMsg.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                                                    {couponMsg.type === 'success' ? '✓ ' : '⚠ '}{couponMsg.text}
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             )}
 

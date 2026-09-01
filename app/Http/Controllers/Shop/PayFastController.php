@@ -236,16 +236,23 @@ class PayFastController extends Controller
             'status'         => 'processing',
             'notes'          => trim(($order->notes ?? '') . " [PayFast:{$pfId}]"),
         ]);
+        // Stock reduces here — on confirmed payment, not at checkout (BUG 1.1/1.2).
+        $order->load('items.product');
+        $order->reduceStock();
+        // Was completely missing before — customer never got any confirmation.
+        try {
+            (new \App\Services\OrderNotificationService())->notify($order->fresh(), 'processing');
+        } catch (\Throwable $e) {
+            Log::error('PayFast notify failed: ' . $e->getMessage());
+        }
         if (method_exists($order, 'addStatusHistory')) {
             $order->addStatusHistory('processing', "Paid via PayFast. ID: {$pfId}", 'payfast');
         }
-        // Award loyalty points
-        if ($order->user_id) {
-            $user = \App\Models\User::find($order->user_id);
-            if ($user && method_exists($user, 'addPoints')) {
-                $user->addPoints((int)floor($order->total / 10), "Order #{$order->id}", $order->id);
-            }
-        }
+        // Loyalty points are awarded on DELIVERY only (Admin/OrderController),
+        // using the admin-configurable rate — not here at payment time. This
+        // used to award points a second time with a different, hardcoded
+        // rate, meaning PayFast customers got double points at an inconsistent
+        // value compared to every other payment method.
         Log::info("PayFast: Order #{$order->id} COMPLETE. PF ID: {$pfId}");
     }
 
@@ -253,10 +260,12 @@ class PayFastController extends Controller
     {
         if (in_array($order->status, ['delivered','shipped','processing'])) return;
         $order->update(['payment_status' => 'failed', 'status' => 'cancelled', 'notes' => trim(($order->notes ?? '') . " [Failed:{$reason}]")]);
+        // restoreStock() only actually restores anything if stock was really
+        // reduced for this order in the first place (internally guarded) —
+        // the old manual loop here had no such check and would also silently
+        // never update stock_sold.
         $order->load('items.product');
-        foreach ($order->items as $item) {
-            if ($item->product) $item->product->increment('stock', $item->quantity);
-        }
+        $order->restoreStock();
         if (method_exists($order, 'addStatusHistory')) {
             $order->addStatusHistory('cancelled', $reason, 'payfast');
         }

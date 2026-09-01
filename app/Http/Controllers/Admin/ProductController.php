@@ -58,6 +58,8 @@ class ProductController extends Controller
 
         $product = Product::create($data);
         $this->saveImages($request, $product);
+        \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
 
         return redirect()->route('admin.products.index')->with('success', "Product \"{$product->name}\" created.");
     }
@@ -89,6 +91,8 @@ class ProductController extends Controller
 
         $product->update($data);
         $this->saveImages($request, $product);
+        \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
 
         return redirect()->route('admin.products.index')->with('success', "Product \"{$product->name}\" updated.");
     }
@@ -100,6 +104,8 @@ class ProductController extends Controller
             if ($diskPath) Storage::disk('uploads')->delete($diskPath);
         }
         $product->delete();
+        \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', 'Product deleted.');
     }
 
@@ -117,10 +123,21 @@ class ProductController extends Controller
         match($data['action']) {
             'activate'   => $products->update(['is_active' => true]),
             'deactivate' => $products->update(['is_active' => false]),
-            'delete'     => $products->get()->each(fn($p) => $p->delete()),
+            'delete'     => $products->with('productImages')->get()->each(function ($p) {
+                // Single-product destroy() already cleans up image files —
+                // bulk delete skipped this entirely, leaving orphaned files
+                // on disk for every product deleted this way.
+                foreach ($p->productImages as $img) {
+                    $diskPath = \App\Services\ImageService::diskPath($img->path);
+                    if ($diskPath) Storage::disk('uploads')->delete($diskPath);
+                }
+                $p->delete();
+            }),
         };
 
         $count = count($data['product_ids']);
+        \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', "{$count} product(s) {$data['action']}d.");
     }
 
@@ -128,7 +145,13 @@ class ProductController extends Controller
     public function export()
     {
         $products = Product::with('category','productImages')->get();
-        $csv = "ID,Name,Slug,Category,Price,Compare Price,Stock,Featured,Description\n";
+        // Header previously only listed 9 columns while the actual data row
+        // written below has 10 values (an unlabeled "is_new" flag squeezed
+        // in between Featured and Description) — meaning the exported file
+        // never actually matched its own header, and "Description" in Excel
+        // would show the is_new flag instead. Re-exporting existing data
+        // will now produce a genuinely consistent file.
+        $csv = "ID,Name,Slug,Category,Price,Compare Price,Stock,Featured,New,Description\n";
         foreach ($products as $p) {
             $desc = str_replace(['"',"\n"], ['\\"',' '], $p->description ?? '');
             $csv .= implode(',', [
@@ -163,19 +186,28 @@ class ProductController extends Controller
                 $slug = Str::slug($row[1] ?? '');
                 if (!$slug) continue;
                 $category = Category::where('name', trim($row[3] ?? ''))->first();
-                Product::updateOrCreate(['slug' => $slug], [
+                // updateOrCreate() always returns a model instance, which is
+                // always truthy in a ternary — meaning $updated incremented
+                // on every row and $created never did, regardless of whether
+                // the product was actually new. wasRecentlyCreated is the
+                // correct signal for which one actually happened.
+                $product = Product::updateOrCreate(['slug' => $slug], [
                     'name'          => trim($row[1]),
                     'category_id'   => $category?->id,
                     'price'         => (float)($row[4] ?? 0),
                     'compare_price' => (float)($row[5] ?? 0) ?: null,
                     'stock'         => (int)($row[6] ?? 0),
                     'is_featured'   => ($row[7] ?? '0') === '1',
-                    'description'   => trim($row[8] ?? ''),
+                    'is_new'        => ($row[8] ?? '0') === '1',
+                    'description'   => trim($row[9] ?? ''),
                     'is_active'     => true,
-                ]) ? $updated++ : $created++;
+                ]);
+                $product->wasRecentlyCreated ? $created++ : $updated++;
             } catch (\Throwable $e) { /* skip bad rows */ }
         }
 
+        \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', "Import complete: {$created} created, {$updated} updated.");
     }
 

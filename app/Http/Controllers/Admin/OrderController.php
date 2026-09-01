@@ -22,15 +22,21 @@ class OrderController extends Controller
                       ->orWhere('customer_phone','like',"%{$search}%");
             });
         }
+        // One query for all 5 counts instead of 5 separate COUNT queries on
+        // every single load of the admin orders page.
+        $statusCounts = Order::selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
         return Inertia::render('Admin/Orders/Index', [
             'orders'  => $q->paginate(20)->withQueryString(),
             'filters' => $request->only(['q','status']),
             'stats'   => [
-                'pending'    => Order::where('status','pending')->count(),
-                'processing' => Order::where('status','processing')->count(),
-                'shipped'    => Order::where('status','shipped')->count(),
-                'delivered'  => Order::where('status','delivered')->count(),
-                'cancelled'  => Order::where('status','cancelled')->count(),
+                'pending'    => $statusCounts['pending']    ?? 0,
+                'processing' => $statusCounts['processing'] ?? 0,
+                'shipped'    => $statusCounts['shipped']    ?? 0,
+                'delivered'  => $statusCounts['delivered']  ?? 0,
+                'cancelled'  => $statusCounts['cancelled']  ?? 0,
             ],
         ]);
     }
@@ -67,7 +73,31 @@ class OrderController extends Controller
         // Inventory management on status change
         $newStatus = $data['status'] ?? $oldStatus;
 
-        // If cancelled after being active, restore stock
+        // COD: reduce stock only once the admin actually confirms the order
+        // for shipping — not at placement. reduceStock() is idempotent so
+        // this is safe even if triggered on more than one transition.
+        if (
+            $order->payment_method === 'cod' &&
+            in_array($newStatus, ['processing', 'shipped']) &&
+            !in_array($oldStatus, ['processing', 'shipped', 'delivered'])
+        ) {
+            $order->load('items.product');
+            $order->reduceStock();
+            $order->countCouponUsage();
+        }
+
+        // Bank transfer: reduce stock when admin manually confirms payment
+        if (
+            $order->payment_method === 'bank_transfer' &&
+            $newStatus === 'processing' &&
+            ($data['payment_status'] ?? $order->payment_status) === 'paid'
+        ) {
+            $order->load('items.product');
+            $order->reduceStock();
+            $order->countCouponUsage();
+        }
+
+        // If cancelled after being active, restore whatever was actually reduced
         if ($newStatus === 'cancelled' && !in_array($oldStatus, ['cancelled'])) {
             $order->load('items.product');
             $order->restoreStock();
@@ -76,14 +106,28 @@ class OrderController extends Controller
         // ── Notifications + loyalty on status change ────────────────
         $newStatus = $data['status'] ?? $oldStatus;
         if (isset($data['status']) && $newStatus !== $oldStatus) {
+            // Was never actually logged from here — the order timeline in
+            // admin has been blank this whole time despite the underlying
+            // model method already existing.
+            $order->addStatusHistory($newStatus, $request->input('status_note'), auth()->user()->name);
             $freshOrder = $order->fresh();
 
-            // Unified: Email + WhatsApp + SMS via NotificationService
-            try {
-                (new \App\Services\OrderNotificationService())->notifyStatusChange($freshOrder, $newStatus);
-            } catch (\Throwable $e) {
-                \Log::error("Notification failed: " . $e->getMessage());
-            }
+            // Unified: Email + WhatsApp + SMS via NotificationService —
+            // dispatched to the real queue, not afterResponse(). That relies
+            // on fastcgi_finish_request(), which only exists under PHP-FPM —
+            // under `php artisan serve` it doesn't exist, so the admin panel
+            // likely still waited for the full notification round-trip
+            // anyway. A real queued dispatch is genuinely decoupled from the
+            // request/response cycle regardless of web server — the request
+            // just inserts a row into the jobs table and returns
+            // immediately; `php artisan queue:work` picks it up separately.
+            dispatch(function () use ($freshOrder, $newStatus) {
+                try {
+                    (new \App\Services\OrderNotificationService())->notifyStatusChange($freshOrder, $newStatus);
+                } catch (\Throwable $e) {
+                    \Log::error("Notification failed: " . $e->getMessage());
+                }
+            });
 
             // Award loyalty points on DELIVERY only
             if ($newStatus === 'delivered' && $freshOrder->user_id
@@ -94,7 +138,12 @@ class OrderController extends Controller
                         $rate = (int)(\App\Models\Setting::get('loyalty_points_rate', 10) ?: 10);
                         $pts  = (int)floor($freshOrder->total / $rate);
                         if ($pts > 0) {
-                            $user->addPoints('Earned for delivered order '.($freshOrder->order_number??'#'.$freshOrder->id), $freshOrder->id, $pts);
+                            // Parameter order was wrong (string passed where the
+                            // signature expects int $points first) — this threw a
+                            // hard TypeError on every delivered order for a
+                            // logged-in customer, meaning points were never
+                            // actually awarded successfully.
+                            $user->addPoints($pts, 'Earned for delivered order '.($freshOrder->order_number ?? '#'.$freshOrder->id), $freshOrder->id);
                         }
                     }
                 } catch (\Throwable $e) {
@@ -184,9 +233,15 @@ class OrderController extends Controller
             ]);
         }
 
-        // Reduce stock for manual orders too
-        $order->load('items.product');
-        $order->reduceStock();
+        // Only reduce stock if this manual order is genuinely confirmed
+        // already (paid, or already progressed past pending) — a staff
+        // member creating a speculative/unconfirmed order (e.g. "pending"
+        // while waiting on a customer to confirm by phone) shouldn't lock up
+        // real stock any more than an unconfirmed customer checkout should.
+        if ($data['payment_status'] === 'paid' || in_array($data['status'], ['processing', 'shipped', 'delivered'])) {
+            $order->load('items.product');
+            $order->reduceStock();
+        }
 
         return redirect()->route('admin.orders.show', $order)->with('success', 'Manual order created.');
     }
@@ -196,7 +251,17 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'order_item_id' => 'required|exists:order_items,id',
-            'quantity'      => 'required|integer|min:1',
+            'quantity'      => [
+                'required', 'integer', 'min:1',
+                // Without this, admin could accidentally enter a return
+                // quantity larger than what was actually ordered.
+                function ($attribute, $value, $fail) use ($request) {
+                    $item = \App\Models\OrderItem::find($request->order_item_id);
+                    if ($item && $value > $item->quantity) {
+                        $fail("Return quantity cannot exceed original order quantity of {$item->quantity}.");
+                    }
+                },
+            ],
             'reason'        => 'required|string|max:200',
             'notes'         => 'nullable|string',
             'refund_method' => 'required|in:original,store_credit,cash,none',

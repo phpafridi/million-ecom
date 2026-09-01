@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\{Http, Log};
 
 class PaymentController extends Controller
 {
+    // Request-scoped cache — instance property, not `static`, so it can
+    // never serve stale credentials left over from a previous request
+    // handled by the same long-lived PHP-FPM worker process (e.g. right
+    // after an admin updates gateway credentials while the site is live).
+    private array $gatewayCache = [];
+
     // ─────────────────────────────────────────────────────
     // HELPERS
     // ─────────────────────────────────────────────────────
@@ -20,6 +26,14 @@ class PaymentController extends Controller
             'status'         => 'processing',
             'notes'          => trim(($order->notes ?? '') . ($txnId ? " [TxnID: $txnId]" : '')),
         ]);
+        // Stock is now reduced here, on CONFIRMED payment — not at checkout
+        // (see BUG 1.1). This was missing entirely, meaning online-payment
+        // orders never reduced stock at all once that earlier bug is fixed.
+        $order->load('items.product');
+        $order->reduceStock();
+        // Coupon usage counted here too, on confirmed payment — same timing
+        // as stock, same reasoning (see BUG 15.1).
+        $order->countCouponUsage();
         Log::info("Order #{$order->id} marked paid. TxnID: {$txnId}");
         try { (new OrderNotificationService())->notify($order->fresh(), 'processing'); } catch (\Throwable $e) { Log::error('Notify failed: '.$e->getMessage()); }
     }
@@ -31,25 +45,29 @@ class PaymentController extends Controller
             'status'         => 'cancelled',
             'notes'          => trim(($order->notes ?? '') . " [Failed: $reason]"),
         ]);
-        // Restore stock
+        // restoreStock() is now internally idempotent — it only actually
+        // restores anything if this order's stock was genuinely reduced in
+        // the first place (tracked via the stock_reduced flag), so it's
+        // always safe to call here regardless of whether this is a first
+        // failed attempt or a reversal of a previously successful payment.
         $order->load('items.product');
-        foreach ($order->items as $item) {
-            if ($item->product) {
-                $item->product->increment('stock', $item->quantity);
-                $item->product->decrement('stock_sold', $item->quantity);
-            }
-        }
+        $order->restoreStock();
         Log::warning("Order #{$order->id} payment failed. Reason: {$reason}");
+    }
+
+    private function gateway(string $code): ?PaymentGateway
+    {
+        return $this->gatewayCache[$code] ??= PaymentGateway::where('code', $code)->first();
     }
 
     private function cred(string $code): array
     {
-        return PaymentGateway::where('code', $code)->first()?->credentials ?? [];
+        return $this->gateway($code)?->credentials ?? [];
     }
 
     private function isTest(string $code): bool
     {
-        return PaymentGateway::where('code', $code)->first()?->is_test_mode ?? true;
+        return $this->gateway($code)?->is_test_mode ?? true;
     }
 
     // ─────────────────────────────────────────────────────
@@ -108,11 +126,37 @@ class PaymentController extends Controller
 
     public function jazzcashCallback(Request $request)
     {
-        $code   = $request->pp_ResponseCode ?? '';
-        $txnRef = $request->pp_TxnRefNo    ?? '';
-        $orderId= $request->ppmpf_1        ?? '';
+        $data    = $request->all();
+        $code    = $data['pp_ResponseCode'] ?? '';
+        $txnRef  = $data['pp_TxnRefNo']     ?? '';
+        $orderId = $data['ppmpf_1']         ?? '';
 
-        $order  = Order::find($orderId)
+        // Verify the response is genuinely from JazzCash before trusting
+        // pp_ResponseCode at all — without this, anyone can POST a fake
+        // "code: 000" directly to this URL and get an order marked paid
+        // without ever actually paying. Uses the same ksort + HMAC pattern
+        // already used to generate the outgoing request's hash above.
+        $gw           = PaymentGateway::where('code', 'jazzcash')->first();
+        $integrityKey = $gw?->credentials['integrity_salt'] ?? '';
+        if ($integrityKey && isset($data['pp_SecureHash'])) {
+            $received = $data['pp_SecureHash'];
+            $toVerify = $data;
+            unset($toVerify['pp_SecureHash']);
+            ksort($toVerify);
+            $hashStr  = $integrityKey . '&' . implode('&', array_values($toVerify));
+            $expected = hash_hmac('sha256', $hashStr, $integrityKey);
+            if (!hash_equals($expected, $received)) {
+                Log::warning("JazzCash: signature mismatch for order {$orderId}, txn {$txnRef}");
+                return redirect()->route('payment.failed')->with('reason', 'Payment could not be verified.');
+            }
+        } elseif ($integrityKey) {
+            // Credentials are configured but JazzCash sent no hash at all —
+            // don't silently proceed as if that's fine.
+            Log::warning("JazzCash: callback missing pp_SecureHash for order {$orderId}");
+            return redirect()->route('payment.failed')->with('reason', 'Payment could not be verified.');
+        }
+
+        $order = Order::find($orderId)
             ?? Order::where('notes','like',"%JC:{$txnRef}%")->first();
 
         if (!$order) {
@@ -180,6 +224,28 @@ class PaymentController extends Controller
     {
         $responseCode = $request->responseCode ?? $request->status ?? '';
         $epOrderId    = $request->orderId ?? '';
+
+        // Verify against a reconstructed hash before trusting the response
+        // code — same class of gap as JazzCash: without this, anyone can
+        // POST a fake success code directly to this URL.
+        $gw      = PaymentGateway::where('code', 'easypaisa')->first();
+        $hashKey = $gw?->credentials['hash_key'] ?? '';
+        if ($hashKey) {
+            $received = $request->merchantHashedReq ?? '';
+            if (!$received) {
+                Log::warning("Easypaisa: callback missing merchantHashedReq for order {$epOrderId}");
+                return redirect()->route('payment.failed')->with('reason', 'Payment could not be verified.');
+            }
+            $storeId   = $gw->credentials['store_id'] ?? '';
+            $amount    = $request->transactionAmount ?? '';
+            $expiry    = $request->tokenExpiry ?? '';
+            $returnUrl = route('payment.easypaisa.callback');
+            $expected  = hash_hmac('sha256', $storeId . '&' . $amount . '&' . $epOrderId . '&' . $expiry . '&' . $returnUrl, $hashKey);
+            if (!hash_equals($expected, $received)) {
+                Log::warning("Easypaisa: signature mismatch for order {$epOrderId}");
+                return redirect()->route('payment.failed')->with('reason', 'Payment could not be verified.');
+            }
+        }
 
         $order = Order::where('notes','like',"%EP:{$epOrderId}%")->first();
 
@@ -397,16 +463,32 @@ class PaymentController extends Controller
 
     public function safepayCallback(Request $request, int $orderId)
     {
-        $order  = Order::findOrFail($orderId);
-        $status = $request->payment_status ?? $request->status ?? '';
+        $order   = Order::findOrFail($orderId);
+        $tracker = $request->tracker ?? '';
 
-        if (in_array(strtolower($status), ['paid', 'success', 'completed'])) {
-            $this->markPaid($order, $request->tracker ?? '');
-            return redirect()->route('order.confirmed', $orderId);
+        // Never trust payment_status/status straight from URL params — as
+        // written this could be "verified" just by visiting this URL with
+        // ?status=paid, no payment required at all. Safepay doesn't use a
+        // signed hash for its redirect; instead you confirm the real state
+        // by calling back to their API with the tracker ID.
+        $cred = $this->cred('safepay');
+        if (!$tracker || empty($cred['api_key'] ?? '')) {
+            $this->markFailed($order, 'Safepay: missing tracker or credentials');
+            return redirect()->route('payment.failed')->with('reason', 'Safepay payment could not be verified.');
         }
 
-        $this->markFailed($order, "Safepay status: {$status}");
-        return redirect()->route('payment.failed')->with('reason', 'Safepay payment was not completed.');
+        $base = $this->isTest('safepay') ? 'https://sandbox.api.getsafepay.com' : 'https://api.getsafepay.com';
+        $res  = Http::withBasicAuth($cred['api_key'], $cred['api_secret'] ?? '')
+            ->get("{$base}/order/v1/payments/{$tracker}");
+        $apiStatus = $res->json('data.tracker.state') ?? '';
+
+        if ($res->failed() || !in_array(strtolower($apiStatus), ['paid', 'completed'])) {
+            $this->markFailed($order, "Safepay API status: {$apiStatus}");
+            return redirect()->route('payment.failed')->with('reason', 'Safepay payment could not be verified.');
+        }
+
+        $this->markPaid($order, $tracker);
+        return redirect()->route('order.confirmed', $orderId);
     }
 
     public function safepayCancel(int $orderId)
@@ -582,7 +664,7 @@ HTML);
             ->post('https://api.flutterwave.com/v3/payments', [
                 'tx_ref'          => $txRef,
                 'amount'          => $order->total,
-                'currency'        => 'NGN', // change to your currency
+                'currency'        => 'PKR',
                 'redirect_url'    => route('payment.flutterwave.callback', $order->id),
                 'customer'        => [
                     'email' => $order->customer_email ?: 'customer@example.com',

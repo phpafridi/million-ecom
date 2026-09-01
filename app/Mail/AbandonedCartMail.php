@@ -3,11 +3,12 @@ namespace App\Mail;
 
 use App\Models\Setting;
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Bus\Queueable;
 
-class AbandonedCartMail extends Mailable
+class AbandonedCartMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
     public function __construct(public array $cartData, public string $customerName = '') {}

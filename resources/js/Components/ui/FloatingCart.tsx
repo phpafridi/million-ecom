@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react'
 import { useState, useEffect, useRef } from 'react'
 import { IconShoppingCart, IconX, IconArrowRight, IconCreditCard } from '@tabler/icons-react'
+import { getFloatOffset } from '@/utils/floatingButtons'
 
 interface Props { settings: Record<string, string> }
 
@@ -28,6 +29,10 @@ export default function FloatingCart({ settings }: Props) {
 
     const bg  = settings?.cart_bubble_color || '#0a0a0a'
     const fmt = (n: number) => `Rs ${Math.round(n).toLocaleString('en-PK')}`
+    // Own enable/position/size, auto-stacking with Chat/WhatsApp — previously
+    // hardcoded to right:24px/bottom:96px with no way to disable or move it.
+    const floatCfg = getFloatOffset(settings, 'cart', { chat: true, cart: true, whatsapp: false })
+    if (!floatCfg.enabled) return null
 
     return (
         <>
@@ -87,7 +92,11 @@ export default function FloatingCart({ settings }: Props) {
             `}</style>
 
             {/* Toggle button — sits directly above the chat bubble */}
-            <button className="ml-cart-fab" style={{ background: bg }} onClick={() => setOpen(v => !v)} aria-label="Cart">
+            <button className="ml-cart-fab" style={{
+                background: bg, width: floatCfg.diameter, height: floatCfg.diameter,
+                bottom: floatCfg.bottom,
+                ...(floatCfg.corner === 'left' ? { left: floatCfg.side, right: 'auto' } : { right: floatCfg.side, left: 'auto' }),
+            }} onClick={() => setOpen(v => !v)} aria-label="Cart">
                 {open
                     ? <IconX size={20} color="white" />
                     : <IconShoppingCart size={20} color="white" />
@@ -105,7 +114,11 @@ export default function FloatingCart({ settings }: Props) {
 
             {/* Preview panel */}
             {open && (
-                <div className="ml-cart-panel" ref={panelRef} style={{ background: '#161616' }}>
+                <div className="ml-cart-panel" ref={panelRef} style={{
+                    background: '#161616',
+                    bottom: floatCfg.bottom + floatCfg.diameter + 10,
+                    ...(floatCfg.corner === 'left' ? { left: floatCfg.side, right: 'auto' } : { right: floatCfg.side, left: 'auto' }),
+                }}>
                     <div style={{ padding: '18px 18px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                             <span style={{ color: 'white', fontWeight: 900, fontSize: 14.5 }}>

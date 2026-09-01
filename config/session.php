@@ -169,7 +169,16 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Auto-true in production rather than relying solely on an explicit
+    // .env value a deployer might forget to set — but still overridable via
+    // SESSION_SECURE_COOKIE if ever needed. Hardcoding this to `true`
+    // directly would break local development entirely (this project is
+    // tested locally over plain http://127.0.0.1:8000, not https).
+    // Uses env('APP_ENV') directly rather than app()->environment() — the
+    // latter calls into the container from inside a config file, which is
+    // non-standard and can misbehave in more minimal bootstrap contexts
+    // like `artisan package:discover`.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
 
     /*
     |--------------------------------------------------------------------------

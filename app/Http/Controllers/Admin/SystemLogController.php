@@ -47,12 +47,24 @@ class SystemLogController extends Controller
             ->orderByDesc('attempts')
             ->get();
 
+        // 2 queries instead of 5 — one for the all-time total (different
+        // date range than the rest, can't combine), one for everything
+        // scoped to the last 24 hours.
+        $total      = ActivityLog::count();
+        $todayStats = ActivityLog::where('created_at', '>=', now()->subDay())
+            ->selectRaw("
+                SUM(severity = 'danger') as danger,
+                SUM(severity = 'warning') as warnings,
+                SUM(action = 'login.success') as logins,
+                SUM(action = 'login.failed') as failed_logins
+            ")->first();
+
         $stats = [
-            'total'     => ActivityLog::count(),
-            'danger'    => ActivityLog::where('severity','danger')->where('created_at','>=',now()->subDay())->count(),
-            'warnings'  => ActivityLog::where('severity','warning')->where('created_at','>=',now()->subDay())->count(),
-            'logins'    => ActivityLog::where('action','login.success')->where('created_at','>=',now()->subDay())->count(),
-            'failed_logins' => ActivityLog::where('action','login.failed')->where('created_at','>=',now()->subDay())->count(),
+            'total'         => $total,
+            'danger'        => (int) ($todayStats->danger        ?? 0),
+            'warnings'      => (int) ($todayStats->warnings      ?? 0),
+            'logins'        => (int) ($todayStats->logins        ?? 0),
+            'failed_logins' => (int) ($todayStats->failed_logins ?? 0),
         ];
 
         return Inertia::render('Admin/SystemLogs/Index', [

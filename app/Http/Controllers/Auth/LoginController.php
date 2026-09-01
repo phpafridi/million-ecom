@@ -16,6 +16,32 @@ class LoginController extends Controller
         catch (\Throwable $e) { return 'ml-admin'; }
     }
 
+    // Wishlist items were tied to session_id with no fallback to user_id
+    // being read anywhere — meaning anything a guest wishlisted before
+    // logging in became permanently invisible the moment their session
+    // regenerated. Cart items had a similar (if less severe) gap. This
+    // moves both onto the account. Wishlist merges one row at a time rather
+    // than a blind mass UPDATE, since the account may already have some of
+    // these products wishlisted from a previous session — a bulk update
+    // would violate the (user_id, product_id) unique constraint the moment
+    // that happens.
+    private function mergeGuestData(string $oldSid, int $userId): void
+    {
+        \App\Models\Wishlist::where('session_id', $oldSid)->whereNull('user_id')
+            ->get()->each(function ($item) use ($userId) {
+                $exists = \App\Models\Wishlist::where('user_id', $userId)
+                    ->where('product_id', $item->product_id)->exists();
+                if ($exists) {
+                    $item->delete();
+                } else {
+                    $item->update(['user_id' => $userId]);
+                }
+            });
+
+        \App\Models\CartItem::where('session_id', $oldSid)
+            ->update(['session_id' => session()->getId()]);
+    }
+
     // ── PUBLIC / CUSTOMER LOGIN ──────────────────────────────────────
     public function show()
     {
@@ -47,6 +73,15 @@ class LoginController extends Controller
             return redirect($isStaffRole ? "/{$path}" : '/');
         }
         try { $settings = Setting::allKeyed(); } catch (\Throwable $e) { $settings = []; }
+        // admin_path is only needed by the actual admin login form (to build
+        // its POST URL) — Setting::allKeyed() returns everything with no
+        // filtering, and this whole object gets sent to the browser as-is.
+        // Leaving admin_path in it on the PUBLIC customer login page would
+        // expose the real hidden admin URL to anyone who just views page
+        // source, with no login attempt or credentials needed at all.
+        if (!$isAdmin) {
+            unset($settings['admin_path']);
+        }
         return Inertia::render('Auth/Login', ['settings' => $settings, 'isAdmin' => $isAdmin]);
     }
 
@@ -78,8 +113,14 @@ class LoginController extends Controller
         }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            // Capture the guest session ID before regenerate() changes it,
+            // so any wishlist/cart items added before logging in can be
+            // merged into the account instead of becoming orphaned.
+            $oldSid = $request->session()->getId();
+
             RateLimiter::clear($key);
             $request->session()->regenerate();
+            $this->mergeGuestData($oldSid, Auth::id());
             \App\Models\ActivityLog::log('login.success', 'Login: ' . auth()->user()->name . ' [' . auth()->user()->role . ']', 'info');
             $path = $this->adminPath();
             $role = Auth::user()->role;
@@ -89,14 +130,18 @@ class LoginController extends Controller
             // staff/admin account logging in through the public customer
             // form is rejected just as firmly as a customer account is
             // rejected on the staff form — no cross-authentication through
-            // the wrong door either way.
+            // the wrong door either way. Neither message reveals the actual
+            // admin path — doing that defeats the entire point of having a
+            // custom/hidden admin URL the moment someone (or an attacker
+            // with a phished/leaked credential) tries the well-known public
+            // /login page first, which is the most natural thing to try.
             if ($isAdmin && !$isStaffRole) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'This login is for staff accounts only.']);
+                return back()->withErrors(['email' => 'These credentials are not valid for this login.']);
             }
             if (!$isAdmin && $isStaffRole) {
                 Auth::logout();
-                return back()->withErrors(['email' => "Staff accounts must sign in at /{$path}/login."]);
+                return back()->withErrors(['email' => 'These credentials are not valid for this login.']);
             }
 
             return redirect()->intended($isStaffRole ? "/{$path}" : '/');

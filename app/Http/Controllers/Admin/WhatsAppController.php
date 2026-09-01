@@ -31,7 +31,7 @@ class WhatsAppController extends Controller
         // No API key or notifications disabled — skip silently
         if (!$apiKey || !$phoneId || !$notifyOn) return false;
 
-        $phone    = preg_replace('/\D/', '', $order->customer_phone ?? '');
+        $phone    = self::normalizePhone($order->customer_phone ?? '');
         if (!$phone) return false;
 
         $template = match($type) {
@@ -44,6 +44,7 @@ class WhatsAppController extends Controller
             ['{name}', '{order_id}', '{order_number}', '{total}', '{tracking_url}', '{status}'],
             [
                 $order->customer_name,
+                $order->id,
                 $order->order_number ?? '#'.$order->id,
                 'Rs ' . number_format($order->total),
                 url("/track/{$order->tracking_token}"),
@@ -69,6 +70,21 @@ class WhatsAppController extends Controller
     }
 
     // ── Generate WhatsApp link for product page ────────────────────────
+    // Same normalization used in OrderNotificationService — local-format
+    // numbers (leading 0) need the country code and no leading 0 for the
+    // WhatsApp Business API to actually deliver.
+    private static function normalizePhone(string $phone, string $defaultCountry = '92'): string
+    {
+        $phone = preg_replace('/\D/', '', $phone);
+        if ($phone === '') return '';
+        if (str_starts_with($phone, '0')) {
+            $phone = $defaultCountry . substr($phone, 1);
+        } elseif (!str_starts_with($phone, $defaultCountry)) {
+            $phone = $defaultCountry . $phone;
+        }
+        return $phone;
+    }
+
     public static function productLink(string $productName, float $price, string $whatsappNumber, string $template): string
     {
         $message = str_replace(
@@ -76,7 +92,7 @@ class WhatsAppController extends Controller
             [$productName, 'Rs ' . number_format($price)],
             $template
         );
-        $number = preg_replace('/\D/', '', $whatsappNumber);
+        $number = self::normalizePhone($whatsappNumber);
         return "https://wa.me/{$number}?text=" . urlencode($message);
     }
 }

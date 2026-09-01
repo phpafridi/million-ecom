@@ -15,6 +15,7 @@ interface Props {
         og_image_url?: string | null
         seo_indexing_enabled: string
         custom_head_scripts: string
+        google_site_verification: string
     }
 }
 
@@ -86,7 +87,8 @@ function ImageUploadField({ label, w, h, hint, current, onFile }: {
 }
 
 export default function SeoIndex({ seo }: Props) {
-    const { props: _p } = usePage<{ adminPath?: string }>()
+    const { props: _p } = usePage<{ adminPath?: string; auth?: { user?: { role?: string } } }>()
+    const authRole = _p.auth?.user?.role ?? ''
     const ap = `/${_p.adminPath ?? 'ml-admin'}`
     const { data, setData, post, processing, errors } = useForm<any>({
         meta_title: seo.meta_title,
@@ -97,6 +99,7 @@ export default function SeoIndex({ seo }: Props) {
         custom_head_scripts: seo.custom_head_scripts,
         favicon: null as File | null,
         og_image: null as File | null,
+        google_site_verification: seo.google_site_verification,
     })
 
     function submit(e: React.FormEvent) {
@@ -162,11 +165,30 @@ export default function SeoIndex({ seo }: Props) {
                         </div>
                     </Section>
 
+                    <Section title="Search Console Verification" icon="✅">
+                        <Field label="Google Search Console Verification Code" hint="From Search Console → Settings → Ownership verification → HTML tag method. Paste just the content value, not the full tag.">
+                            <Input value={data.google_site_verification} onChange={(e: any) => setData('google_site_verification', e.target.value)}
+                                placeholder="abcXYZ123..." />
+                        </Field>
+                    </Section>
+
+                    <a href={`${ap}/analytics`} className="block bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 text-white no-underline hover:opacity-90 transition-opacity">
+                        <div className="text-[13px] font-bold flex items-center gap-2">📊 Looking for Google Analytics, GTM, or Pixel IDs?</div>
+                        <div className="text-[12px] text-gray-300 mt-1">Those live on the dedicated Analytics page →</div>
+                    </a>
+
                     <Section title="Advanced — Custom Head Scripts" icon="⚙️">
-                        <Field label="Custom HTML / Analytics Scripts" hint="Paste Google Analytics, Meta Pixel, or other tracking scripts here. Inserted into every page's <head>.">
+                        <div className="mb-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-[12.5px] text-amber-800 leading-relaxed">
+                            ⚠️ <strong>This runs on every single customer page load, unrestricted.</strong> Only
+                            paste code from sources you fully trust — this is not sandboxed. For Google Analytics,
+                            Meta Pixel, GTM, or TikTok Pixel specifically, use the Analytics page instead
+                            (safer — they don't accept arbitrary script). Restricted to full Admin accounts only.
+                        </div>
+                        <Field label="Custom HTML / Analytics Scripts" hint={authRole === 'admin' ? "Paste tracking scripts not covered by the dedicated fields above." : "Only full Admin accounts can edit this field."}>
                             <textarea value={data.custom_head_scripts} onChange={e => setData('custom_head_scripts', e.target.value)} rows={5}
+                                disabled={authRole !== 'admin'}
                                 placeholder="<script>...</script>"
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary,#00c8ff)] resize-none transition-all" />
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-[12.5px] font-mono outline-none focus:border-[var(--color-primary,#00c8ff)] resize-none transition-all disabled:bg-gray-50 disabled:text-gray-400" />
                         </Field>
                     </Section>
                 </div>

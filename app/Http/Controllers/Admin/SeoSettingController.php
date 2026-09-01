@@ -23,6 +23,12 @@ class SeoSettingController extends Controller
                 'og_image_url'         => $s['og_image_url']         ?? null,
                 'seo_indexing_enabled' => $s['seo_indexing_enabled'] ?? '1',
                 'custom_head_scripts'  => $s['custom_head_scripts']  ?? '',
+                // The tracking pixels (GA/GTM/FB/TikTok) turned out to
+                // already have their own dedicated Analytics page — adding
+                // them here too would have been the exact duplication this
+                // whole reorganization is meant to fix. Only this one is
+                // genuinely unique to SEO.
+                'google_site_verification' => $s['google_site_verification'] ?? '',
             ],
         ]);
     }
@@ -38,10 +44,29 @@ class SeoSettingController extends Controller
             'custom_head_scripts'  => 'nullable|string',
             'favicon'              => 'nullable|image|mimes:png,ico,jpg,webp|max:1024',
             'og_image'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'google_site_verification' => 'nullable|string|max:100',
         ]);
 
+        // custom_head_scripts renders raw, unescaped HTML/JS into every
+        // single customer page load — the real risk here isn't a remote
+        // attacker (this route already requires admin auth), it's blast
+        // radius: any 'staff' role account could otherwise inject
+        // site-wide malicious JS if that lower-privileged account is ever
+        // compromised, not just a genuine 'admin' account. Restricting to
+        // admin-only meaningfully shrinks that blast radius — unlike
+        // pattern-matching for "gtag(" substrings, which a single comment
+        // containing that string trivially defeats while injecting
+        // anything else alongside it.
+        $keys = ['meta_title','meta_description','meta_keywords','site_url','seo_indexing_enabled',
+            'google_site_verification'];
+        if (auth()->user()->role === 'admin') {
+            $keys[] = 'custom_head_scripts';
+        } elseif ($request->filled('custom_head_scripts')) {
+            return back()->withErrors(['custom_head_scripts' => 'Only full admin accounts can edit custom head scripts.']);
+        }
+
         // Save text fields
-        foreach (['meta_title','meta_description','meta_keywords','site_url','seo_indexing_enabled','custom_head_scripts'] as $key) {
+        foreach ($keys as $key) {
             if ($request->has($key)) {
                 Setting::set($key, (string) $request->input($key));
             }

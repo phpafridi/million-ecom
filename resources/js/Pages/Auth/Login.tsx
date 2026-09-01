@@ -28,7 +28,13 @@ export default function Login({ settings, isAdmin = false }: Props) {
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-3 mb-2">
                         {settings?.logo_url ? (
-                            <img src={settings.logo_url} alt={siteName} className="h-12 w-auto object-contain" style={{ maxWidth: 220 }} />
+                            <>
+                                <img src={settings.logo_url} alt={siteName} className="h-12 w-auto object-contain" style={{ maxWidth: 90 }} />
+                                <div className="text-left">
+                                    <div className="font-manrope font-black text-2xl tracking-wider leading-none" style={{ color: settings?.header_title_color || 'var(--color-dark-bg, #0a0e1a)' }}>{siteName.toUpperCase()}</div>
+                                    <div className="text-[10px] font-bold tracking-[.16em] uppercase mt-0.5" style={{ color: settings?.header_subtitle_color || 'var(--color-primary, #00c8ff)' }}>{tagline}</div>
+                                </div>
+                            </>
                         ) : (
                             <>
                                 <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-lg"
@@ -36,8 +42,8 @@ export default function Login({ settings, isAdmin = false }: Props) {
                                     <span className="font-manrope font-black text-xl" style={{ color:'var(--color-primary, #00c8ff)' }}>{initial}</span>
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-manrope font-black text-2xl tracking-wider leading-none" style={{ color:'var(--color-dark-bg, #0a0e1a)' }}>{siteName.toUpperCase()}</div>
-                                    <div className="text-[10px] font-bold tracking-[.16em] uppercase mt-0.5" style={{ color:'var(--color-primary, #00c8ff)' }}>{tagline}</div>
+                                    <div className="font-manrope font-black text-2xl tracking-wider leading-none" style={{ color: settings?.header_title_color || 'var(--color-dark-bg, #0a0e1a)' }}>{siteName.toUpperCase()}</div>
+                                    <div className="text-[10px] font-bold tracking-[.16em] uppercase mt-0.5" style={{ color: settings?.header_subtitle_color || 'var(--color-primary, #00c8ff)' }}>{tagline}</div>
                                 </div>
                             </>
                         )}

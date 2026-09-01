@@ -16,6 +16,25 @@ class SettingController extends Controller
         ]);
     }
 
+    // These two just render a different page with the same full settings
+    // dump — every settings page picks out only the specific keys it
+    // cares about. All three post to the same update() below, so there's
+    // only ever one source of truth for how a setting actually gets saved,
+    // regardless of which page it was edited from.
+    public function branding()
+    {
+        return Inertia::render('Admin/Branding/Index', [
+            'settings' => Setting::allKeyed(),
+        ]);
+    }
+
+    public function notifications()
+    {
+        return Inertia::render('Admin/Notifications/Index', [
+            'settings' => Setting::allKeyed(),
+        ]);
+    }
+
     public function update(Request $request)
     {
         $data = $request->validate([
@@ -95,7 +114,13 @@ class SettingController extends Controller
             'sms_deliver_template'   => 'nullable|string|max:500',
             'sms_cancel_template'    => 'nullable|string|max:500',
             'address'                => 'nullable|string|max:300',
-            'whatsapp_number'        => 'nullable|string|max:20',
+            // Previously just 'nullable|string|max:20' — accepted literally
+            // any text under 20 characters, including a country name typed
+            // in by mistake instead of an actual number. That produced a
+            // broken wa.me link (WhatsApp's own redirect tried to interpret
+            // the non-numeric value as a username instead of a phone
+            // number). Now requires an actual phone number shape.
+            'whatsapp_number'        => 'nullable|string|max:20|regex:/^\+?[0-9]{7,15}$/',
             'delivery_threshold'      => 'nullable|numeric',
             'login_max_attempts'      => 'nullable|integer|min:1|max:20',
             'login_lockout_minutes'   => 'nullable|integer|min:1|max:1440',
@@ -123,6 +148,10 @@ class SettingController extends Controller
             'product_contact_method' => 'nullable|string|in:whatsapp,messenger,phone,email,none',
             'product_card_contact'   => 'nullable|string|in:whatsapp,messenger,phone,none',
             'messenger_url'          => 'nullable|url',
+            // Was configurable from a page (WhatsApp/Index.tsx) but missing
+            // from this whitelist entirely, so it silently never actually
+            // saved despite the product page genuinely reading it.
+            'whatsapp_product_msg'   => 'nullable|string|max:500',
             'trust_1_icon'           => 'nullable|string|max:10',
             'trust_1_title'          => 'nullable|string|max:50',
             'trust_1_sub'            => 'nullable|string|max:100',
@@ -140,6 +169,21 @@ class SettingController extends Controller
             'trust_5_sub'            => 'nullable|string|max:100',
             'ticker_items'           => 'nullable|string|max:500',
             'trust_bar_bg'           => 'nullable|string|max:20',
+            'header_title_color'     => 'nullable|string|max:20',
+            'search_text_color'      => 'nullable|string|max:20',
+            // Floating button controls — enable/disable, corner, and size
+            // for Chat, Cart, and WhatsApp independently, so they can be
+            // positioned without overlapping each other.
+            'chat_float_enabled'     => 'nullable|in:0,1',
+            'chat_float_position'    => 'nullable|in:left,right',
+            'chat_float_size'        => 'nullable|in:sm,md,lg',
+            'cart_float_enabled'     => 'nullable|in:0,1',
+            'cart_float_position'    => 'nullable|in:left,right',
+            'cart_float_size'        => 'nullable|in:sm,md,lg',
+            'whatsapp_float_enabled' => 'nullable|in:0,1',
+            'whatsapp_float_position'=> 'nullable|in:left,right',
+            'whatsapp_float_size'    => 'nullable|in:sm,md,lg',
+            'header_subtitle_color'  => 'nullable|string|max:20',
             'trust_icon_color'       => 'nullable|string|max:20',
             'trust_title_color'      => 'nullable|string|max:20',
             'trust_sub_color'        => 'nullable|string|max:20',
@@ -217,13 +261,16 @@ class SettingController extends Controller
             'delivery_threshold','shipping_fee','login_max_attempts','login_lockout_minutes','admin_max_attempts','admin_lockout_minutes','facebook_url','instagram_url',
             'twitter_url','youtube_url','topbar_message','admin_path','sale_enabled','sale_label','sale_badge','sale_ends_at','sale_bg','sale_text_color','sale_discount',
             'show_whatsapp_button','show_facebook_button','show_instagram_button',
-            'show_phone_button','product_contact_method','product_card_contact','messenger_url',
+            'show_phone_button','product_contact_method','product_card_contact','messenger_url','whatsapp_product_msg',
             'trust_1_icon','trust_1_title','trust_1_sub',
             'trust_2_icon','trust_2_title','trust_2_sub',
             'trust_3_icon','trust_3_title','trust_3_sub',
             'trust_4_icon','trust_4_title','trust_4_sub',
             'trust_5_icon','trust_5_title','trust_5_sub',
-            'trust_bar_bg','trust_icon_color','trust_title_color','trust_sub_color',
+            'trust_bar_bg','trust_icon_color','trust_title_color','trust_sub_color','header_title_color','header_subtitle_color','search_text_color',
+            'chat_float_enabled','chat_float_position','chat_float_size',
+            'cart_float_enabled','cart_float_position','cart_float_size',
+            'whatsapp_float_enabled','whatsapp_float_position','whatsapp_float_size',
             'ticker_bg','ticker_live_bg','ticker_live_text','ticker_text_color',
             'brands_show','brands_title','brands_subtitle','brands_items',
             'ticker_items',

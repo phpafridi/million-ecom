@@ -29,13 +29,16 @@
     "zustand": "^5.0"
   },
   "devDependencies": {
+    "@laravel/echo-react": "^2.4.0",
     "@tailwindcss/vite": "^4.0",
     "@types/node": "^22.0",
     "@types/react": "^19.0",
     "@types/react-dom": "^19.0",
     "@vitejs/plugin-react": "^4.3",
     "autoprefixer": "^10.4",
+    "laravel-echo": "^2.4.0",
     "laravel-vite-plugin": "^1.0",
+    "pusher-js": "^8.6.0",
     "tailwindcss": "^4.0",
     "typescript": "^5.5",
     "vite": "^6.0"

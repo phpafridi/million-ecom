@@ -11,11 +11,42 @@ class CartController extends Controller
 {
     private function sessionId(): string { return session()->getId(); }
 
+    // Global flash sale is a site-wide % discount (Settings: sale_enabled,
+    // sale_discount, sale_ends_at) shown on the product page and product
+    // cards — but it was never actually applied when adding to cart or
+    // calculating checkout totals. A customer could see "20% off" on a
+    // product, add it, and still get charged full price. Shared here so
+    // add() and cartItems() can't drift out of sync with each other.
+    private function flashSalePrice(float $basePrice): float
+    {
+        $enabled  = Setting::get('sale_enabled', '0') === '1';
+        $discount = (int) Setting::get('sale_discount', '0');
+        $endsAt   = Setting::get('sale_ends_at', '');
+        $active   = $enabled && $discount > 0
+            && (!$endsAt || now()->lt(\Carbon\Carbon::parse($endsAt)));
+        return $active ? round($basePrice * (1 - $discount / 100), 2) : $basePrice;
+    }
+
     private function cartItems()
     {
-        return CartItem::where('session_id', $this->sessionId())
+        $items = CartItem::where('session_id', $this->sessionId())
             ->with(['product.productImages'])
             ->get();
+
+        // Keep stored cart prices in sync with the flash sale's current
+        // state — handles the sale turning on/off or the discount % changing
+        // after an item was already added, without ever discounting a
+        // variant-priced item (variants aren't part of this global sale).
+        foreach ($items as $item) {
+            if ($item->variant_id || !$item->product) continue;
+            $correctPrice = $this->flashSalePrice($item->product->price);
+            if ((float) $item->price !== $correctPrice) {
+                $item->update(['price' => $correctPrice]);
+                $item->price = $correctPrice;
+            }
+        }
+
+        return $items;
     }
 
     public function index()
@@ -60,6 +91,10 @@ class CartController extends Controller
             'discount'        => $totalDiscount,
             'points_discount' => $pointsDiscount,
             'coupon_discount' => $couponDiscount,
+            // Needed so the frontend can show "Coupon applied: CODE ✕" and
+            // let the customer actually remove it — previously only the
+            // discount amount was sent, with no code and no way to cancel.
+            'coupon_code'     => session('coupon_code'),
             'loyalty_points'  => $loyaltyPoints,
             'loyalty_value'   => $loyaltyValue,
             'points_used'     => $pointsUsed,
@@ -109,6 +144,8 @@ class CartController extends Controller
                 $stock        = $variant->stock;
                 $variantLabel = $variant->label ?? null;
             }
+        } else {
+            $price = $this->flashSalePrice($price);
         }
 
         if ($stock < $qty) return back()->with('error', 'Not enough stock available.');
@@ -212,6 +249,23 @@ class CartController extends Controller
                 return back()->with('error', "\"{$item->product->name}\" only has {$item->product->stock} units left.");
         }
 
+        // COD doesn't require any real payment to place an order, which makes
+        // it the one method someone could abuse to exhaust real stock with
+        // fake orders (place, never pay, never collect). Online gateways
+        // naturally self-limit this since each attempt needs a real card/
+        // wallet. This only blocks *repeated* COD orders from the same phone
+        // number in a short window — legitimate customers reordering later
+        // are unaffected.
+        if ($data['gateway'] === 'cod') {
+            $recentCodOrders = Order::where('customer_phone', $data['phone'])
+                ->where('payment_method', 'cod')
+                ->where('created_at', '>=', now()->subHours(2))
+                ->count();
+            if ($recentCodOrders >= 3) {
+                return back()->with('error', 'Too many orders placed from this number recently. Please contact us directly to complete your order.');
+            }
+        }
+
         $user      = auth()->user();
         $subtotal  = $items->sum('subtotal');
         $threshold = (float) Setting::get('delivery_threshold', '0');
@@ -259,6 +313,10 @@ class CartController extends Controller
             'payment_status'   => 'pending',
         ]);
 
+        // Without this, the order timeline in admin started completely
+        // blank — no record of when the order was actually placed.
+        $order->addStatusHistory('pending', 'Order placed by customer', 'customer');
+
         foreach ($items as $item) {
             $order->items()->create([
                 'product_id'    => $item->product_id,
@@ -276,11 +334,20 @@ class CartController extends Controller
         }
 
         $order->load('items.product');
-        $order->reduceStock();
+        // Stock is reduced only on confirmed online payment (PaymentController::markPaid)
+        // or when admin confirms a COD order for shipping (Admin/OrderController::update).
+        // Reducing it here — at mere order placement, before any payment or shipping
+        // confirmation — let anyone exhaust real stock with fake/abandoned COD orders,
+        // and could double-reduce or wrongly reduce stock for online payments that later
+        // fail. See BUG 1.1 / BUG 5.1 in the audit.
 
-        // Coupon usage
+        // Coupon usage is counted only once this order is genuinely
+        // confirmed (online payment succeeds, or admin confirms a COD/bank
+        // transfer order) — see Order::countCouponUsage(). Incrementing it
+        // here at raw checkout meant a coupon could exhaust itself entirely
+        // from abandoned or failed online payments with zero real purchases
+        // behind them.
         if ($couponCode) {
-            Coupon::where('code', $couponCode)->increment('used_count');
             session()->forget(['coupon_code', 'coupon_discount']);
         }
 
@@ -297,13 +364,17 @@ class CartController extends Controller
         // Clear cart
         CartItem::where('session_id', $this->sessionId())->delete();
 
-        // Send all notifications — deferred to run AFTER the HTTP response is
-        // already sent to the browser. Previously this ran inline and blocked
-        // the whole checkout on 1-2 real SMTP round-trips (plus WhatsApp/SMS
-        // API calls if enabled) before the customer ever saw the confirmation
-        // page. Using afterResponse() means the redirect happens immediately;
-        // the emails/WhatsApp/SMS still send, just invisibly in the background
-        // within the same request lifecycle — no queue worker needed.
+        // Send all notifications via the real queue — not afterResponse().
+        // afterResponse() relies on fastcgi_finish_request() to actually
+        // close the connection early, which only exists under PHP-FPM —
+        // under `php artisan serve` (the built-in dev server) that function
+        // doesn't exist, so the browser likely still waited for the full
+        // notification round-trip anyway despite this "fix". A real queued
+        // dispatch is genuinely decoupled from the request/response cycle
+        // regardless of which web server is running — the HTTP request just
+        // inserts a row into the jobs table (fast) and returns immediately;
+        // a separate `php artisan queue:work` process picks it up on its
+        // own schedule.
         $orderForNotify = $order->fresh();
         dispatch(function () use ($orderForNotify) {
             try {
@@ -311,7 +382,7 @@ class CartController extends Controller
             } catch (\Throwable $e) {
                 \Log::error('Notification failed: ' . $e->getMessage());
             }
-        })->afterResponse();
+        });
 
         $gatewayCode = $data['gateway'];
         if (in_array($gatewayCode, ['cod', 'bank_transfer'])) {

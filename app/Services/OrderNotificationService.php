@@ -35,11 +35,25 @@ class OrderNotificationService
         return $order->order_number ?? ('MLN-' . str_pad($order->id, 5, '0', STR_PAD_LEFT));
     }
 
-    private function getStatuses(string $key): array
+    private function getStatuses(string $key, array $defaultIfUnset = ['processing', 'shipped', 'delivered', 'cancelled']): array
     {
         $val = $this->s[$key] ?? '';
-        return $val ? array_map('trim', explode(',', $val))
-                    : ['processing', 'shipped', 'delivered', 'cancelled'];
+        return $val ? array_map('trim', explode(',', $val)) : $defaultIfUnset;
+    }
+
+    // Called from PaymentController::markPaid() and PayFastController — this
+    // method genuinely didn't exist before, meaning every online-payment
+    // confirmation (JazzCash, Easypaisa, Safepay, Stripe, PayPal, Razorpay,
+    // PayFast) has been silently failing to notify the customer, caught by
+    // the surrounding try/catch with no visible error to the customer or
+    // admin beyond a log line.
+    public function notify(Order $order, string $status): void
+    {
+        if ($status === 'new_order') {
+            $this->notifyNewOrder($order);
+        } else {
+            $this->notifyStatusChange($order, $status);
+        }
     }
 
     // ── Called on new order ──────────────────────────────────────────
@@ -69,7 +83,11 @@ class OrderNotificationService
             $this->waAdmin($order, $newStatus);
         }
 
-        if (in_array($newStatus, $this->getStatuses('sms_notify_on')))
+        // SMS often costs real money per message — unlike email/WhatsApp, it
+        // should never fire on every status by default just because the
+        // admin hasn't configured this field yet. Empty here means
+        // genuinely disabled, not "send on everything."
+        if (in_array($newStatus, $this->getStatuses('sms_notify_on', [])))
             $this->smsCustomer($order, $newStatus);
     }
 
@@ -109,7 +127,7 @@ class OrderNotificationService
         $key = $this->s['whatsapp_api_key'] ?? '';
         $pid = $this->s['whatsapp_phone_id'] ?? '';
         if (!$key || !$pid) return;
-        $phone = preg_replace('/\D/', '', $order->customer_phone ?? '');
+        $phone = $this->normalizePhone($order->customer_phone);
         if (!$phone) return;
         $tplMap = ['placed'=>'whatsapp_order_template','processing'=>'whatsapp_order_template',
                    'shipped'=>'whatsapp_ship_template','delivered'=>'whatsapp_deliver_template',
@@ -139,18 +157,14 @@ class OrderNotificationService
             'cancelled' => "❌ CANCELLED: Order {$num} — Rs ".number_format($order->total),
             default     => null,
         };
-        if ($msg) $this->wa($key, $pid, preg_replace('/\D/', '', $admin), $msg);
+        if ($msg) $this->wa($key, $pid, $this->normalizePhone($admin), $msg);
     }
 
     private function wa(string $key, string $pid, string $phone, string $msg): void
     {
-        try {
-            $res = Http::withToken($key)->post("https://graph.facebook.com/v18.0/{$pid}/messages", [
-                'messaging_product' => 'whatsapp', 'to' => $phone,
-                'type' => 'text', 'text' => ['body' => $msg],
-            ]);
-            if (!$res->successful()) Log::warning("WA API: " . $res->body());
-        } catch (\Throwable $e) { Log::error("WA send failed: " . $e->getMessage()); }
+        // Dispatched to the queue — this was a synchronous HTTP call sitting
+        // directly in the checkout/status-update request path before.
+        \App\Jobs\SendWhatsAppNotification::dispatch($key, $pid, $phone, $msg);
     }
 
     // ── SMS ──────────────────────────────────────────────────────────
@@ -160,7 +174,7 @@ class OrderNotificationService
         $provider = $this->s['sms_provider'] ?? '';
         $key      = $this->s['sms_api_key']  ?? '';
         if (!$key || !$provider) return;
-        $phone = preg_replace('/\D/', '', $order->customer_phone ?? '');
+        $phone = $this->normalizePhone($order->customer_phone);
         if (!$phone) return;
         $tplMap = ['placed'=>'sms_order_template','processing'=>'sms_order_template',
                    'shipped'=>'sms_ship_template','delivered'=>'sms_deliver_template',
@@ -168,20 +182,32 @@ class OrderNotificationService
         $tpl = $this->s[$tplMap[$status] ?? ''] ?? $this->smsTpl($status);
         $msg = $this->fill($tpl, $order);
         $sender = $this->s['sms_sender_id'] ?? '';
-        try {
-            match($provider) {
-                'twilio' => Http::withBasicAuth($key, $this->s['sms_api_secret'] ?? '')
-                    ->post("https://api.twilio.com/2010-04-01/Accounts/{$key}/Messages.json",
-                        ['From' => $sender, 'To' => "+{$phone}", 'Body' => $msg]),
-                default  => Http::post($this->s['sms_api_url'] ?? '', [
-                    'api_key' => $key, 'sender' => $sender, 'phone' => $phone, 'message' => $msg,
-                ]),
-            };
-            Log::info("SMS sent to {$phone}");
-        } catch (\Throwable $e) { Log::error("SMS failed: " . $e->getMessage()); }
+        // Dispatched to the queue — was a synchronous HTTP call before.
+        \App\Jobs\SendSmsNotification::dispatch(
+            $provider, $key, $phone, $msg, $sender,
+            $this->s['sms_api_secret'] ?? '',
+            $this->s['sms_api_url']    ?? ''
+        );
     }
 
     // ── Template helpers ─────────────────────────────────────────────
+    // Customers commonly enter Pakistani numbers in local format (leading 0,
+    // e.g. 03001234567) but WhatsApp/SMS gateway APIs need the full
+    // international format with country code and no leading 0
+    // (923001234567) — messages would otherwise fail to deliver or go to an
+    // invalid number entirely.
+    private function normalizePhone(?string $phone, string $defaultCountry = '92'): string
+    {
+        $phone = preg_replace('/\D/', '', $phone ?? '');
+        if ($phone === '') return '';
+        if (str_starts_with($phone, '0')) {
+            $phone = $defaultCountry . substr($phone, 1);
+        } elseif (!str_starts_with($phone, $defaultCountry)) {
+            $phone = $defaultCountry . $phone;
+        }
+        return $phone;
+    }
+
     private function fill(string $tpl, Order $order): string
     {
         return str_replace(

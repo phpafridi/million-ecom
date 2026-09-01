@@ -21,13 +21,22 @@ class AccountController extends Controller
             ->take(5)
             ->get();
 
+        // One query for both counts instead of two separate ones against
+        // the same table.
+        $summary = Order::where('user_id', $user->id)
+            ->selectRaw('COUNT(*) as total_orders, SUM(CASE WHEN status != "cancelled" THEN total ELSE 0 END) as total_spent')
+            ->first();
+
         $stats = [
-            'total_orders'    => Order::where('user_id', $user->id)->count(),
-            'total_spent'     => Order::where('user_id', $user->id)->whereNotIn('status', ['cancelled'])->sum('total'),
+            'total_orders'    => (int) ($summary->total_orders ?? 0),
+            'total_spent'     => (float) ($summary->total_spent ?? 0),
             'loyalty_points'  => $user->loyalty_points,
             'points_value'    => $user->points_value,
             'level'           => $user->level,
-            'wishlist_count'  => Wishlist::where('session_id', session()->getId())->count(),
+            // Tied to the logged-in account, not the browser session — a
+            // wishlist built as a guest and then merged on login (see
+            // LoginController) needs to keep counting correctly afterward.
+            'wishlist_count'  => Wishlist::where('user_id', $user->id)->count(),
         ];
 
         return Inertia::render('Account/Index', [
@@ -71,7 +80,10 @@ class AccountController extends Controller
     // ── Wishlist ─────────────────────────────────────────────────────
     public function wishlist()
     {
-        $items = Wishlist::where('session_id', session()->getId())
+        // This account page is only reachable while logged in, so query by
+        // the account directly — same bug as everywhere else in this pass
+        // (session_id doesn't survive login/session regeneration).
+        $items = Wishlist::where('user_id', auth()->id())
             ->with('product.productImages', 'product.category')
             ->get();
 

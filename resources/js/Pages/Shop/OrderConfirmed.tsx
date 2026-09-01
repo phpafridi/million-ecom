@@ -2,11 +2,17 @@ import { Head, Link } from '@inertiajs/react'
 import { IconCheck, IconShoppingBag, IconHome, IconPhone, IconBrandWhatsapp, IconClock, IconCreditCard } from '@tabler/icons-react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 
+interface OrderItemLine {
+    product_name: string; variant_label?: string | null
+    quantity: number; price: number; subtotal: number
+}
 interface Order {
     id: number; order_number?: string; tracking_token?: string
     total: number; payment_method: string
     payment_status: string; status: string
     customer_name: string; customer_phone: string; items_count: number
+    items?: OrderItemLine[]
+    subtotal?: number; shipping?: number; discount?: number; coupon_code?: string | null
 }
 interface Props { order: Order | null; auth: any; settings: Record<string, string> }
 
@@ -51,12 +57,51 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                 {order && (
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
 
+                        {/* Line items — previously the confirmation page only
+                            showed a bare item count and the final total, no
+                            product names, variants, or discount breakdown at
+                            all. This is effectively the customer's receipt. */}
+                        {order.items && order.items.length > 0 && (
+                            <div className="p-5 border-b border-gray-100 space-y-3">
+                                {order.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-start gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-[13.5px] font-semibold text-gray-900 truncate">{item.product_name}</p>
+                                            {item.variant_label && (
+                                                <p className="text-[12px] text-gray-500 mt-0.5">{item.variant_label}</p>
+                                            )}
+                                            <p className="text-[12px] text-gray-400 mt-0.5">{fmt(item.price)} × {item.quantity}</p>
+                                        </div>
+                                        <span className="text-[13.5px] font-bold text-gray-900 whitespace-nowrap">{fmt(item.subtotal)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Order summary */}
                         <div className="p-5 border-b border-gray-100">
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-[13px] font-semibold text-gray-600">Order Number</span>
                                 <span className="font-manrope font-black text-[15px]">{displayNum}</span>
                             </div>
+                            {typeof order.subtotal === 'number' && (
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-[13px] font-semibold text-gray-600">Subtotal</span>
+                                    <span className="text-[13.5px] text-gray-900">{fmt(order.subtotal)}</span>
+                                </div>
+                            )}
+                            {!!order.discount && order.discount > 0 && (
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-[13px] font-semibold text-green-600">Discount{order.coupon_code ? ` (${order.coupon_code})` : ''}</span>
+                                    <span className="text-[13.5px] font-semibold text-green-600">-{fmt(order.discount)}</span>
+                                </div>
+                            )}
+                            {typeof order.shipping === 'number' && (
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-[13px] font-semibold text-gray-600">Shipping</span>
+                                    <span className="text-[13.5px] text-gray-900">{order.shipping > 0 ? fmt(order.shipping) : 'Free'}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-[13px] font-semibold text-gray-600">Total</span>
                                 <span className="font-manrope font-black text-[18px]" style={{ color: 'var(--color-primary)' }}>{fmt(order.total)}</span>

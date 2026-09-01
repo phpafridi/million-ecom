@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{User, Order, Setting, EmailSubscriber};
+use App\Models\{User, Order, Setting, EmailSubscriber, EmailCampaign};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Mail, Log};
 use Inertia\Inertia;
@@ -149,32 +149,39 @@ class EmailCampaignController extends Controller
         // Deduplicate by email
         $recipients = $recipients->unique('email')->values();
 
-        $sent = 0; $failed = 0;
+        // A real, persistent record of this campaign — the table already
+        // existed for exactly this (name/subject/status/sent_count/sent_at)
+        // but nothing ever actually created a row in it.
+        $campaign = EmailCampaign::create([
+            'name'    => \Illuminate\Support\Str::limit($data['subject'], 60),
+            'subject' => $data['subject'],
+            'body'    => $data['body'],
+            'status'  => 'sent',
+            'sent_at' => now(),
+        ]);
 
+        // Queued rather than sent inline — the previous synchronous loop
+        // with a 100ms sleep per recipient meant ~1000 subscribers would
+        // take over 100 seconds, blowing past PHP's execution time limit
+        // and timing out mid-send with no way to know who had already
+        // received it. Each recipient is now its own queued job, staggered
+        // slightly to stay within typical SMTP provider rate limits.
+        $dispatched = 0;
         foreach ($recipients as $r) {
-            try {
-                $html = $this->buildHtml($data['body'], [
-                    'name'       => $r['name'] ?? 'Valued Customer',
-                    'store_name' => $storeName,
-                    'store_url'  => $storeUrl,
-                ], $settings);
+            $html = $this->buildHtml($data['body'], [
+                'name'       => $r['name'] ?? 'Valued Customer',
+                'store_name' => $storeName,
+                'store_url'  => $storeUrl,
+            ], $settings);
 
-                Mail::html($html, function($m) use ($r, $data, $fromEmail, $storeName) {
-                    $m->to($r['email'], $r['name'] ?? '')
-                      ->subject($data['subject'])
-                      ->from($fromEmail, $storeName);
-                });
-                $sent++;
-                usleep(100000); // 100ms between sends
-            } catch (\Throwable $e) {
-                Log::warning("Campaign failed to {$r['email']}: " . $e->getMessage());
-                $failed++;
-            }
+            \App\Jobs\SendCampaignEmail::dispatch(
+                $r['email'], $r['name'] ?? '', $data['subject'], $html,
+                $fromEmail, $storeName, $campaign->id
+            )->delay(now()->addSeconds(intdiv($dispatched, 5))); // ~5/sec
+            $dispatched++;
         }
 
-        return back()->with('success',
-            "Sent to {$sent} people" . ($failed > 0 ? ", {$failed} failed." : '.')
-        );
+        return back()->with('success', "Campaign queued for {$dispatched} recipient" . ($dispatched === 1 ? '' : 's') . ".");
     }
 
     private function buildHtml(string $body, array $vars, array $settings): string

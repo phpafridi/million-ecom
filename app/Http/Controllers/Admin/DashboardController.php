@@ -11,14 +11,17 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Revenue chart — last 12 months
-        $revenueChart = collect(range(11, 0))->map(function($i) {
+        // Revenue chart — last 12 months, one query instead of 12
+        $revenueRaw = Order::whereNotIn('status', ['cancelled'])
+            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key, COUNT(*) as orders, COALESCE(SUM(total),0) as revenue")
+            ->groupByRaw("DATE_FORMAT(created_at, '%Y-%m')")
+            ->get()
+            ->keyBy('month_key');
+
+        $revenueChart = collect(range(11, 0))->map(function($i) use ($revenueRaw) {
             $month = Carbon::now()->subMonths($i);
-            $data  = Order::whereYear('created_at', $month->year)
-                ->whereMonth('created_at', $month->month)
-                ->whereNotIn('status', ['cancelled'])
-                ->selectRaw('COUNT(*) as orders, COALESCE(SUM(total),0) as revenue')
-                ->first();
+            $data  = $revenueRaw->get($month->format('Y-m'));
             return [
                 'month'   => $month->format('M'),
                 'revenue' => (float) ($data->revenue ?? 0),
@@ -67,7 +70,7 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
                 'revenue'         => (float) Order::whereNotIn('status',['cancelled'])->sum('total'),
-                'orders'          => Order::count(),
+                'orders'          => Order::whereNotIn('status', ['cancelled'])->count(),
                 'customers'       => User::where('role','customer')->count(),
                 'products'        => Product::active()->count(),
                 'pending_orders'  => Order::where('status','pending')->count(),

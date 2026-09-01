@@ -34,9 +34,15 @@ class StaffController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate(['name'=>'sometimes|string|max:100','staff_role'=>'sometimes|in:manager,editor,support,viewer','is_active'=>'sometimes|boolean','password'=>'sometimes|nullable|string|min:8']);
-        if (!empty($data['password'])) { $data['password'] = Hash::make($data['password']); } else { unset($data['password']); }
+        $passwordChanged = !empty($data['password']);
+        if ($passwordChanged) { $data['password'] = Hash::make($data['password']); } else { unset($data['password']); }
         if (isset($data['staff_role'])) { $data['permissions'] = self::$roles[$data['staff_role']]['permissions']; }
         $user->update($data);
+        // Lets a staff member notice an unauthorized password reset — no
+        // notification existed at all before.
+        if ($passwordChanged) {
+            \App\Jobs\NotifyPasswordChanged::dispatch($user->email, $user->name);
+        }
         return back()->with('success', $user->name . ' updated.');
     }
 

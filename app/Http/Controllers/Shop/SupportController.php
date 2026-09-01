@@ -45,7 +45,9 @@ class SupportController extends Controller
         ]);
 
         $siteName = Setting::get('site_name', 'MILLIONAIRE');
-        try { Mail::raw("Hi {$data['name']},\n\nTicket #{$tn} created.\nSubject: {$data['subject']}\n\nWe'll reply within 24 hours.\n\n— {$siteName} Support", fn($m) => $m->to($data['email'])->subject("Support Ticket #{$tn} Created")); } catch (\Throwable $e) {}
+        \App\Jobs\SendSupportTicketConfirmation::dispatch(
+            $data['email'], $data['name'], $tn, $data['subject'], $siteName
+        );
 
         return back()->with('success', "Ticket #{$tn} created! We'll reply within 24 hours.");
     }

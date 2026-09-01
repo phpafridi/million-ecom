@@ -81,9 +81,11 @@ const NAV = [
             { label: 'Returns',   icon: IconChevronLeft,   path: '/returns' },
             { label: 'Live Chat', icon: IconMessageCircle, path: '/chat' },
             { label: 'Staff',     icon: IconUserCheck,     path: '/staff' },
-            { label: 'WhatsApp',  icon: IconMessageCircle, path: '/whatsapp' },
+            // WhatsApp link removed — settings consolidated into Settings page
             { label: 'Theme',     icon: IconPalette,       path: '/theme' },
+            { label: 'Branding',  icon: IconPhoto,         path: '/branding' },
             { label: 'SEO',       icon: IconWorld,         path: '/seo' },
+            { label: 'Notifications', icon: IconBell,      path: '/notifications' },
             { label: 'IP Firewall',  icon: IconLock,     path: '/blocked-ips' },
             { label: 'System Logs',  icon: IconLock,   path: '/system-logs' },
             { label: 'Backup',       icon: IconPointFilled,      path: '/backup' },
@@ -151,10 +153,12 @@ export default function AdminLayout({ children, title }: { children: React.React
             {/* Brand */}
             <div className="flex items-center gap-2.5 px-4 h-16 border-b border-white/8 flex-shrink-0">
                 {props.settings?.logo_url ? (
-                    // Real logo already carries the brand — show it alone, no
-                    // competing text squeezed in next to it.
-                    <div className="h-9 flex-1 min-w-0 flex items-center overflow-hidden">
-                        <img src={props.settings.logo_url} alt={siteName} className="h-full w-auto object-contain" style={{ maxHeight: 36, maxWidth: '100%' }} />
+                    <div className="h-9 flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
+                        <img src={props.settings.logo_url} alt={siteName} className="h-full w-auto object-contain flex-shrink-0" style={{ maxHeight: 36, maxWidth: 60 }} />
+                        <div className="min-w-0 flex-1">
+                            <div className="font-manrope font-black text-white text-[12.5px] leading-none truncate">{siteName}</div>
+                            <div className="text-[8.5px] text-white/35 font-semibold uppercase tracking-widest mt-0.5 truncate">Admin Panel</div>
+                        </div>
                     </div>
                 ) : (
                     <>
