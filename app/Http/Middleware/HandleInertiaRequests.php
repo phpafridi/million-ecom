@@ -114,6 +114,9 @@ class HandleInertiaRequests extends Middleware
                 'email'          => $request->user()->email,
                 'role'           => $request->user()->role,
                 'loyalty_points' => $request->user()->loyalty_points ?? 0,
+                'permissions'    => $request->user()->role === 'staff'
+                    ? (is_array($request->user()->permissions) ? $request->user()->permissions : json_decode($request->user()->permissions ?? '[]', true))
+                    : null,
             ] : null],
             'flash' => [
                 'success'            => session('success'),

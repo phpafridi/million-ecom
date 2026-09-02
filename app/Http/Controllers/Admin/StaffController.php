@@ -24,19 +24,47 @@ class StaffController extends Controller
         return Inertia::render('Admin/Staff/Index', ['staff'=>$staff,'roles'=>self::$roles]);
     }
 
+    // Valid permission keys — matches AdminMiddleware's map and the
+    // frontend's PERMISSION_OPTIONS list exactly, so validation can't be
+    // bypassed with an arbitrary string that happens to match nothing.
+    public static array $validPermissions = ['dashboard','orders','orders_lookup','products','customers','categories','coupons','reviews',
+        'email_campaigns','support_tickets','hero_slides','banners','pages','returns','chat','can_delete'];
+
     public function store(Request $request)
     {
-        $data = $request->validate(['name'=>'required|string|max:100','email'=>'required|email|unique:users,email','password'=>'required|min:8','staff_role'=>'required|in:manager,editor,support,viewer']);
-        User::create(['name'=>$data['name'],'email'=>$data['email'],'password'=>Hash::make($data['password']),'role'=>'staff','is_staff'=>true,'staff_role'=>$data['staff_role'],'permissions'=>self::$roles[$data['staff_role']]['permissions'],'is_active'=>true]);
+        $data = $request->validate([
+            'name'=>'required|string|max:100','email'=>'required|email|unique:users,email','password'=>'required|min:8',
+            'staff_role'=>'required|in:manager,editor,support,viewer',
+            // Custom, hand-picked permissions — falls back to the role's
+            // default set if the admin didn't customize anything. Previously
+            // there was no way to give a staff member any combination other
+            // than the 4 fixed presets.
+            'permissions'=>'nullable|array','permissions.*'=>'in:'.implode(',', self::$validPermissions),
+        ]);
+        $permissions = $data['permissions'] ?? self::$roles[$data['staff_role']]['permissions'];
+        User::create(['name'=>$data['name'],'email'=>$data['email'],'password'=>Hash::make($data['password']),'role'=>'staff','is_staff'=>true,'staff_role'=>$data['staff_role'],'permissions'=>$permissions,'is_active'=>true]);
         return back()->with('success', $data['name'] . ' added as ' . self::$roles[$data['staff_role']]['label'] . '.');
     }
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate(['name'=>'sometimes|string|max:100','staff_role'=>'sometimes|in:manager,editor,support,viewer','is_active'=>'sometimes|boolean','password'=>'sometimes|nullable|string|min:8']);
+        $data = $request->validate([
+            'name'=>'sometimes|string|max:100','staff_role'=>'sometimes|in:manager,editor,support,viewer','is_active'=>'sometimes|boolean','password'=>'sometimes|nullable|string|min:8',
+            'permissions'=>'nullable|array','permissions.*'=>'in:'.implode(',', self::$validPermissions),
+        ]);
         $passwordChanged = !empty($data['password']);
         if ($passwordChanged) { $data['password'] = Hash::make($data['password']); } else { unset($data['password']); }
-        if (isset($data['staff_role'])) { $data['permissions'] = self::$roles[$data['staff_role']]['permissions']; }
+        // Previously always overwrote permissions with the role's fixed
+        // list whenever staff_role was present in the request — meaning
+        // any custom checkbox selection from the edit form could never
+        // actually persist, since this line silently replaced it every
+        // single save. Now only falls back to the role default when the
+        // admin genuinely didn't send a custom permissions array at all.
+        if (array_key_exists('permissions', $data)) {
+            // explicit array (possibly empty) sent — respect it as-is
+        } elseif (isset($data['staff_role'])) {
+            $data['permissions'] = self::$roles[$data['staff_role']]['permissions'];
+        }
         $user->update($data);
         // Lets a staff member notice an unauthorized password reset — no
         // notification existed at all before.

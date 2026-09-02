@@ -1,5 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import { useState } from 'react'
 import { IconPlus, IconEdit, IconTrash, IconCheck, IconX, IconShield } from '@tabler/icons-react'
 
@@ -7,22 +8,50 @@ interface Staff { id:number; name:string; email:string; role:string; staff_role:
 interface Role { label:string; description:string; color:string; permissions:string[] }
 interface Props { staff:Staff[]; roles:Record<string,Role> }
 
+// Every page a staff account could conceivably access — matches
+// AdminMiddleware's permission map exactly, so a checked box here always
+// corresponds to something the backend will actually allow.
+const PERMISSION_OPTIONS: { key: string; label: string }[] = [
+    { key: 'dashboard',        label: 'Dashboard' },
+    { key: 'orders',           label: 'Orders (full — edit status, delete)' },
+    { key: 'orders_lookup',    label: 'Order Lookup (search & view only)' },
+    { key: 'products',         label: 'Products' },
+    { key: 'customers',        label: 'Customers' },
+    { key: 'categories',       label: 'Categories' },
+    { key: 'coupons',          label: 'Coupons' },
+    { key: 'reviews',          label: 'Reviews' },
+    { key: 'email_campaigns',  label: 'Email Campaigns' },
+    { key: 'support_tickets',  label: 'Support Tickets' },
+    { key: 'hero_slides',      label: 'Hero Slides' },
+    { key: 'banners',          label: 'Banners' },
+    { key: 'pages',            label: 'Pages' },
+    { key: 'returns',          label: 'Returns' },
+    { key: 'chat',             label: 'Live Chat' },
+]
+
 export default function StaffIndex({ staff, roles }:Props) {
     const { props: __p } = usePage<{ adminPath?: string }>()
     const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [adding, setAdding]   = useState(false)
     const [editing, setEditing] = useState<Staff|null>(null)
-    const [form, setForm]       = useState({ name:'', email:'', password:'', staff_role:'support' })
-    const [eform, setEform]     = useState({ name:'', staff_role:'support', is_active:true, password:'' })
+    const [form, setForm]       = useState({ name:'', email:'', password:'', staff_role:'support', permissions: roles['support']?.permissions ?? [] })
+    const [eform, setEform]     = useState({ name:'', staff_role:'support', is_active:true, password:'', permissions: [] as string[] })
+    // Deleting a staff account is high-stakes and hard to undo (they lose
+    // access immediately) — a native confirm() is too easy to click
+    // through from habit, so this requires typing their name instead.
+    const [pendingDelete, setPendingDelete] = useState<Staff | null>(null)
     const inp = "w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white"
 
     function add(e:React.FormEvent){
-        e.preventDefault(); router.post(`${ap}/staff`, form, { onSuccess:()=>{ setForm({name:'',email:'',password:'',staff_role:'support'}); setAdding(false) } }) }
+        e.preventDefault(); router.post(`${ap}/staff`, form, { onSuccess:()=>{ setForm({name:'',email:'',password:'',staff_role:'support',permissions:roles['support']?.permissions ?? []}); setAdding(false) } }) }
     function edit(e:React.FormEvent){
         e.preventDefault(); if(!editing) return; router.put(`${ap}/staff/${editing.id}`, eform as any, { onSuccess:()=>setEditing(null) }) }
-    function del(s:Staff){
-        if(!confirm(`Remove ${s.name}?`)) return; router.delete(`${ap}/staff/${s.id}`) }
-    function startEdit(s:Staff){ setEditing(s); setEform({ name:s.name, staff_role:s.staff_role||'support', is_active:s.is_active, password:'' }) }
+    function del(s:Staff){ setPendingDelete(s) }
+    function confirmDelete(){
+        if (!pendingDelete) return
+        router.delete(`${ap}/staff/${pendingDelete.id}`, { onFinish: () => setPendingDelete(null) })
+    }
+    function startEdit(s:Staff){ setEditing(s); setEform({ name:s.name, staff_role:s.staff_role||'support', is_active:s.is_active, password:'', permissions: s.permissions ?? [] }) }
 
     return (
         <AdminLayout title="Staff & Roles">
@@ -80,9 +109,30 @@ export default function StaffIndex({ staff, roles }:Props) {
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email *</label><input type="email" className={inp} value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} required/></div>
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Password *</label><input type="password" className={inp} value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} required/></div>
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Role *</label>
-                            <select className={inp} value={form.staff_role} onChange={e=>setForm(f=>({...f,staff_role:e.target.value}))}>
+                            <select className={inp} value={form.staff_role} onChange={e=>{
+                                const role = e.target.value
+                                setForm(f=>({...f, staff_role:role, permissions: roles[role]?.permissions ?? []}))
+                            }}>
                                 {Object.entries(roles).map(([k,r])=><option key={k} value={k}>{r.label} — {r.description}</option>)}
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Page Access</label>
+                            <p className="text-[11px] text-gray-400 mb-2">Role sets sensible defaults above — adjust individual pages here if needed.</p>
+                            <div className="grid grid-cols-2 gap-1.5 p-3 bg-gray-50 rounded-xl max-h-[180px] overflow-y-auto">
+                                {PERMISSION_OPTIONS.map(p => (
+                                    <label key={p.key} className="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" className="w-3.5 h-3.5" checked={form.permissions.includes(p.key)}
+                                            onChange={e => setForm(f => ({...f, permissions: e.target.checked ? [...f.permissions, p.key] : f.permissions.filter(x=>x!==p.key)}))} />
+                                        <span className="text-[12px] text-gray-700">{p.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer mt-2 p-2.5 bg-red-50 border border-red-100 rounded-xl">
+                                <input type="checkbox" className="w-3.5 h-3.5 accent-red-600" checked={form.permissions.includes('can_delete')}
+                                    onChange={e => setForm(f => ({...f, permissions: e.target.checked ? [...f.permissions, 'can_delete'] : f.permissions.filter(x=>x!=='can_delete')}))} />
+                                <span className="text-[12px] font-semibold text-red-700">Allow deleting items (applies across every page above)</span>
+                            </label>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button type="submit" className="flex-1 h-11 rounded-xl font-bold text-[14px] border-none cursor-pointer" style={{background:'var(--color-primary)',color:'var(--color-primary-text)'}}>Create</button>
@@ -98,9 +148,29 @@ export default function StaffIndex({ staff, roles }:Props) {
                     <form onSubmit={edit} className="space-y-4">
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Name</label><input className={inp} value={eform.name} onChange={e=>setEform(f=>({...f,name:e.target.value}))}/></div>
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Role</label>
-                            <select className={inp} value={eform.staff_role} onChange={e=>setEform(f=>({...f,staff_role:e.target.value}))}>
+                            <select className={inp} value={eform.staff_role} onChange={e=>{
+                                const role = e.target.value
+                                setEform(f=>({...f, staff_role:role, permissions: roles[role]?.permissions ?? []}))
+                            }}>
                                 {Object.entries(roles).map(([k,r])=><option key={k} value={k}>{r.label}</option>)}
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Page Access</label>
+                            <div className="grid grid-cols-2 gap-1.5 p-3 bg-gray-50 rounded-xl max-h-[180px] overflow-y-auto">
+                                {PERMISSION_OPTIONS.map(p => (
+                                    <label key={p.key} className="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" className="w-3.5 h-3.5" checked={eform.permissions.includes(p.key)}
+                                            onChange={e => setEform(f => ({...f, permissions: e.target.checked ? [...f.permissions, p.key] : f.permissions.filter(x=>x!==p.key)}))} />
+                                        <span className="text-[12px] text-gray-700">{p.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer mt-2 p-2.5 bg-red-50 border border-red-100 rounded-xl">
+                                <input type="checkbox" className="w-3.5 h-3.5 accent-red-600" checked={eform.permissions.includes('can_delete')}
+                                    onChange={e => setEform(f => ({...f, permissions: e.target.checked ? [...f.permissions, 'can_delete'] : f.permissions.filter(x=>x!=='can_delete')}))} />
+                                <span className="text-[12px] font-semibold text-red-700">Allow deleting items (applies across every page above)</span>
+                            </label>
                         </div>
                         <div><label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">New Password</label><input type="password" className={inp} value={eform.password} onChange={e=>setEform(f=>({...f,password:e.target.value}))} placeholder="Leave blank to keep"/></div>
                         <div className="flex items-center gap-3"><input type="checkbox" id="ia" checked={eform.is_active} onChange={e=>setEform(f=>({...f,is_active:e.target.checked}))} className="w-4 h-4"/><label htmlFor="ia" className="text-[13.5px] font-semibold text-gray-700">Account Active</label></div>
@@ -111,6 +181,15 @@ export default function StaffIndex({ staff, roles }:Props) {
                     </form>
                 </div>
             </div>}
+
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Remove this staff member?"
+                itemName={pendingDelete?.name}
+                requireTypedConfirmation={pendingDelete?.name}
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

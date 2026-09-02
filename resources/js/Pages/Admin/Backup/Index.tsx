@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import { useState } from 'react'
 import { IconDatabase, IconDownload, IconTrash, IconPlus, IconRefresh } from '@tabler/icons-react'
 
@@ -11,6 +12,9 @@ interface Backup {
 export default function BackupIndex({ backups, disk_free, db_size }: { backups: Backup[]; disk_free: string; db_size: string }) {
     const [creating, setCreating] = useState(false)
     const [notes, setNotes] = useState('')
+    // A deleted backup can't be recovered — if it turns out to have been
+    // the one you actually needed, that's gone. Worth typing the filename.
+    const [pendingDelete, setPendingDelete] = useState<Backup | null>(null)
 
     function create() {
         setCreating(true)
@@ -20,9 +24,10 @@ export default function BackupIndex({ backups, disk_free, db_size }: { backups: 
         })
     }
 
-    function deleteBackup(id: number, filename: string) {
-        if (!confirm(`Delete backup ${filename}?`)) return
-        router.delete(`${window.location.pathname}/${id}`, { preserveScroll: true })
+    function deleteBackup(id: number, filename: string) { setPendingDelete({ id, filename } as Backup) }
+    function confirmDelete() {
+        if (!pendingDelete) return
+        router.delete(`${window.location.pathname}/${pendingDelete.id}`, { preserveScroll: true, onFinish: () => setPendingDelete(null) })
     }
 
     const statusColor = (s: string) => s === 'completed' ? '#059669' : s === 'failed' ? '#DC2626' : '#D97706'
@@ -131,6 +136,14 @@ export default function BackupIndex({ backups, disk_free, db_size }: { backups: 
                 on Google Drive, Dropbox, or an external drive. Server backups can be lost if the server crashes.
                 Schedule weekly backups minimum, daily before any major changes.
             </div>
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Delete this backup? It cannot be recovered."
+                itemName={pendingDelete?.filename}
+                requireTypedConfirmation={pendingDelete?.filename}
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

@@ -31,6 +31,10 @@ function VariantBuilder({ productId }: { productId?: number }) {
     const [saving, setSaving] = useState(false)
     const { props: pp } = usePage<{ adminPath?: string; product?: any }>()
     const ap = `/${pp.adminPath ?? 'ml-admin'}`
+    // When off, color/size are customer-facing options only — stock is
+    // tracked once on the product itself, not separately per combination.
+    // Not every store wants the overhead of setting stock per color/size.
+    const [trackStock, setTrackStock] = useState<boolean>(pp.product?.track_variant_stock ?? true)
 
     // Load existing attributes
     useState(() => {
@@ -58,7 +62,7 @@ function VariantBuilder({ productId }: { productId?: number }) {
     function save() {
         if (!productId) return
         setSaving(true)
-        router.post(`${ap}/products/${productId}/variants`, { attributes: attrs }, { onFinish: () => setSaving(false) })
+        router.post(`${ap}/products/${productId}/variants`, { attributes: attrs, track_variant_stock: trackStock }, { onFinish: () => setSaving(false) })
     }
 
     const inp = "h-9 px-3 border border-gray-200 rounded-lg text-[13px] outline-none focus:border-[var(--color-primary)] bg-white"
@@ -129,6 +133,18 @@ function VariantBuilder({ productId }: { productId?: number }) {
                     )}
                 </div>
             ))}
+            <label className="flex items-start gap-2.5 p-3.5 bg-gray-50 rounded-xl cursor-pointer mb-1">
+                <input type="checkbox" checked={trackStock} onChange={e => setTrackStock(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-[var(--color-primary)]"/>
+                <span>
+                    <span className="block text-[13px] font-semibold text-gray-800">Track stock separately for each combination</span>
+                    <span className="block text-[11.5px] text-gray-500 mt-0.5">
+                        {trackStock
+                            ? 'On — each color/size has its own stock number, set individually below after saving.'
+                            : 'Off — Color/Size are shown to customers as options only. Stock is tracked once on the product itself (the Stock field above), the same for every combination.'}
+                    </span>
+                </span>
+            </label>
             <div className="flex gap-2 flex-wrap">
                 <button type="button" onClick={addAttr}
                     className="h-9 px-4 border-2 border-dashed border-gray-300 rounded-xl text-[12.5px] font-semibold text-gray-600 hover:border-[var(--color-primary)] cursor-pointer bg-white">
@@ -143,6 +159,79 @@ function VariantBuilder({ productId }: { productId?: number }) {
                 )}
             </div>
             {!productId && <p className="text-[12px] text-amber-600 mt-2">💡 Save the product first, then add variants here.</p>}
+            {productId && trackStock && <VariantStockTable productId={productId} variants={pp.product?.variants ?? []} ap={ap} />}
+        </div>
+    )
+}
+
+// Editable stock/price table for the actual per-combination ProductVariant
+// records generated when attributes are saved above. Without this, every
+// new combination (or one that's never had stock set) stays stuck at 0 —
+// meaning it's genuinely impossible to sell, and on the customer side the
+// color/size selection has nothing real behind it to send to the cart.
+function VariantStockTable({ productId, variants, ap }: { productId: number; variants: any[]; ap: string }) {
+    const [rows, setRows] = useState<Record<number, { stock: string; price: string; compare_price: string; sku: string }>>({})
+    const [saving, setSaving] = useState(false)
+
+    useState(() => {
+        const init: typeof rows = {}
+        for (const v of variants) {
+            init[v.id] = { stock: String(v.stock ?? 0), price: v.price != null ? String(v.price) : '', compare_price: v.compare_price != null ? String(v.compare_price) : '', sku: v.sku ?? '' }
+        }
+        setRows(init)
+    })
+
+    if (!variants.length) return null
+
+    function label(v: any): string {
+        return (v.variant_values ?? v.variantValues ?? []).map((vv: any) => vv.value).join(' / ') || `Variant #${v.id}`
+    }
+
+    function set(id: number, field: string, val: string) {
+        setRows(r => ({ ...r, [id]: { ...r[id], [field]: val } }))
+    }
+
+    function save() {
+        setSaving(true)
+        const payload = variants.map(v => ({
+            id: v.id,
+            stock: Number(rows[v.id]?.stock || 0),
+            price: rows[v.id]?.price ? Number(rows[v.id].price) : null,
+            compare_price: rows[v.id]?.compare_price ? Number(rows[v.id].compare_price) : null,
+            sku: rows[v.id]?.sku || null,
+        }))
+        router.post(`${ap}/products/${productId}/variant-stock`, { variants: payload }, { onFinish: () => setSaving(false) })
+    }
+
+    const inp = "h-9 px-2.5 border border-gray-200 rounded-lg text-[12.5px] outline-none focus:border-[var(--color-primary)] bg-white w-full"
+
+    return (
+        <div className="mt-5 pt-5 border-t border-gray-200">
+            <p className="text-[13px] font-bold text-gray-800 mb-1">Stock & Price per Combination</p>
+            <p className="text-[11.5px] text-gray-400 mb-3">Each row is one real, sellable combination (e.g. Red + Large). Leave price blank to use the product's base price.</p>
+            <div className="overflow-x-auto">
+                <table className="w-full text-[12.5px]">
+                    <thead><tr className="border-b border-gray-200">
+                        {['Combination', 'Stock', 'Price', 'Compare Price', 'SKU'].map(h => <th key={h} className="text-left px-2 py-2 text-[10.5px] font-black text-gray-400 uppercase tracking-wide">{h}</th>)}
+                    </tr></thead>
+                    <tbody className="divide-y divide-gray-50">
+                        {variants.map(v => (
+                            <tr key={v.id}>
+                                <td className="px-2 py-2 font-semibold text-gray-700">{label(v)}</td>
+                                <td className="px-2 py-2 w-24"><input type="number" min={0} className={inp} value={rows[v.id]?.stock ?? ''} onChange={e => set(v.id, 'stock', e.target.value)} /></td>
+                                <td className="px-2 py-2 w-28"><input type="number" min={0} className={inp} placeholder="base price" value={rows[v.id]?.price ?? ''} onChange={e => set(v.id, 'price', e.target.value)} /></td>
+                                <td className="px-2 py-2 w-28"><input type="number" min={0} className={inp} placeholder="optional" value={rows[v.id]?.compare_price ?? ''} onChange={e => set(v.id, 'compare_price', e.target.value)} /></td>
+                                <td className="px-2 py-2 w-32"><input className={inp} placeholder="optional" value={rows[v.id]?.sku ?? ''} onChange={e => set(v.id, 'sku', e.target.value)} /></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" onClick={save} disabled={saving}
+                className="mt-3 h-9 px-6 rounded-xl text-[13px] font-bold border-none cursor-pointer disabled:opacity-60"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
+                {saving ? 'Saving…' : '✓ Save Stock & Price'}
+            </button>
         </div>
     )
 }

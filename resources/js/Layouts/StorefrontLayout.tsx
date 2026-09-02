@@ -219,7 +219,19 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     @media (max-width: 1023px) {
                         .ml-header-row {
                             display: grid !important;
-                            grid-template-columns: 40px 1fr 40px;
+                            /* 4 explicit columns now: hamburger, logo
+                               (flexible/centered), search toggle, dark
+                               mode toggle. This was hardcoded to exactly
+                               3 columns — adding the dark mode button
+                               without updating this pushed it onto an
+                               invisible second grid row (CSS Grid's
+                               default auto-flow for anything beyond the
+                               explicit columns), which a fixed-height
+                               overflow-hidden container then clipped
+                               entirely — also compressing the first row's
+                               effective height, which is what shifted the
+                               logo up. */
+                            grid-template-columns: 40px 1fr 40px 40px;
                             align-items: center;
                         }
                         .ml-header-logo {
@@ -267,6 +279,15 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]"
                         onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false) }}>
                         <IconSearch size={20} />
+                    </button>
+
+                    {/* Dark mode toggle — mobile quick-access. Previously
+                        only reachable buried inside the hamburger dropdown
+                        menu; this puts it directly in the header row like
+                        the desktop version already has. */}
+                    <button onClick={toggleDark} className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]"
+                        title={darkMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+                        {darkMode === 'dark' ? <IconSun size={19} /> : <IconMoon size={19} />}
                     </button>
 
                     {/* Wishlist — mobile already has this in the bottom nav bar */}
@@ -443,13 +464,17 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
 
                         {/* Brand */}
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 18, color: 'var(--color-primary-text, #0a0a0a)', fontFamily: 'Manrope, sans-serif' }}>M</div>
+                            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, textDecoration: 'none' }}>
+                                {logoUrl ? (
+                                    <img src={logoUrl} alt={siteName} style={{ height: 40, width: 'auto', maxWidth: 120, objectFit: 'contain' }} />
+                                ) : (
+                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 18, color: 'var(--color-primary-text, #0a0a0a)', fontFamily: 'Manrope, sans-serif' }}>{siteName[0]}</div>
+                                )}
                                 <div>
                                     <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 16, letterSpacing: '0.08em', margin: 0, color: 'white' }}>{siteName}.</p>
-                                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Wear Your Status</p>
+                                    {tagline && <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{tagline}</p>}
                                 </div>
-                            </div>
+                            </Link>
                             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: 16 }}>Premium fashion and lifestyle products for those who know their worth.</p>
                             {phone && <a href={`tel:${phone}`} style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📞 {phone}</a>}
                         </div>

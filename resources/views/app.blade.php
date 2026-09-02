@@ -207,7 +207,23 @@
     </style>
 
     @if($customJs)
-        {!! $customJs !!}
+        @php
+            // This is a defense-in-depth layer, not a real guarantee — an
+            // attacker with genuine admin access could still embed harmful
+            // code alongside one of these substrings and pass this check.
+            // The actual protection is that this field is already
+            // restricted to full Admin accounts only (not Staff) at save
+            // time. This just catches accidental mistakes or unrelated
+            // injected content, and keeps the field itself well below the
+            // rest of the page in unrestricted-execution risk.
+            $safeJsPatterns = ['gtag(', 'fbq(', 'ttq.', 'dataLayer',
+                '_linkedin_partner_id', 'klaviyo', 'hotjar',
+                'clarity', 'pinterest', 'snapchat', 'intercom'];
+            $customJsLooksSafe = collect($safeJsPatterns)->contains(fn($p) => str_contains($customJs, $p));
+        @endphp
+        @if($customJsLooksSafe)
+            {!! $customJs !!}
+        @endif
     @endif
 
     @viteReactRefresh

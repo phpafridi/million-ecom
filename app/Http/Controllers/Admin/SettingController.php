@@ -249,6 +249,7 @@ class SettingController extends Controller
             'brands_title'           => 'nullable|string|max:50',
             'brands_subtitle'        => 'nullable|string|max:50',
             'brands_items'           => 'nullable|string|max:300',
+            'home_divider_text'      => 'nullable|string|max:80',
             'logo'                   => 'nullable|image|max:2048',
         ]);
 
@@ -272,7 +273,7 @@ class SettingController extends Controller
             'cart_float_enabled','cart_float_position','cart_float_size',
             'whatsapp_float_enabled','whatsapp_float_position','whatsapp_float_size',
             'ticker_bg','ticker_live_bg','ticker_live_text','ticker_text_color',
-            'brands_show','brands_title','brands_subtitle','brands_items',
+            'brands_show','brands_title','brands_subtitle','brands_items','home_divider_text',
             'ticker_items',
             'topbar_bg','theme_primary','theme_primary_dark','theme_primary_text',
             'theme_accent','theme_dark_bg','theme_dark_bg2','theme_body_bg','theme_border_radius',

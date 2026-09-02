@@ -59,26 +59,8 @@ class ChatController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    public function poll(Request $request)
-    {
-        $session = DB::table('chat_sessions')->where('session_id', $request->session_id)->first();
-        if (!$session) return response()->json(['messages' => [], 'status' => 'closed']);
-
-        $since    = $request->since ?? 0;
-        $messages = DB::table('chat_messages')
-            ->where('session_id', $session->id)->where('id', '>', $since)
-            ->orderBy('id')->get();
-
-        DB::table('chat_messages')
-            ->where('session_id', $session->id)->where('sender_type', 'agent')->where('is_read', false)
-            ->update(['is_read' => true]);
-
-        return response()->json([
-            'messages' => $messages,
-            'status'   => $session->status,
-            'agent'    => $session->agent_id ? DB::table('users')->where('id', $session->agent_id)->value('name') : null,
-        ]);
-    }
+    // poll() removed — chat moved to Reverb/Echo WebSockets, confirmed
+    // zero references anywhere in the frontend before removing.
 
     public function requestAgent(Request $request)
     {

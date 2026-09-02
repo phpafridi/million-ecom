@@ -144,7 +144,30 @@ class LoginController extends Controller
                 return back()->withErrors(['email' => 'These credentials are not valid for this login.']);
             }
 
-            return redirect()->intended($isStaffRole ? "/{$path}" : '/');
+            // Staff without "dashboard" permission would otherwise land
+            // directly on the one page they're blocked from, immediately
+            // hitting a confusing 403 right after logging in successfully.
+            // Send them to the first page they actually have access to
+            // instead.
+            $landingPath = "/{$path}";
+            if ($isStaffRole && !$request->session()->get('url.intended')) {
+                $user = Auth::user();
+                $perms = is_array($user->permissions) ? $user->permissions : json_decode($user->permissions ?? '[]', true);
+                if (!in_array('dashboard', $perms ?? [])) {
+                    $firstPageByPerm = [
+                        'orders' => 'orders', 'orders_lookup' => 'orders/lookup', 'products' => 'products',
+                        'customers' => 'customers', 'categories' => 'categories', 'coupons' => 'coupons',
+                        'reviews' => 'reviews', 'email_campaigns' => 'email-campaigns', 'support_tickets' => 'support',
+                        'hero_slides' => 'hero-slides', 'banners' => 'banners', 'pages' => 'pages',
+                        'returns' => 'returns', 'chat' => 'chat',
+                    ];
+                    foreach ($firstPageByPerm as $perm => $seg) {
+                        if (in_array($perm, $perms ?? [])) { $landingPath = "/{$path}/{$seg}"; break; }
+                    }
+                }
+            }
+
+            return redirect()->intended($isStaffRole ? $landingPath : '/');
         }
 
         RateLimiter::hit($key, $lockoutMins * 60);

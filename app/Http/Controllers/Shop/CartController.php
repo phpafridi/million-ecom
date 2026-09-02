@@ -141,7 +141,9 @@ class CartController extends Controller
             $variant = ProductVariant::find($variantId);
             if ($variant) {
                 $price        = $variant->price ?? $product->price;
-                $stock        = $variant->stock;
+                // Sync mode: color/size are customer-facing labels only —
+                // stock lives once on the product, not per combination.
+                $stock        = $product->track_variant_stock ? $variant->stock : $product->stock;
                 $variantLabel = $variant->label ?? null;
             }
         } else {
@@ -175,7 +177,13 @@ class CartController extends Controller
     {
         $data = $request->validate(['quantity' => 'required|integer|min:1|max:100']);
         $item = CartItem::where('id', $id)->where('session_id', $this->sessionId())->firstOrFail();
-        if ($data['quantity'] > $item->product->stock) return back()->with('error', 'Not enough stock.');
+        // Same fix as checkout() — was only ever checking the parent
+        // product's stock, ignoring variant_id, so increasing quantity on
+        // a variant item with real stock could still be wrongly blocked.
+        $availableStock = ($item->variant_id && $item->product->track_variant_stock)
+            ? (\App\Models\ProductVariant::find($item->variant_id)?->stock ?? 0)
+            : $item->product->stock;
+        if ($data['quantity'] > $availableStock) return back()->with('error', 'Not enough stock.');
         $item->update(['quantity' => $data['quantity']]);
         return back();
     }
@@ -245,8 +253,18 @@ class CartController extends Controller
         if ($items->isEmpty()) return back()->with('error', 'Your cart is empty.');
 
         foreach ($items as $item) {
-            if ($item->product->stock < $item->quantity)
-                return back()->with('error', "\"{$item->product->name}\" only has {$item->product->stock} units left.");
+            // Was only ever checking the parent product's own stock column,
+            // completely ignoring variant_id — harmless before, since no
+            // product actually had real per-variant stock records. Now that
+            // it does, a variant's real stock could be 10 while the parent
+            // product's own stock field sits at 0 (never meant to be used
+            // once variants exist), failing every single checkout for any
+            // variant product regardless of real availability.
+            $availableStock = ($item->variant_id && $item->product->track_variant_stock)
+                ? (\App\Models\ProductVariant::find($item->variant_id)?->stock ?? 0)
+                : $item->product->stock;
+            if ($availableStock < $item->quantity)
+                return back()->with('error', "\"{$item->product->name}\" only has {$availableStock} units left.");
         }
 
         // COD doesn't require any real payment to place an order, which makes

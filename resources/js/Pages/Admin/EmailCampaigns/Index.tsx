@@ -1,6 +1,7 @@
 import { Head, useForm, usePage, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { IconMail, IconSend, IconUsers, IconBell, IconCheck, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import AdminLayout from '@/Layouts/AdminLayout'
 
 interface Subscriber { id: number; email: string; name: string | null; source: string; subscribed_at: string }
@@ -28,6 +29,7 @@ export default function EmailCampaigns({ subscribers, subscriberCount, orderedCo
     const [tab, setTab] = useState<'compose'|'subscribers'>('compose')
     const [tpl, setTpl] = useState(0)
     const [showImport, setShowImport] = useState(false)
+    const [pendingRemoveSub, setPendingRemoveSub] = useState<number | null>(null)
 
     // Compose form
     const { data, setData, post, processing } = useForm({
@@ -73,10 +75,7 @@ export default function EmailCampaigns({ subscribers, subscriberCount, orderedCo
         e.preventDefault()
         importForm.post(`${ap}/email-campaigns/subscribers/import`, { onSuccess: () => { importForm.reset(); setShowImport(false) }})
     }
-    function removeSub(id: number) {
-        if (!confirm('Remove this subscriber?')) return
-        router.delete(`${ap}/email-campaigns/subscribers/${id}`, { preserveScroll: true })
-    }
+    function removeSub(id: number) { setPendingRemoveSub(id) }
 
     return (
         <AdminLayout title="Email Campaigns">
@@ -295,6 +294,12 @@ export default function EmailCampaigns({ subscribers, subscriberCount, orderedCo
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!pendingRemoveSub}
+                title="Remove this subscriber?"
+                onConfirm={() => { if (pendingRemoveSub) router.delete(`${ap}/email-campaigns/subscribers/${pendingRemoveSub}`, { preserveScroll: true, onFinish: () => setPendingRemoveSub(null) }) }}
+                onCancel={() => setPendingRemoveSub(null)}
+            />
         </AdminLayout>
     )
 }

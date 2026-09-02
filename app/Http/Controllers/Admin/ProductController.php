@@ -67,7 +67,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         return Inertia::render('Admin/Products/Edit', [
-            'product'    => $product->load(['category','productImages','variantAttributes.values']),
+            'product'    => $product->load(['category','productImages','variantAttributes.values','variants.variantValues']),
             'categories' => $this->categoryOptions(),
         ]);
     }
@@ -222,10 +222,45 @@ class ProductController extends Controller
             'attributes.*.values'         => 'required|array',
             'attributes.*.values.*.value' => 'required|string|max:50',
             'attributes.*.values.*.color_hex' => 'nullable|string|max:7',
+            // When off, color/size stay as customer-facing options only —
+            // stock is tracked once on the product itself, not separately
+            // per combination. Not every store wants the overhead of
+            // setting stock for every color/size individually.
+            'track_variant_stock'         => 'nullable|boolean',
         ]);
 
-        $product->variantAttributes()->delete();
+        $product->update(['track_variant_stock' => $request->boolean('track_variant_stock', true)]);
 
+        // Previously this only ever saved the ABSTRACT attribute/value
+        // options (e.g. "Color: Red, Black" as selectable choices) — it
+        // never actually created the real, stock-tracked ProductVariant
+        // records those combinations are supposed to produce. Selecting a
+        // color on the product page was purely cosmetic: nothing matched,
+        // so `variant_id` sent to the cart was always null, and the
+        // selection vanished completely — never reaching the order, which
+        // is why admin order details showed no color/size at all.
+        //
+        // Capture existing variants' stock/price/sku BEFORE wiping the old
+        // attribute definitions, keyed by their value combination (as
+        // text, since the old value IDs are about to be deleted) — so
+        // regenerating combinations after an edit doesn't reset stock back
+        // to zero for combinations that already existed.
+        $oldVariants = $product->variants()->with('variantValues')->get();
+        $preserved = [];
+        foreach ($oldVariants as $v) {
+            $key = $v->variantValues->pluck('value')->sort()->values()->implode('|');
+            if ($key !== '') {
+                $preserved[$key] = ['price' => $v->price, 'compare_price' => $v->compare_price, 'stock' => $v->stock, 'sku' => $v->sku, 'image' => $v->image, 'is_active' => $v->is_active];
+            }
+        }
+
+        $product->variantAttributes()->delete();
+        // Old ProductVariant rows (and their value pivots) are superseded
+        // by freshly generated ones below — deleting here, not before,
+        // since $oldVariants above already captured what's needed from them.
+        $product->variants()->delete();
+
+        $valueIdsByAttribute = [];
         foreach ($data['attributes'] as $i => $attrData) {
             $attr = $product->variantAttributes()->create([
                 'name'         => $attrData['name'],
@@ -233,16 +268,73 @@ class ProductController extends Controller
                 'display_type' => $attrData['display_type'] ?? 'button',
                 'sort_order'   => $i,
             ]);
+            $created = [];
             foreach ($attrData['values'] as $j => $valData) {
-                $attr->values()->create([
+                $val = $attr->values()->create([
                     'value'      => is_array($valData) ? $valData['value'] : $valData,
                     'color_hex'  => is_array($valData) ? ($valData['color_hex'] ?? null) : null,
                     'sort_order' => $j,
                 ]);
+                $created[] = $val;
             }
+            $valueIdsByAttribute[] = $created;
         }
 
-        return back()->with('success', 'Variants saved.');
+        // Cartesian product across every attribute's values — one
+        // ProductVariant per actual combination (e.g. Red+Large,
+        // Red+Small, Black+Large, Black+Small).
+        $combinations = [[]];
+        foreach ($valueIdsByAttribute as $values) {
+            $next = [];
+            foreach ($combinations as $combo) {
+                foreach ($values as $val) {
+                    $next[] = [...$combo, $val];
+                }
+            }
+            $combinations = $next;
+        }
+
+        foreach ($combinations as $combo) {
+            $key = collect($combo)->pluck('value')->sort()->values()->implode('|');
+            $prev = $preserved[$key] ?? null;
+            $variant = $product->variants()->create([
+                'price'         => $prev['price']         ?? null,
+                'compare_price' => $prev['compare_price'] ?? null,
+                'stock'         => $prev['stock']         ?? 0,
+                'sku'           => $prev['sku']            ?? null,
+                'image'         => $prev['image']          ?? null,
+                'is_active'     => $prev['is_active']      ?? true,
+            ]);
+            $variant->variantValues()->attach(collect($combo)->pluck('id'));
+        }
+
+        return back()->with('success', 'Variants saved — ' . count($combinations) . ' combination(s) generated. Set stock/price for each under the product\'s Variants tab.');
+    }
+
+    // Bulk update stock/price/sku for the generated per-combination
+    // variants — without this, every new combination stays at the 0-stock
+    // default forever, since nothing else can change it.
+    public function updateVariantStock(Request $request, Product $product)
+    {
+        $data = $request->validate([
+            'variants'                => 'required|array',
+            'variants.*.id'           => 'required|integer|exists:product_variants,id',
+            'variants.*.stock'        => 'required|integer|min:0',
+            'variants.*.price'        => 'nullable|numeric|min:0',
+            'variants.*.compare_price'=> 'nullable|numeric|min:0',
+            'variants.*.sku'          => 'nullable|string|max:100',
+        ]);
+
+        foreach ($data['variants'] as $v) {
+            $product->variants()->where('id', $v['id'])->update([
+                'stock'         => $v['stock'],
+                'price'         => $v['price'] ?? null,
+                'compare_price' => $v['compare_price'] ?? null,
+                'sku'           => $v['sku'] ?? null,
+            ]);
+        }
+
+        return back()->with('success', 'Variant stock updated.');
     }
 
     // ── HELPERS ──

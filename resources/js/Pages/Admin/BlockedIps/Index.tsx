@@ -2,9 +2,11 @@ import { Head, router } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 import { IconShield, IconX, IconPlus, IconAlertTriangle, IconBan, IconCheck } from '@tabler/icons-react'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 
 export default function BlockedIps({ ips, suspicious, stats, filters }: any) {
     const [showAdd, setShowAdd] = useState(false)
+    const [pendingRemove, setPendingRemove] = useState<{ id: number; ip: string } | null>(null)
     const [form, setForm] = useState({ ip:'', reason:'', hours:'' })
     const [search, setSearch] = useState(filters?.search ?? '')
 
@@ -138,12 +140,12 @@ export default function BlockedIps({ ips, suspicious, stats, filters }: any) {
                                 <td className="px-4 py-3">
                                     <div className="flex gap-2">
                                         {b.is_active ? (
-                                            <button onClick={() => router.patch(`${window.location.pathname}/${b.ip}/unblock`, {}, { preserveScroll:true })}
+                                            <button onClick={() => confirm('Unblock this IP? It will be able to access the site again immediately.') && router.patch(`${window.location.pathname}/${b.ip}/unblock`, {}, { preserveScroll:true })}
                                                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-none cursor-pointer bg-green-50 text-green-700">
                                                 <IconCheck size={12}/> Unblock
                                             </button>
                                         ) : (
-                                            <button onClick={() => router.delete(`${window.location.pathname}/${b.id}`, { preserveScroll:true })}
+                                            <button onClick={() => setPendingRemove({ id: b.id, ip: b.ip })}
                                                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-none cursor-pointer bg-red-50 text-red-600">
                                                 <IconX size={12}/> Remove
                                             </button>
@@ -202,6 +204,13 @@ export default function BlockedIps({ ips, suspicious, stats, filters }: any) {
                     </div>
                 </>
             )}
+            <ConfirmDeleteModal
+                open={!!pendingRemove}
+                title="Remove this IP block? It will be able to access the site again immediately."
+                itemName={pendingRemove?.ip}
+                onConfirm={() => { if (pendingRemove) router.delete(`${window.location.pathname}/${pendingRemove.id}`, { preserveScroll: true, onFinish: () => setPendingRemove(null) }) }}
+                onCancel={() => setPendingRemove(null)}
+            />
         </AdminLayout>
     )
 }

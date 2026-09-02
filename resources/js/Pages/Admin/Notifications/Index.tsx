@@ -121,7 +121,7 @@ export default function Notifications({ settings }: Props) {
                     <Field label="Notify Customer">
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" checked={data.email_notify_customer === '1'} onChange={e => setData('email_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                            <span className="text-[13px]">Send email to customer on status change</span>
+                            <span className="text-[13px]">Send order confirmation email when placed, and on status changes below</span>
                         </label>
                     </Field>
                     <Field label="Notify Admin">
@@ -161,7 +161,7 @@ export default function Notifications({ settings }: Props) {
                         <Field label="Notify Customer">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" checked={data.whatsapp_notify_customer === '1'} onChange={e => setData('whatsapp_notify_customer', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
-                                <span className="text-[13px]">WA message to customer on status change</span>
+                                <span className="text-[13px]">WA message to customer when order is placed, and on status changes below</span>
                             </label>
                         </Field>
                     </div>

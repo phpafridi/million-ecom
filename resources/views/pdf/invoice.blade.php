@@ -58,7 +58,7 @@
   <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
   <tbody>
     @foreach($order->items as $i => $item)
-    <tr><td>{{ $i+1 }}</td><td>{{ $item->product_name }}</td><td>{{ $item->quantity }}</td><td>Rs {{ number_format($item->price) }}</td><td>Rs {{ number_format($item->subtotal) }}</td></tr>
+    <tr><td>{{ $i+1 }}</td><td>{{ $item->product_name }}@if($item->variant_label)<br><span style="font-size:10px;color:#666">{{ $item->variant_label }}</span>@endif</td><td>{{ $item->quantity }}</td><td>Rs {{ number_format($item->price) }}</td><td>Rs {{ number_format($item->subtotal) }}</td></tr>
     @endforeach
   </tbody>
 </table>

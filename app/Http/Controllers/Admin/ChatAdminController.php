@@ -77,13 +77,10 @@ class ChatAdminController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function sessionPoll(Request $request, int $id)
-    {
-        $since    = $request->since ?? 0;
-        $messages = DB::table('chat_messages')->where('session_id', $id)->where('id', '>', $since)->orderBy('id')->get();
-        DB::table('chat_messages')->where('session_id', $id)->where('sender_type', 'visitor')->where('is_read', false)->update(['is_read' => true]);
-        return response()->json(['messages' => $messages, 'session' => DB::table('chat_sessions')->where('id', $id)->first(), 'unread_waiting' => DB::table('chat_messages')->join('chat_sessions', 'chat_messages.session_id', '=', 'chat_sessions.id')->where('chat_sessions.status', 'waiting')->where('chat_messages.is_read', false)->count()]);
-    }
+    // sessionPoll() removed — admin chat panel moved to Reverb/Echo
+    // WebSockets, confirmed zero references anywhere in the frontend
+    // before removing. sessionMessages() below (a one-time fetch when
+    // opening a conversation, not a polling loop) is unrelated and stays.
 
     public function sessionMessages(int $id)
     {

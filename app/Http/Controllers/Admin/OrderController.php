@@ -11,6 +11,34 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    // Dedicated quick-lookup page — searches order number, phone, customer
+    // name, AND tracking number (the regular Orders list search doesn't
+    // cover tracking number at all), returning full order details
+    // immediately rather than requiring a click-through for each one.
+    public function lookup(Request $request)
+    {
+        $results = [];
+        if ($term = trim((string) $request->q)) {
+            $results = Order::with('items', 'returns')
+                ->where(function ($query) use ($term) {
+                    $query->where('id', 'like', "%{$term}%")
+                        ->orWhere('order_number', 'like', "%{$term}%")
+                        ->orWhere('customer_name', 'like', "%{$term}%")
+                        ->orWhere('customer_phone', 'like', "%{$term}%")
+                        ->orWhere('tracking_number', 'like', "%{$term}%")
+                        ->orWhere('courier', 'like', "%{$term}%");
+                })
+                ->latest()
+                ->limit(25)
+                ->get();
+        }
+
+        return Inertia::render('Admin/Orders/Lookup', [
+            'results' => $results,
+            'query'   => $request->q,
+        ]);
+    }
+
     public function index(Request $request)
     {
         $q = Order::with('items')->latest();
@@ -51,6 +79,7 @@ class OrderController extends Controller
     public function update(Request $request, Order $order)
     {
         $oldStatus = $order->status;
+        $oldPaymentStatus = $order->payment_status;
         $data = $request->validate([
             'status'         => 'sometimes|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'sometimes|in:pending,paid,failed,refunded',
@@ -129,8 +158,14 @@ class OrderController extends Controller
                 }
             });
 
-            // Award loyalty points on DELIVERY only
-            if ($newStatus === 'delivered' && $freshOrder->user_id
+            // Award loyalty points when payment is actually confirmed
+            // received ("paid"), not on delivery — delivery can take days
+            // or weeks after payment, and the customer has already
+            // genuinely paid at that point regardless of shipping status.
+            // Guarded by the OLD payment status too, so re-saving an order
+            // that's already paid doesn't award points a second time.
+            $newPaymentStatus = $data['payment_status'] ?? $oldPaymentStatus;
+            if ($newPaymentStatus === 'paid' && $oldPaymentStatus !== 'paid' && $freshOrder->user_id
                 && \App\Models\Setting::get('loyalty_enabled', '1') === '1') {
                 try {
                     $user = \App\Models\User::find($freshOrder->user_id);
@@ -143,7 +178,7 @@ class OrderController extends Controller
                             // hard TypeError on every delivered order for a
                             // logged-in customer, meaning points were never
                             // actually awarded successfully.
-                            $user->addPoints($pts, 'Earned for delivered order '.($freshOrder->order_number ?? '#'.$freshOrder->id), $freshOrder->id);
+                            $user->addPoints($pts, 'Earned for order '.($freshOrder->order_number ?? '#'.$freshOrder->id), $freshOrder->id);
                         }
                     }
                 } catch (\Throwable $e) {

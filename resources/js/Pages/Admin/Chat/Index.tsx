@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { useState, useEffect, useRef } from 'react'
 import { useEchoPublic } from '@laravel/echo-react'
 import { IconSend, IconX, IconPlus, IconTrash, IconRobot, IconMessageCircle } from '@tabler/icons-react'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 
 interface Session { id:number; visitor_name:string; visitor_email:string; status:string; agent_name:string; last_message:string; unread_count:number; created_at:string }
 interface Faq { id:number; question:string; answer:string; category:string; keywords:string; is_active:boolean }
@@ -13,6 +14,7 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
     const { props: __p } = usePage<{ adminPath?: string }>()
     const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [active, setActive]   = useState<Session|null>(null)
+    const [pendingDeleteFaq, setPendingDeleteFaq] = useState<number | null>(null)
     // Same stale-closure fix as the customer widget — the useEchoPublic
     // callback below was reading `active` from whatever render created the
     // closure, not the current value, which could permanently miss updates
@@ -224,13 +226,19 @@ export default function ChatAdmin({ sessions, faqs, stats }:Props) {
                                     <p className="text-[12.5px] text-gray-500">{f.answer.slice(0,120)}{f.answer.length>120?'...':''}</p>
                                     {f.keywords&&<p className="text-[11px] text-gray-400 mt-1">Keywords: {typeof f.keywords==='string'?f.keywords:JSON.stringify(f.keywords)}</p>}
                                 </div>
-                                <button onClick={()=>{ if(confirm('Delete this FAQ?')) router.delete(`${ap}/chat/faqs/${f.id}`, {preserveScroll:true}) }} className="w-8 h-8 rounded-lg border border-red-100 flex items-center justify-center text-red-400 hover:bg-red-50 cursor-pointer bg-white flex-shrink-0"><IconTrash size={14}/></button>
+                                <button onClick={()=>setPendingDeleteFaq(f.id)} className="w-8 h-8 rounded-lg border border-red-100 flex items-center justify-center text-red-400 hover:bg-red-50 cursor-pointer bg-white flex-shrink-0"><IconTrash size={14}/></button>
                             </div>
                         ))}
                         {faqs.length===0&&<div className="p-12 text-center text-gray-400"><IconRobot size={40} className="mx-auto mb-3 opacity-20"/><p className="font-bold">No FAQs yet — add some so the bot can answer questions</p></div>}
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!pendingDeleteFaq}
+                title="Delete this FAQ?"
+                onConfirm={() => { if (pendingDeleteFaq) router.delete(`${ap}/chat/faqs/${pendingDeleteFaq}`, { preserveScroll: true, onFinish: () => setPendingDeleteFaq(null) }) }}
+                onCancel={() => setPendingDeleteFaq(null)}
+            />
         </AdminLayout>
     )
 }

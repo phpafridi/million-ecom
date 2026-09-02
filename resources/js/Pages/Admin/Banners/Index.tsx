@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { IconPencil, IconTrash, IconX, IconPlus, IconDeviceDesktop, IconDeviceMobile, IconCheck } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import ImageUpload, { DualImageUpload } from '@/Components/Admin/ImageUpload'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import { IMAGE_SPECS } from '@/constants/imageSpecs'
 import type { Banner } from '@/types'
 
@@ -193,6 +194,7 @@ export default function BannersIndex({ banners }: Props) {
     const { props } = usePage<{ adminPath?: string }>()
     const ap = `/${props.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Banner | 'new' | null>(null)
+    const [pendingDelete, setPendingDelete] = useState<Banner | null>(null)
 
     const posMap: Record<string, string> = {
         full_hero: '① Full-Width Hero', promo: '② Promo Left',
@@ -269,7 +271,7 @@ export default function BannersIndex({ banners }: Props) {
                                         className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all border-solid">
                                         <IconPencil size={14} />
                                     </button>
-                                    <button onClick={() => confirm('Delete this banner?') && router.delete(`${ap}/banners/${b.id}`)}
+                                    <button onClick={() => setPendingDelete(b)}
                                         className="w-8 h-8 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-400 cursor-pointer transition-all border-solid">
                                         <IconTrash size={14} />
                                     </button>
@@ -289,6 +291,12 @@ export default function BannersIndex({ banners }: Props) {
             </div>
 
             {editing && <BannerForm banner={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Delete this banner?"
+                onConfirm={() => { if (pendingDelete) router.delete(`${ap}/banners/${pendingDelete.id}`, { onFinish: () => setPendingDelete(null) }) }}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

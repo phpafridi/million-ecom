@@ -11,6 +11,11 @@ class Order extends Model
         'customer_address','city','payment_method','payment_status','status',
         'return_status','notes','coupon_code','discount',
         'subtotal','shipping','total','payment_proof','tracking_history','stock_reduced','coupon_counted',
+        // Were missing entirely — the admin UI for entering these
+        // (added earlier this session) appeared to save successfully with
+        // no error, but Eloquent's mass-assignment protection silently
+        // dropped both fields before they ever reached the database.
+        'tracking_number','courier',
     ];
 
     protected $casts = ['tracking_history' => 'array'];
@@ -70,7 +75,12 @@ class Order extends Model
 
         $this->loadMissing('items');
         foreach ($this->items as $item) {
-            if ($item->variant_id) {
+            // Sync mode (track_variant_stock off): reduce the product's
+            // own stock even though this item has a variant attached —
+            // that variant is a customer-facing label only in this mode,
+            // not a separately-tracked stock pool.
+            $product = \App\Models\Product::find($item->product_id);
+            if ($item->variant_id && $product?->track_variant_stock) {
                 $updated = \App\Models\ProductVariant::where('id', $item->variant_id)
                     ->where('stock', '>=', $item->quantity)
                     ->update(['stock' => \Illuminate\Support\Facades\DB::raw("stock - {$item->quantity}")]);
@@ -102,7 +112,8 @@ class Order extends Model
 
         $this->loadMissing('items');
         foreach ($this->items as $item) {
-            if ($item->variant_id) {
+            $product = \App\Models\Product::find($item->product_id);
+            if ($item->variant_id && $product?->track_variant_stock) {
                 \App\Models\ProductVariant::where('id', $item->variant_id)
                     ->update(['stock' => \Illuminate\Support\Facades\DB::raw("stock + {$item->quantity}")]);
             } else {

@@ -2,6 +2,7 @@ import { Head, usePage, router, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import { IconPlus, IconPencil, IconTrash, IconX, IconUpload, IconInfoCircle } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import type { HeroSlide } from '@/types'
 
 interface Props { slides: HeroSlide[] }
@@ -138,6 +139,7 @@ export default function HeroSlidesIndex({ slides }: Props) {
     const { props: _p } = usePage<{ adminPath?: string }>()
     const ap = `/${_p.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<HeroSlide | 'new' | null>(null)
+    const [pendingDelete, setPendingDelete] = useState<HeroSlide | null>(null)
 
     return (
         <AdminLayout title="Hero Slides">
@@ -168,7 +170,7 @@ export default function HeroSlidesIndex({ slides }: Props) {
                                 <button onClick={() => setEditing(s)} className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all">
                                     <IconPencil size={14} />
                                 </button>
-                                <button onClick={() => confirm('Delete this slide?') && router.delete(`${ap}/hero-slides/${s.id}`)}
+                                <button onClick={() => setPendingDelete(s)}
                                     className="w-8 h-8 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all">
                                     <IconTrash size={14} />
                                 </button>
@@ -178,6 +180,12 @@ export default function HeroSlidesIndex({ slides }: Props) {
                 ))}
             </div>
             {editing && <SlideForm slide={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Delete this slide?"
+                onConfirm={() => { if (pendingDelete) router.delete(`${ap}/hero-slides/${pendingDelete.id}`, { onFinish: () => setPendingDelete(null) }) }}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

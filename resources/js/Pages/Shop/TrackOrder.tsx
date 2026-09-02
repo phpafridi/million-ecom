@@ -15,6 +15,8 @@ interface TrackingResult {
     status: string
     payment_status: string
     payment_method: string
+    courier?: string | null
+    tracking_number?: string | null
     subtotal: number
     shipping: number
     discount: number
@@ -129,6 +131,22 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                         {order.tracking_token}
                                     </span>
                                 </div>
+
+                                {/* Courier / shipment tracking — only shown once the admin has
+                                    actually filled these in, not an empty placeholder */}
+                                {(order.courier || order.tracking_number) && (
+                                    <div className="flex items-center gap-2 flex-wrap bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-6">
+                                        <span className="text-[16px]">🚚</span>
+                                        {order.courier && <span className="text-[12.5px] font-bold text-blue-800">{order.courier}</span>}
+                                        {order.tracking_number && (
+                                            <>
+                                                <span className="text-[12px] text-blue-400">·</span>
+                                                <span className="text-[12px] text-blue-600">Consignment #</span>
+                                                <span className="font-mono font-bold text-[13px] text-blue-800">{order.tracking_number}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Progress Stepper */}
                                 {!order.cancelled ? (

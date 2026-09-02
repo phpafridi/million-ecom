@@ -86,6 +86,7 @@ export default function Branding({ settings }: Props) {
         brands_title:       settings.brands_title       ?? 'Top Brands',
         brands_subtitle:    settings.brands_subtitle    ?? 'Official Partners',
         brands_items:       settings.brands_items       ?? 'Apple|Samsung|Sony|Dell|LG|ASUS',
+        home_divider_text:  settings.home_divider_text  ?? 'Fresh Drops Meet Fan Favorites',
         // These 9 theme fields were missing from Settings.tsx's initial
         // form data entirely — meaning the color pickers never actually
         // reflected a previously-saved value on page load, only the
@@ -266,6 +267,12 @@ export default function Branding({ settings }: Props) {
                                 ))}
                             </div>
                         </div>
+                    </Section>
+
+                    <Section title="Homepage Section Divider" icon="✨">
+                        <Field label="Divider Text" hint="The badge text shown in the decorative divider between New Arrivals and Featured Products on the homepage">
+                            <input className={inputCls} value={data.home_divider_text} onChange={e => setData('home_divider_text', e.target.value)} placeholder="Fresh Drops Meet Fan Favorites" />
+                        </Field>
                     </Section>
 
                     <Section title="Brands Bar" icon="🏷️">

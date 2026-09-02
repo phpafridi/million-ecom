@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useState } from 'react'
 import { IconShieldCheck, IconAlertTriangle, IconX, IconTrash, IconRefresh } from '@tabler/icons-react'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 
 interface Log {
     id: number; user_name: string; user_role: string; action: string
@@ -15,6 +16,7 @@ export default function SystemLogs({ logs, suspicious, stats, filters, settings,
     const ap = `/${(window as any).__inertia?.page?.props?.adminPath ?? 'ml-admin'}`
     const [filter, setFilter] = useState(filters ?? {})
     const [selected, setSelected] = useState<Log|null>(null)
+    const [confirmClear, setConfirmClear] = useState(false)
 
     function apply(key: string, val: string) {
         const f = { ...filter, [key]: val }
@@ -103,10 +105,7 @@ export default function SystemLogs({ logs, suspicious, stats, filters, settings,
                     <IconRefresh size={14} /> Reset
                 </button>
                 <div className="ml-auto">
-                    <button onClick={() => {
-                        if (confirm('Clear logs older than 30 days?'))
-                            router.delete(window.location.pathname + '/clear', { data: { days: 30 } })
-                    }} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-[13px] hover:bg-red-100 cursor-pointer">
+                    <button onClick={() => setConfirmClear(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-[13px] hover:bg-red-100 cursor-pointer">
                         <IconTrash size={14} /> Clear Old Logs
                     </button>
                 </div>
@@ -183,6 +182,12 @@ export default function SystemLogs({ logs, suspicious, stats, filters, settings,
                     </div>
                 </>
             )}
+            <ConfirmDeleteModal
+                open={confirmClear}
+                title="Clear logs older than 30 days?"
+                onConfirm={() => { router.delete(window.location.pathname + '/clear', { data: { days: 30 }, onFinish: () => setConfirmClear(false) }) }}
+                onCancel={() => setConfirmClear(false)}
+            />
         </AdminLayout>
     )
 }

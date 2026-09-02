@@ -67,9 +67,14 @@ class DashboardController extends Controller
         // Pending reviews
         $pendingReviews = Review::where('is_approved', false)->count();
 
+        // Refunds were never subtracted here at all — Total Revenue just
+        // summed orders.total regardless of any later return, so refunding
+        // an item never moved the number.
+        $refundedTotal = DB::table('order_returns')->where('status', 'refunded')->sum('refund_amount');
+
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'revenue'         => (float) Order::whereNotIn('status',['cancelled'])->sum('total'),
+                'revenue'         => (float) Order::whereNotIn('status',['cancelled'])->sum('total') - (float) $refundedTotal,
                 'orders'          => Order::whereNotIn('status', ['cancelled'])->count(),
                 'customers'       => User::where('role','customer')->count(),
                 'products'        => Product::active()->count(),

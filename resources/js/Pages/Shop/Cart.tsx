@@ -31,7 +31,12 @@ interface Props {
 const FIELD_ERRORS: Record<string, string> = {}
 
 export default function Cart({ items, subtotal, shipping, total, discount=0, points_discount=0, coupon_discount=0, coupon_code=null, loyalty_points=0, loyalty_value=0, points_used=0, loyalty_enabled=true, redeem_enabled=true, user_profile, gateways, settings, auth }: Props) {
-    const [step, setStep] = useState<'cart' | 'checkout' | 'payment'>('cart')
+    const [step, setStep] = useState<'cart' | 'checkout' | 'payment'>(() => {
+        // Lets "Buy It Now" jump straight to the checkout form instead of
+        // landing on the cart page first — /cart?step=checkout
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('step') === 'checkout') return 'checkout'
+        return 'cart'
+    })
     const [proofFile, setProofFile] = useState<File | null>(null)
     const [proofPreview, setProofPreview] = useState<string | null>(null)
     const [couponCode, setCouponCode] = useState('')
@@ -42,7 +47,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
     // the minimum order amount) failed completely silently. The customer
     // saw the loading state finish and then... nothing, with no way to know
     // why.
-    const { props: pageProps } = usePage<{ flash?: { coupon_success?: string; coupon_error?: string } }>()
+    const { props: pageProps } = usePage<{ flash?: { coupon_success?: string; coupon_error?: string; error?: string; success?: string } }>()
     const [couponMsg, setCouponMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
     useEffect(() => {
         if (pageProps.flash?.coupon_success) {
@@ -51,6 +56,17 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
             setCouponMsg({ type: 'error', text: pageProps.flash.coupon_error })
         }
     }, [pageProps.flash?.coupon_success, pageProps.flash?.coupon_error])
+
+    // Checkout failures — stock, gateway, phone format, COD limits, etc. —
+    // were ALL sent correctly by the backend via this same flash mechanism,
+    // but nothing on this page ever read or displayed them at all. Every
+    // failure just looked like a silent bounce back to the same step with
+    // zero indication of why, regardless of what the actual reason was.
+    const [checkoutError, setCheckoutError] = useState<string | null>(null)
+    useEffect(() => {
+        if (pageProps.flash?.error) setCheckoutError(pageProps.flash.error)
+    }, [pageProps.flash?.error])
+
     const fileRef = useRef<HTMLInputElement>(null)
     const fmt = (n: number) => `Rs ${n.toLocaleString('en-PK')}`
 
@@ -375,6 +391,13 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                         {/* STEP 2: Checkout form */}
                         {step === 'checkout' && (
                             <form onSubmit={goToPayment} className="space-y-5" noValidate>
+
+                                {checkoutError && (
+                                    <div className="bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl px-4 py-3.5 text-[13.5px] font-semibold flex items-start gap-2.5">
+                                        <IconAlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                                        <span>{checkoutError}</span>
+                                    </div>
+                                )}
 
                                 {/* Customer info */}
                                 <div className="bg-white rounded-2xl border border-gray-100 p-5">

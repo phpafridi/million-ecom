@@ -2,6 +2,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import { IconPlus, IconTrash, IconPencil, IconX, IconCheck, IconTag } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 
 interface Coupon {
     id: number; code: string; type: string; value: number
@@ -113,10 +114,12 @@ export default function CouponsIndex({ coupons }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
     const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Coupon | 'new' | null>(null)
+    const [pendingDelete, setPendingDelete] = useState<Coupon | null>(null)
 
-    function del(c: Coupon) {
-        if (!confirm(`Delete coupon "${c.code}"?`)) return
-        router.delete(`${ap}/coupons/${c.id}`, { preserveScroll: true })
+    function del(c: Coupon) { setPendingDelete(c) }
+    function confirmDelete() {
+        if (!pendingDelete) return
+        router.delete(`${ap}/coupons/${pendingDelete.id}`, { preserveScroll: true, onFinish: () => setPendingDelete(null) })
     }
 
     const typeLabel = (t: string) => ({ percentage:'% off', fixed:'Rs off', free_shipping:'Free Shipping' }[t] ?? t)
@@ -176,6 +179,13 @@ export default function CouponsIndex({ coupons }: Props) {
                 </div>
             </div>
             {editing && <CouponForm coupon={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)}/>}
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Delete this coupon?"
+                itemName={pendingDelete?.code}
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

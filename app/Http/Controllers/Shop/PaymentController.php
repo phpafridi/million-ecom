@@ -21,6 +21,7 @@ class PaymentController extends Controller
 
     private function markPaid(Order $order, string $txnId = ''): void
     {
+        $wasAlreadyPaid = $order->payment_status === 'paid';
         $order->update([
             'payment_status' => 'paid',
             'status'         => 'processing',
@@ -34,6 +35,26 @@ class PaymentController extends Controller
         // Coupon usage counted here too, on confirmed payment — same timing
         // as stock, same reasoning (see BUG 15.1).
         $order->countCouponUsage();
+        // Loyalty points earned on confirmed payment, matching the same
+        // trigger used in Admin/OrderController for manually-confirmed
+        // COD/bank-transfer orders — online gateway payments need the
+        // identical logic here, since this is a completely separate code
+        // path. Guarded against a gateway sending a duplicate webhook for
+        // an order that was already paid.
+        if (!$wasAlreadyPaid && $order->user_id && \App\Models\Setting::get('loyalty_enabled', '1') === '1') {
+            try {
+                $user = \App\Models\User::find($order->user_id);
+                if ($user) {
+                    $rate = (int)(\App\Models\Setting::get('loyalty_points_rate', 10) ?: 10);
+                    $pts  = (int)floor($order->total / $rate);
+                    if ($pts > 0) {
+                        $user->addPoints($pts, 'Earned for order '.($order->order_number ?? '#'.$order->id), $order->id);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Loyalty points failed: ' . $e->getMessage());
+            }
+        }
         Log::info("Order #{$order->id} marked paid. TxnID: {$txnId}");
         try { (new OrderNotificationService())->notify($order->fresh(), 'processing'); } catch (\Throwable $e) { Log::error('Notify failed: '.$e->getMessage()); }
     }

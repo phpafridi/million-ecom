@@ -10,6 +10,7 @@ interface Order {
     customer_address: string; payment_method: string; payment_status: string; status: string
     return_status: string | null; notes: string | null; payment_proof: string | null
     subtotal: number; shipping: number; discount: number; coupon_code: string | null; total: number; created_at: string
+    tracking_number: string | null; courier: string | null
     items: OrderItem[]; returns: OrderReturn[]
 }
 interface Props { order: Order }
@@ -28,6 +29,9 @@ export default function OrderShow({ order }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
     const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [showReturn, setShowReturn] = useState(false)
+    const [courier, setCourier] = useState(order.courier ?? '')
+    const [trackingNumber, setTrackingNumber] = useState(order.tracking_number ?? '')
+    const [savingTracking, setSavingTracking] = useState(false)
     const fmt = (n: number) => `Rs ${Number(n).toLocaleString('en-PK')}`
 
     const { data: retData, setData: setRetData, post: postReturn, processing: retProcessing } = useForm({
@@ -42,6 +46,14 @@ export default function OrderShow({ order }: Props) {
 
     function updateStatus(field: string, value: string) {
         router.patch(`${ap}/orders/${order.id}`, { [field]: value }, { preserveScroll: true })
+    }
+
+    function saveTracking() {
+        setSavingTracking(true)
+        router.patch(`${ap}/orders/${order.id}`, { courier, tracking_number: trackingNumber }, {
+            preserveScroll: true,
+            onFinish: () => setSavingTracking(false),
+        })
     }
 
     function submitReturn(e: React.FormEvent) {
@@ -147,6 +159,28 @@ export default function OrderShow({ order }: Props) {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+                            <div className="pt-4 border-t border-gray-100">
+                                <p className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Shipping / Tracking</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[11px] font-semibold text-gray-400 mb-1">Courier Company</label>
+                                        <input value={courier} onChange={e => setCourier(e.target.value)}
+                                            placeholder="e.g. TCS, Leopards, M&P"
+                                            className="w-full h-10 px-3 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary)]" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-semibold text-gray-400 mb-1">Tracking Number</label>
+                                        <input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)}
+                                            placeholder="Consignment / tracking ID"
+                                            className="w-full h-10 px-3 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-[var(--color-primary)]" />
+                                    </div>
+                                </div>
+                                <button onClick={saveTracking} disabled={savingTracking}
+                                    className="mt-3 h-9 px-5 rounded-xl text-[12.5px] font-bold border-none cursor-pointer disabled:opacity-60"
+                                    style={{ background:'var(--color-primary)', color:'var(--color-primary-text)' }}>
+                                    {savingTracking ? 'Saving…' : '✓ Save Tracking Info'}
+                                </button>
                             </div>
                         </div>
                     </div>

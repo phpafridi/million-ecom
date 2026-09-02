@@ -20,6 +20,7 @@ import {
     IconPalette,
     IconPhoto,
     IconPointFilled,
+    IconSearch,
     IconSettings,
     IconShoppingBag,
     IconStar,
@@ -45,51 +46,56 @@ const NAV = [
         group: 'STORE',
         defaultOpen: true,
         items: [
-            { label: 'Dashboard',  icon: IconLayoutDashboard, path: '' },
-            { label: 'Products',   icon: IconPackage,         path: '/products' },
-            { label: 'Orders',     icon: IconShoppingBag,     path: '/orders' },
-            { label: 'Customers',  icon: IconUsers,           path: '/customers' },
-            { label: 'Categories', icon: IconCategory,        path: '/categories' },
+            { label: 'Dashboard',  icon: IconLayoutDashboard, path: '',            perm: 'dashboard' },
+            { label: 'Products',   icon: IconPackage,         path: '/products',   perm: 'products' },
+            { label: 'Orders',     icon: IconShoppingBag,     path: '/orders',     perm: 'orders' },
+            { label: 'Order Lookup', icon: IconSearch,        path: '/orders/lookup', perm: 'orders_lookup', impliedBy: 'orders' },
+            { label: 'Customers',  icon: IconUsers,           path: '/customers',  perm: 'customers' },
+            { label: 'Categories', icon: IconCategory,        path: '/categories', perm: 'categories' },
         ]
     },
     {
         group: 'MARKETING',
         defaultOpen: false,
         items: [
-            { label: 'Coupons',         icon: IconTag,     path: '/coupons' },
-            { label: 'Reviews',         icon: IconStar,    path: '/reviews' },
-            { label: 'Email Campaigns', icon: IconMail,    path: '/email-campaigns' },
-            { label: 'Support',         icon: IconHeadset, path: '/support' },
+            { label: 'Coupons',         icon: IconTag,     path: '/coupons',         perm: 'coupons' },
+            { label: 'Reviews',         icon: IconStar,    path: '/reviews',         perm: 'reviews' },
+            { label: 'Email Campaigns', icon: IconMail,    path: '/email-campaigns', perm: 'email_campaigns' },
+            { label: 'Support',         icon: IconHeadset, path: '/support',         perm: 'support_tickets' },
         ]
     },
     {
         group: 'CONTENT',
         defaultOpen: false,
         items: [
-            { label: 'Hero Slides', icon: IconPhoto,      path: '/hero-slides' },
-            { label: 'Banners',     icon: IconTrendingUp, path: '/banners' },
-            { label: 'Pages',       icon: IconFileText,   path: '/pages' },
+            { label: 'Hero Slides', icon: IconPhoto,      path: '/hero-slides', perm: 'hero_slides' },
+            { label: 'Banners',     icon: IconTrendingUp, path: '/banners',     perm: 'banners' },
+            { label: 'Pages',       icon: IconFileText,   path: '/pages',       perm: 'pages' },
         ]
     },
     {
         group: 'CONFIGURATION',
         defaultOpen: false,
+        // adminOnly: true items are never shown to staff at all, regardless
+        // of their permissions array — matching AdminMiddleware's
+        // $adminOnly list exactly, so the nav never shows a link staff
+        // would just get blocked from clicking.
         items: [
-            { label: 'Analytics', icon: IconChartBar,      path: '/analytics' },
-            { label: 'Reports',   icon: IconChartBar,      path: '/reports' },
-            { label: 'Payments',  icon: IconCreditCard,    path: '/payments' },
-            { label: 'Returns',   icon: IconChevronLeft,   path: '/returns' },
-            { label: 'Live Chat', icon: IconMessageCircle, path: '/chat' },
-            { label: 'Staff',     icon: IconUserCheck,     path: '/staff' },
+            { label: 'Analytics', icon: IconChartBar,      path: '/analytics',    adminOnly: true },
+            { label: 'Reports',   icon: IconChartBar,      path: '/reports',      adminOnly: true },
+            { label: 'Payments',  icon: IconCreditCard,    path: '/payments',     adminOnly: true },
+            { label: 'Returns',   icon: IconChevronLeft,   path: '/returns',      perm: 'returns' },
+            { label: 'Live Chat', icon: IconMessageCircle, path: '/chat',         perm: 'chat' },
+            { label: 'Staff',     icon: IconUserCheck,     path: '/staff',        adminOnly: true },
             // WhatsApp link removed — settings consolidated into Settings page
-            { label: 'Theme',     icon: IconPalette,       path: '/theme' },
-            { label: 'Branding',  icon: IconPhoto,         path: '/branding' },
-            { label: 'SEO',       icon: IconWorld,         path: '/seo' },
-            { label: 'Notifications', icon: IconBell,      path: '/notifications' },
-            { label: 'IP Firewall',  icon: IconLock,     path: '/blocked-ips' },
-            { label: 'System Logs',  icon: IconLock,   path: '/system-logs' },
-            { label: 'Backup',       icon: IconPointFilled,      path: '/backup' },
-            { label: 'Settings',     icon: IconSettings,      path: '/settings' },
+            { label: 'Theme',     icon: IconPalette,       path: '/theme',        adminOnly: true },
+            { label: 'Branding',  icon: IconPhoto,         path: '/branding',     adminOnly: true },
+            { label: 'SEO',       icon: IconWorld,         path: '/seo',          adminOnly: true },
+            { label: 'Notifications', icon: IconBell,      path: '/notifications', adminOnly: true },
+            { label: 'IP Firewall',  icon: IconLock,     path: '/blocked-ips',    adminOnly: true },
+            { label: 'System Logs',  icon: IconLock,   path: '/system-logs',      adminOnly: true },
+            { label: 'Backup',       icon: IconPointFilled, path: '/backup',      adminOnly: true },
+            { label: 'Settings',     icon: IconSettings,   path: '/settings',     adminOnly: true },
         ]
     },
 ]
@@ -148,6 +154,20 @@ export default function AdminLayout({ children, title }: { children: React.React
     const userName = props.auth?.user?.name ?? 'Admin'
     const notifs   = props.adminNotifications
 
+    // Staff members only see nav items they're actually permitted to
+    // access — previously every staff account saw the full nav regardless
+    // of role, and only found out they lacked access after clicking
+    // through to a 403 page. Full admins (permissions === null) see
+    // everything, unfiltered.
+    const userPerms = props.auth?.user?.permissions
+    const isRestrictedStaff = props.auth?.user?.role === 'staff' && Array.isArray(userPerms)
+    const visibleNav = isRestrictedStaff
+        ? NAV.map(g => ({
+              ...g,
+              items: g.items.filter((i: any) => !i.adminOnly && (i.perm === null || userPerms.includes(i.perm) || (i.impliedBy && userPerms.includes(i.impliedBy)))),
+          })).filter(g => g.items.length > 0)
+        : NAV
+
     const Sidebar = () => (
         <div className="flex flex-col h-full">
             {/* Brand */}
@@ -180,7 +200,7 @@ export default function AdminLayout({ children, title }: { children: React.React
 
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-2">
-                {NAV.map(g => (
+                {visibleNav.map(g => (
                     <NavGroup key={g.group} {...g} ap={ap} url={url}
                         onNav={() => setMobileOpen(false)} />
                 ))}

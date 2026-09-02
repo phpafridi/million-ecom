@@ -9,7 +9,7 @@ class Product extends Model
 
     protected $fillable = [
         'name','slug','description','price','compare_price',
-        'category_id','stock','stock_reserved','stock_sold',
+        'category_id','stock','stock_reserved','stock_sold','track_variant_stock',
         'is_featured','is_new','is_active','sort_order',
         'avg_rating','review_count',
     ];
@@ -18,6 +18,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_new'      => 'boolean',
         'is_active'   => 'boolean',
+        'track_variant_stock' => 'boolean',
     ];
 
     protected $appends = ['images','discount_pct','first_image','is_low_stock'];

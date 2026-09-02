@@ -109,7 +109,11 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
         : []
     const rawPrice      = selectedVariant?.price         ?? product.price
     const rawCompare    = selectedVariant?.compare_price ?? product.compare_price
-    const activeStock   = selectedVariant?.stock         ?? product.stock
+    // Sync mode (track_variant_stock off on the product): the variant is a
+    // customer-facing label only — always use the product's own stock,
+    // never the variant's, since that field isn't meaningfully maintained
+    // in this mode.
+    const activeStock   = (selectedVariant && product.track_variant_stock !== false) ? selectedVariant.stock : product.stock
 
     // Flash sale discount
     const _settings   = (pageProps as any).settings ?? settings ?? {}
@@ -194,6 +198,40 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
         })
     }
 
+    // Same validation as addToCart(), but goes straight to the checkout
+    // form afterward instead of leaving the customer on the product page —
+    // for someone who already knows they want this item, "Add to Cart"
+    // normally means an extra trip through the cart page first.
+    function buyNow() {
+        if (missingRequired.length > 0) {
+            const el = document.getElementById(`attr-${missingRequired[0].id}`)
+            if (el) {
+                el.style.cssText += ';outline:2px solid #ef4444;outline-offset:4px;border-radius:8px;animation:mlShake 0.4s ease'
+                setTimeout(() => { if (el) el.style.cssText = el.style.cssText.replace(/outline[^;]*;/g, '').replace(/animation[^;]*;/g, '') }, 1800)
+            }
+            return
+        }
+        const hasVariantStockRecords = (product.variants?.length ?? 0) > 0
+        const allRequiredSelected = (product.variant_attributes ?? []).every((a: any) =>
+            (a.values?.length ?? 0) === 0 || !(a.is_required ?? true) || selectedValues[a.id]
+        )
+        if (hasVariantStockRecords && hasVariants && !selectedVariant && allRequiredSelected && Object.keys(selectedValues).length > 0) {
+            alert('This combination is out of stock. Please try different options.')
+            return
+        }
+        if (adding) return
+        setAdding(true)
+        router.post('/cart/add', {
+            product_id: product.id,
+            quantity: qty,
+            variant_id: selectedVariant?.id ?? null,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => router.visit('/cart'),
+            onError:   () => setAdding(false),
+        })
+    }
+
     function toggleWishlist() {
         setWished(w => !w)
         router.post('/wishlist/toggle', { product_id: product.id }, {
@@ -217,7 +255,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
     const currentImgUrl = selectedVariant?.image ?? imgs[activeImg]?.url ?? '/images/placeholder.jpg'
 
     return (
-        <StorefrontLayout auth={auth} settings={settings} hideFloatingCart>
+        <StorefrontLayout auth={auth} settings={settings}>
             <Head title={product.name} />
 
             {/* ── Lightbox ── */}
@@ -525,9 +563,16 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                                 : 'Add to Cart'
                                         }
                                     </button>
+                                    <button onClick={buyNow}
+                                        disabled={adding}
+                                        className={`col-span-2 flex items-center justify-center gap-2.5 h-[52px] font-black text-[14px] rounded-2xl transition-all border-none cursor-pointer disabled:cursor-not-allowed
+                                            ${missingRequired.length > 0 ? 'opacity-60 grayscale' : 'hover:opacity-90 disabled:opacity-70'}`}
+                                        style={{ background: 'var(--color-dark-bg,#0a0a0a)', color: '#ffffff' }}>
+                                        {adding ? 'Processing…' : 'Buy It Now'}
+                                    </button>
                                     <Link href="/cart"
                                         className="flex items-center justify-center gap-2 h-[48px] font-bold text-[13px] rounded-2xl no-underline border-2 transition-all hover:opacity-80"
-                                        style={{ borderColor: 'var(--color-dark-bg)', color: 'var(--color-dark-bg)', background: 'transparent' }}>
+                                        style={{ background: 'transparent', borderColor: 'var(--color-dark-bg)', color: 'var(--color-dark-bg)' }}>
                                         View Cart
                                     </Link>
                                     <button onClick={() => toggleWishlist()}
@@ -586,7 +631,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {prose && (
                             <div className="p-6 lg:p-8">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ color: 'var(--color-dark-bg)', fontFamily: 'Manrope,sans-serif' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
                                     About This Product
                                 </h2>
                                 <p className="text-[14px] text-gray-600 leading-[1.85] whitespace-pre-line">{prose}</p>
@@ -597,7 +642,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {specs.length > 0 && (
                             <div className="p-6 lg:p-8">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ color: 'var(--color-dark-bg)', fontFamily: 'Manrope,sans-serif' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
                                     Specifications
                                 </h2>
                                 <div className="divide-y divide-gray-50">
@@ -615,7 +660,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {!prose && specs.length === 0 && product.description && (
                             <div className="p-6 lg:p-8 lg:col-span-2">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ color: 'var(--color-dark-bg)', fontFamily: 'Manrope,sans-serif' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
                                     Product Details
                                 </h2>
                                 <p className="text-[14px] text-gray-600 leading-[1.85]">{product.description}</p>
@@ -710,7 +755,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between flex-wrap gap-2">
-                                                <span className="font-bold text-[13.5px] text-gray-900">{r.name}</span>
+                                                <span className="font-bold text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>{r.name}</span>
                                                 <span className="text-[11.5px] text-gray-400">{new Date(r.created_at).toLocaleDateString()}</span>
                                             </div>
                                             <div className="flex gap-0.5 mt-1">
@@ -720,7 +765,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                             </div>
                                         </div>
                                     </div>
-                                    {r.title && <p className="font-bold text-[13.5px] text-gray-900 mb-1 ml-13">{r.title}</p>}
+                                    {r.title && <p className="font-bold text-[13.5px] mb-1 ml-13" style={{ color: 'var(--color-dark-bg)' }}>{r.title}</p>}
                                     {r.body && <p className="text-[13.5px] text-gray-600 leading-relaxed">{r.body}</p>}
                                 </div>
                             ))}
@@ -768,22 +813,28 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                     padding: '10px 14px', alignItems: 'center', gap: 12,
                 }}>
                     <div style={{ minWidth: 0, flexShrink: 0 }}>
-                        <div className="font-black" style={{ fontSize: 16, color: 'var(--color-dark-bg)', whiteSpace: 'nowrap' }}>{fmt(rawPrice)}</div>
+                        <div className="font-black" style={{ fontSize: 16, whiteSpace: 'nowrap', color: 'var(--color-dark-bg)' }}>{fmt(rawPrice)}</div>
                         {rawCompare > rawPrice && (
                             <div style={{ fontSize: 11, color: '#9CA3AF', textDecoration: 'line-through' }}>{fmt(rawCompare)}</div>
                         )}
                     </div>
                     <button onClick={addToCart} disabled={adding}
-                        className={`flex-1 flex items-center justify-center gap-2 h-[46px] font-black text-[13.5px] rounded-xl border-none cursor-pointer transition-all disabled:cursor-not-allowed
+                        className={`flex-1 flex items-center justify-center gap-1.5 h-[46px] font-black text-[12.5px] rounded-xl border-none cursor-pointer transition-all disabled:cursor-not-allowed
                             ${missingRequired.length > 0 ? 'opacity-60 grayscale' : 'disabled:opacity-70'}`}
                         style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
-                        <IconShoppingCart size={17} />
+                        <IconShoppingCart size={15} />
                         {adding
                             ? 'Adding…'
                             : missingRequired.length > 0
                                 ? `Select ${missingRequired[0]?.name?.replace(/\d+$/, '') || 'Option'}`
                                 : 'Add to Cart'
                         }
+                    </button>
+                    <button onClick={buyNow} disabled={adding}
+                        className={`flex-1 flex items-center justify-center h-[46px] font-black text-[12.5px] rounded-xl border-none cursor-pointer transition-all disabled:cursor-not-allowed
+                            ${missingRequired.length > 0 ? 'opacity-60 grayscale' : 'disabled:opacity-70'}`}
+                        style={{ background: 'var(--color-dark-bg,#0a0a0a)', color: '#ffffff' }}>
+                        {adding ? 'Processing…' : 'Buy Now'}
                     </button>
                 </div>
             )}

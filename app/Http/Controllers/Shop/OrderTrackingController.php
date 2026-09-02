@@ -84,6 +84,8 @@ class OrderTrackingController extends Controller
             'status'         => $order->status,
             'payment_status' => $order->payment_status,
             'payment_method' => $order->payment_method,
+            'courier'         => $order->courier,
+            'tracking_number' => $order->tracking_number,
             'subtotal'       => $order->subtotal,
             'shipping'       => $order->shipping,
             'discount'       => $order->discount ?? 0,

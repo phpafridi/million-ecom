@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
+import { useState } from 'react'
 import { IconCheck, IconTrash, IconStar } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 
 interface Review {
     id: number; name: string; email: string | null; rating: number
@@ -31,9 +33,11 @@ export default function ReviewsIndex({ reviews, stats }: Props) {
     function approve(id: number) {
         router.patch(`${ap}/reviews/${id}/approve`, {}, { preserveScroll: true })
     }
-    function del(id: number) {
-        if (!confirm('Delete this review?')) return
-        router.delete(`${ap}/reviews/${id}`, { preserveScroll: true })
+    const [pendingDelete, setPendingDelete] = useState<number | null>(null)
+    function del(id: number) { setPendingDelete(id) }
+    function confirmDelete() {
+        if (!pendingDelete) return
+        router.delete(`${ap}/reviews/${pendingDelete}`, { preserveScroll: true, onFinish: () => setPendingDelete(null) })
     }
 
     return (
@@ -115,6 +119,12 @@ export default function ReviewsIndex({ reviews, stats }: Props) {
                     </tbody>
                 </table>
             </div>
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title="Delete this review?"
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

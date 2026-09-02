@@ -1,16 +1,42 @@
 import { Link, usePage } from '@inertiajs/react'
 import { useState, useEffect, useRef } from 'react'
-import { IconShoppingCart, IconX, IconArrowRight, IconCreditCard } from '@tabler/icons-react'
+import { IconShoppingCart, IconX, IconArrowRight, IconCreditCard, IconTrash } from '@tabler/icons-react'
 import { getFloatOffset } from '@/utils/floatingButtons'
 
+interface CartLine { id: number; product_id: number; product_name: string; product_image: string | null; variant_label: string | null; price: number; quantity: number; subtotal: number }
 interface Props { settings: Record<string, string> }
 
 export default function FloatingCart({ settings }: Props) {
-    const { props }     = usePage<{ cartCount?: number; cartTotal?: number }>()
+    const { props }     = usePage<{ cartCount?: number; cartTotal?: number; cartItems?: CartLine[] }>()
     const cartCount     = props.cartCount ?? 0
     const cartTotal     = props.cartTotal ?? 0
+    // Already being shared globally on every page (HandleInertiaRequests)
+    // with full name/image/variant/price detail — it just was never being
+    // read here, so the panel only ever showed a bare count and total
+    // instead of the actual items, unlike the reference design.
+    const cartItems     = props.cartItems ?? []
     const [open, setOpen] = useState(false)
     const panelRef = useRef<HTMLDivElement>(null)
+
+    // Auto-open when the count goes UP. A plain useRef for "previous count"
+    // doesn't work for the most common case — adding the very first item
+    // to an empty cart — because this component returns null and isn't
+    // even mounted while the cart is empty, so it has no memory of "0"
+    // to compare against once it mounts fresh already at 1. sessionStorage
+    // persists across that mount/unmount boundary (and across full page
+    // navigations) so the comparison actually works for every addition,
+    // not just the second one onward.
+    useEffect(() => {
+        const key = 'ml_cart_last_count'
+        const prev = Number(sessionStorage.getItem(key) ?? '0')
+        if (cartCount > prev) {
+            setOpen(true)
+            const t = setTimeout(() => setOpen(false), 5000)
+            sessionStorage.setItem(key, String(cartCount))
+            return () => clearTimeout(t)
+        }
+        sessionStorage.setItem(key, String(cartCount))
+    }, [cartCount])
 
     // Auto-close if the cart becomes empty (e.g. after checkout)
     useEffect(() => { if (cartCount === 0) setOpen(false) }, [cartCount])
@@ -136,6 +162,27 @@ export default function FloatingCart({ settings }: Props) {
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
                                 <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12.5, fontWeight: 600 }}>Subtotal</span>
                                 <span style={{ color: 'var(--color-primary,#C9A84C)', fontSize: 18, fontWeight: 900 }}>{fmt(cartTotal)}</span>
+                            </div>
+                        )}
+
+                        {cartItems.length > 0 && (
+                            <div style={{ maxHeight: 220, overflowY: 'auto', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {cartItems.map(item => (
+                                    <div key={item.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                                        <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.06)' }}>
+                                            {item.product_image
+                                                ? <img src={item.product_image} alt={item.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IconShoppingCart size={16} color="rgba(255,255,255,0.3)" /></div>
+                                            }
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <p style={{ color: '#fff', fontSize: 12.5, fontWeight: 700, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.product_name}</p>
+                                            {item.variant_label && <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: '2px 0 0' }}>{item.variant_label}</p>}
+                                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, margin: '2px 0 0' }}>Qty {item.quantity} × {fmt(item.price)}</p>
+                                        </div>
+                                        <span style={{ color: '#fff', fontSize: 12.5, fontWeight: 800, flexShrink: 0 }}>{fmt(item.subtotal)}</span>
+                                    </div>
+                                ))}
                             </div>
                         )}
 

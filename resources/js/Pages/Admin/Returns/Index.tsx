@@ -12,9 +12,9 @@ export default function ReturnsIndex({ returns, stats }:Props) {
     const { props: __p } = usePage<{ adminPath?: string }>()
     const ap = `/${__p?.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Return|null>(null)
-    const [form, setForm]       = useState({ status:'', admin_notes:'', refund_amount:'' })
+    const [form, setForm]       = useState({ status:'', admin_notes:'', refund_amount:'', restock:false })
 
-    function startEdit(r:Return){ setEditing(r); setForm({ status:r.status, admin_notes:'', refund_amount:String(r.refund_amount||r.order_total||0) }) }
+    function startEdit(r:Return){ setEditing(r); setForm({ status:r.status, admin_notes:'', refund_amount:String(r.refund_amount||r.order_total||0), restock:false }) }
     function submit(e:React.FormEvent){
         e.preventDefault(); if(!editing) return; router.patch(`${ap}/returns/${editing.id}`, form, { onSuccess:()=>setEditing(null) }) }
 
@@ -61,6 +61,10 @@ export default function ReturnsIndex({ returns, stats }:Props) {
                             </select>
                         </div>
                         {form.status==='refunded'&&<div><label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Refund Amount</label><input type="number" className="w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none" value={form.refund_amount} onChange={e=>setForm(f=>({...f,refund_amount:e.target.value}))}/></div>}
+                        {form.status==='refunded'&&<label className="flex items-center gap-2 cursor-pointer p-3 bg-gray-50 rounded-xl">
+                            <input type="checkbox" checked={form.restock} onChange={e=>setForm(f=>({...f,restock:e.target.checked}))} className="w-4 h-4" style={{accentColor:'var(--color-primary)'}}/>
+                            <span className="text-[13px] text-gray-700">Restock this item (add quantity back to inventory)</span>
+                        </label>}
                         <div><label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Note to Customer</label><textarea className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-[13.5px] outline-none resize-none" rows={3} value={form.admin_notes} onChange={e=>setForm(f=>({...f,admin_notes:e.target.value}))} placeholder="Explain decision to customer..."/></div>
                         <div className="flex gap-3">
                             <button type="submit" className="flex-1 h-11 rounded-xl font-bold text-[14px] border-none cursor-pointer" style={{background:'var(--color-primary)',color:'var(--color-primary-text)'}}>Save & Email Customer</button>

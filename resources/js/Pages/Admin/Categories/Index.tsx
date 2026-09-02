@@ -2,10 +2,11 @@ import { Head, router, useForm, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import { IconPlus, IconPencil, IconTrash, IconX, IconUpload, IconChevronRight, IconChevronDown, IconGripVertical } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
+import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import { DualImageUpload } from '@/Components/Admin/ImageUpload'
 
 const CAT_IMAGE_DESKTOP  = { w: 900,  h: 1080, label: 'Category Image (Desktop)',  hint: 'Nearly square — shown as a square card on desktop grid' }
-const CAT_IMAGE_MOBILE   = { w: 600,  h: 600,  label: 'Category Image (Mobile)',   hint: 'Square — shown as a 3:4 portrait card on mobile scroll' }
+const CAT_IMAGE_MOBILE   = { w: 600,  h: 600,  label: 'Category Image (Mobile)',   hint: 'Square — shown as a square card on mobile scroll' }
 const CAT_BANNER_DESKTOP = { w: 1920, h: 380,  label: 'Category Banner (Desktop)', hint: 'Wide landscape — shown between product sections on desktop' }
 const CAT_BANNER_MOBILE  = { w: 900,  h: 540,  label: 'Category Banner (Mobile)',  hint: 'Landscape 5:3 — shown on mobile. Falls back to desktop banner if not set' }
 
@@ -280,10 +281,15 @@ export default function CategoriesIndex({ categories, allCategories }: Props) {
     const { props: pageProps } = usePage<{ adminPath?: string }>()
     const ap = `/${pageProps.adminPath ?? 'ml-admin'}`
     const [editing, setEditing] = useState<Category | 'new' | null>(null)
+    // Deleting a category can affect every product assigned to it — high
+    // stakes, so this requires typing the name rather than a native
+    // confirm() someone could click through from habit.
+    const [pendingDelete, setPendingDelete] = useState<Category | null>(null)
 
-    function del(cat: Category) {
-        if (!confirm(`Delete "${cat.name}"?${(cat.children?.length??0)>0 ? '\n\nSub-items will be moved to top level.' : ''}`)) return
-        router.delete(`${ap}/categories/${cat.id}`, { preserveScroll: true })
+    function del(cat: Category) { setPendingDelete(cat) }
+    function confirmDelete() {
+        if (!pendingDelete) return
+        router.delete(`${ap}/categories/${pendingDelete.id}`, { preserveScroll: true, onFinish: () => setPendingDelete(null) })
     }
 
     const total = (cats: Category[]): number => cats.reduce((n,c) => n + 1 + total(c.children??[]), 0)
@@ -341,6 +347,15 @@ export default function CategoriesIndex({ categories, allCategories }: Props) {
             {editing && (
                 <CatForm cat={editing === 'new' ? undefined : editing} allCategories={allCategories} onClose={() => setEditing(null)}/>
             )}
+
+            <ConfirmDeleteModal
+                open={!!pendingDelete}
+                title={(pendingDelete?.children?.length ?? 0) > 0 ? 'Delete this category? Sub-items will move to top level.' : 'Delete this category?'}
+                itemName={pendingDelete?.name}
+                requireTypedConfirmation={pendingDelete?.name}
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDelete(null)}
+            />
         </AdminLayout>
     )
 }

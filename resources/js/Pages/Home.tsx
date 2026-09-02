@@ -90,6 +90,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
     const [tab, setTab] = useState('featured')
     const [loaded, setLoaded] = useState(false)
     const whatsapp = settings?.whatsapp_number ?? ''
+    const dividerText = settings?.home_divider_text ?? 'Fresh Drops Meet Fan Favorites'
 
     // Trust bar — fully editable from Admin → Settings
     const TRUST = [1,2,3,4,5].map(n => ({
@@ -187,14 +188,14 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                             ? Array(8).fill(0).map((_,i)=>(
                                 <div key={i} className="flex-shrink-0 animate-pulse"
                                     style={{ width:'calc(50% - 6px)', scrollSnapAlign:'start' }}>
-                                    <div className="bg-gray-200 rounded-[18px] w-full" style={{ aspectRatio:'3/4' }} />
+                                    <div className="bg-gray-200 rounded-[18px] w-full" style={{ aspectRatio:'1/1' }} />
                                 </div>
                             ))
                             : categories.slice(0,8).map(cat=>(
                                 <Link key={cat.id} href={`/shop?category=${cat.slug}`}
                                     className="no-underline flex-shrink-0 block"
                                     style={{ width:'calc(50% - 6px)', scrollSnapAlign:'start' }}>
-                                    <div className="relative overflow-hidden rounded-[18px] w-full" style={{ aspectRatio:'3/4' }}>
+                                    <div className="relative overflow-hidden rounded-[18px] w-full" style={{ aspectRatio:'1/1' }}>
                                         <img src={cat.mobile_image ?? cat.image ?? '/images/placeholder.jpg'} alt={cat.name}
                                             className="w-full h-full object-cover block" style={{ objectPosition: 'center 20%' }} loading="lazy" />
                                         <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.05) 55%,transparent 100%)' }} />
@@ -210,15 +211,15 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                     <style>{`#ml-cat-track::-webkit-scrollbar{display:none}`}</style>
                 </div>
                 {/* Desktop grid */}
-                <div className="hidden lg:grid lg:grid-cols-8 gap-3 px-10">
+                <div className="hidden lg:grid lg:grid-cols-6 gap-4 px-10">
                     {!loaded
-                        ? Array(8).fill(0).map((_,i)=><CategorySkeleton key={i} />)
+                        ? Array(6).fill(0).map((_,i)=><CategorySkeleton key={i} />)
                         : categories.slice(0,8).map((cat,i)=>(
                             <motion.div key={cat.id} initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} transition={{ delay:i*0.04 }}>
                                 <Link href={`/shop?category=${cat.slug}`}
-                                    className="bg-white rounded-[13px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]">
+                                    className="bg-white rounded-[16px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]">
                                     <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" style={{ objectPosition: 'center 20%' }} loading="lazy" />
-                                    <span className="block text-[11px] font-bold text-gray-900 py-2 px-1 truncate">{cat.name}</span>
+                                    <span className="block text-[13px] font-bold text-gray-900 py-3 px-2 truncate">{cat.name}</span>
                                 </Link>
                             </motion.div>
                         ))
@@ -379,17 +380,22 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
             />
 
             {/* ── Section divider — separates New Arrivals from Featured without
-                needing a banner image. Pure CSS, auto-matches the active theme. ── */}
-            <div className="px-4 sm:px-6 lg:px-10 my-6 sm:my-8">
-                <div className="flex items-center gap-4 sm:gap-6 max-w-[1400px] mx-auto">
+                needing a banner image. Pure CSS, auto-matches the active theme.
+                Text is admin-configurable (Branding → Section Divider Text). ── */}
+            <div className="px-4 sm:px-6 lg:px-10 my-8 sm:my-10">
+                <div className="flex items-center gap-3 sm:gap-5 max-w-[1400px] mx-auto">
                     <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primary, #C9A84C) 60%, var(--color-primary, #C9A84C))' }} />
-                    <div className="flex items-center gap-2 flex-shrink-0 px-4 py-2 rounded-full border"
-                        style={{ borderColor: 'var(--color-primary, #C9A84C)', background: 'rgba(201,168,76,0.08)' }}>
-                        <span className="text-[13px] sm:text-[15px]">✨</span>
-                        <span className="font-manrope font-black text-[10px] sm:text-[11.5px] uppercase tracking-[0.15em]" style={{ color: 'var(--color-dark-bg, #0a0a0a)' }}>
-                            Fresh Drops <span style={{ color: 'var(--color-primary, #C9A84C)' }}>Meet</span> Fan Favorites
-                        </span>
-                        <span className="text-[13px] sm:text-[15px]">✨</span>
+                    <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 rounded-full blur-md opacity-40" style={{ background: 'var(--color-primary, #C9A84C)' }} />
+                        <div className="relative flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg"
+                            style={{ background: 'linear-gradient(135deg, var(--color-primary, #C9A84C), var(--color-primary-dark, #B8973B))' }}>
+                            <span className="text-[15px] sm:text-[17px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}>✨</span>
+                            <span className="font-manrope font-black text-[11px] sm:text-[13px] uppercase tracking-[0.12em] whitespace-nowrap"
+                                style={{ color: 'var(--color-primary-text, #0a0a0a)' }}>
+                                {dividerText}
+                            </span>
+                            <span className="text-[15px] sm:text-[17px]" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}>✨</span>
+                        </div>
                     </div>
                     <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primary, #C9A84C) 60%, var(--color-primary, #C9A84C))' }} />
                 </div>

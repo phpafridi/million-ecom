@@ -170,7 +170,7 @@ Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy
 // ── CHAT ─────────────────────────────────────────────────────────────────────
 Route::post('/chat/start',         [ChatController::class, 'start'])->name('chat.start');
 Route::post('/chat/send',          [ChatController::class, 'send'])->name('chat.send')->middleware('throttle:30,1');
-Route::get('/chat/poll',           [ChatController::class, 'poll'])->name('chat.poll');
+// chat.poll route removed — poll() method deleted, chat uses Reverb now.
 Route::post('/chat/request-agent', [ChatController::class, 'requestAgent'])->name('chat.request-agent');
 Route::post('/chat/rate',          [ChatController::class, 'rate'])->name('chat.rate');
 
@@ -233,6 +233,7 @@ Route::middleware(['auth', 'admin'])  // Only admin role
         return back()->with('success','Stock updated.');
     })->name('products.stock');
     Route::post('products/{product}/variants', [Admin\ProductController::class, 'storeVariant'])->name('products.variants');
+    Route::post('products/{product}/variant-stock', [Admin\ProductController::class, 'updateVariantStock'])->name('products.variant-stock');
 
     // Categories
     Route::get('categories',              [Admin\CategoryController::class, 'index'])->name('categories.index');
@@ -246,6 +247,7 @@ Route::middleware(['auth', 'admin'])  // Only admin role
     Route::get('orders/create',          [Admin\OrderController::class, 'createManual'])->name('orders.create');
     Route::post('orders/manual',         [Admin\OrderController::class, 'storeManual'])->name('orders.manual');
     Route::get('orders',                 [Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/lookup',          [Admin\OrderController::class, 'lookup'])->name('orders.lookup');
     Route::get('orders/{order}',         [Admin\OrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}',       [Admin\OrderController::class, 'update'])->name('orders.update');
     Route::delete('orders/{order}',      [Admin\OrderController::class, 'destroy'])->name('orders.destroy');
@@ -353,7 +355,7 @@ Route::middleware(['auth', 'admin'])  // Only admin role
     Route::get('chat',                        [Admin\ChatAdminController::class, 'index'])->name('chat.admin.index');
     Route::post('chat/sessions/{id}/join',    [Admin\ChatAdminController::class, 'join'])->name('chat.admin.join');
     Route::post('chat/sessions/{id}/reply',   [Admin\ChatAdminController::class, 'reply'])->name('chat.admin.reply');
-    Route::get('chat/sessions/{id}/poll',     [Admin\ChatAdminController::class, 'sessionPoll'])->name('chat.admin.poll');
+    // chat.admin.poll route removed — sessionPoll() method deleted, admin chat panel uses Reverb now.
     Route::post('chat/sessions/{id}/close',   [Admin\ChatAdminController::class, 'close'])->name('chat.admin.close');
     Route::post('chat/heartbeat',             [Admin\ChatAdminController::class, 'heartbeat'])->name('chat.admin.heartbeat');
     Route::get('chat/sessions/{id}/messages', [Admin\ChatAdminController::class, 'sessionMessages'])->name('chat.admin.messages');
