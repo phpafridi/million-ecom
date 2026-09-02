@@ -1,6 +1,6 @@
 {
-    "name": "moin/electronics",
-    "description": "MOIN Electronics — Pakistan's Premier Tech Store",
+    "name": "millionaire",
+    "description": "millionaire online store",
     "type": "project",
     "require": {
         "php": "^8.2",

@@ -131,13 +131,11 @@ php artisan serve
 
 Open browser: http://localhost:8000
 Admin panel:  http://localhost:8000/admin
-Login:        admin@moin.pk / password
 
 ---
 
 ## Every time you work on it
 
-Open TWO cmd windows, both in C:\xampp\htdocs\moin:
 
 Window 1:
 ```cmd

@@ -114,7 +114,7 @@ function SeoIndex({ seo }) {
               {
                 value: data.meta_title,
                 onChange: (e) => setData("meta_title", e.target.value),
-                placeholder: "MOIN Electronics — Manage Online IT Needs",
+                placeholder: "Millionaire Online Store",
                 maxLength: 70
               }
             ),
@@ -147,7 +147,7 @@ function SeoIndex({ seo }) {
               placeholder: "laptops, smartphones, gaming pc, pakistan electronics"
             }
           ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Canonical Site URL", hint: "Your live domain — used for sitemap and canonical tags", error: errors.site_url, children: /* @__PURE__ */ jsx(Input, { value: data.site_url, onChange: (e) => setData("site_url", e.target.value), placeholder: "https://moin.pk" }) })
+          /* @__PURE__ */ jsx(Field, { label: "Canonical Site URL", hint: "Your live domain — used for sitemap and canonical tags", error: errors.site_url, children: /* @__PURE__ */ jsx(Input, { value: data.site_url, onChange: (e) => setData("site_url", e.target.value), placeholder: "https://millionairepk.com" }) })
         ] }),
         /* @__PURE__ */ jsxs(Section, { title: "Indexing & Crawling", icon: /* @__PURE__ */ jsx(IconRobot, { size: 18, className: "text-[var(--color-primary,#00c8ff)]" }), children: [
           /* @__PURE__ */ jsxs("label", { className: "flex items-center justify-between p-3.5 bg-gray-50 rounded-xl cursor-pointer", children: [

@@ -117,7 +117,7 @@ export default function SeoIndex({ seo }: Props) {
                     <Section title="Search Engine Meta Tags" icon="🔍">
                         <Field label="Meta Title" hint="Shown in browser tabs and Google search results (max 70 chars)" error={errors.meta_title}>
                             <Input value={data.meta_title} onChange={(e: any) => setData('meta_title', e.target.value)}
-                                placeholder="MOIN Electronics — Manage Online IT Needs" maxLength={70} />
+                                placeholder="Millionaire Online Store" maxLength={70} />
                             <div className="text-[11px] text-gray-400 mt-1">{data.meta_title.length}/70</div>
                         </Field>
                         <Field label="Meta Description" hint="Shown under your title in search results (max 160 chars)" error={errors.meta_description}>
@@ -130,7 +130,7 @@ export default function SeoIndex({ seo }: Props) {
                                 placeholder="laptops, smartphones, gaming pc, pakistan electronics" />
                         </Field>
                         <Field label="Canonical Site URL" hint="Your live domain — used for sitemap and canonical tags" error={errors.site_url}>
-                            <Input value={data.site_url} onChange={(e: any) => setData('site_url', e.target.value)} placeholder="https://moin.pk" />
+                            <Input value={data.site_url} onChange={(e: any) => setData('site_url', e.target.value)} placeholder="https://millionairepk.com" />
                         </Field>
                     </Section>
 
