@@ -33,6 +33,11 @@
 <div class="wrap">
   <div class="card">
     <div class="header">
+      @if($logoUrl)
+        <img src="{{ $logoUrl }}" alt="{{ $storeName }}" style="height:36px;width:auto;margin-bottom:16px;">
+      @else
+        <div style="font-size:18px;font-weight:900;color:white;letter-spacing:0.05em;margin-bottom:16px;">{{ strtoupper($storeName ?? 'STORE') }}</div>
+      @endif
       <div style="font-size:56px;margin-bottom:16px;">🚚</div>
       <h1>Your Order is On Its Way!</h1>
       <p>Order #{{ $order->id }} has been dispatched and is heading to you.</p>

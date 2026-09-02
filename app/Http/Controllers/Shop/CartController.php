@@ -241,7 +241,7 @@ class CartController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:100',
             'phone'         => 'required|string|max:20',
-            'email'         => 'nullable|email|max:100',
+            'email'         => 'required|email|max:100',
             'address'       => 'required|string|max:500',
             'city'          => 'required|string|max:100',
             'gateway'       => 'required|string|exists:payment_gateways,code',

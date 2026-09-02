@@ -15,8 +15,16 @@ export default function Wishlist({ items, settings, auth }: Props) {
         router.post('/wishlist/toggle', { product_id: productId }, { preserveScroll: true })
     }
 
-    function addToCart(productId: number) {
-        router.post('/cart/add', { product_id: productId, quantity: 1 }, { preserveScroll: true })
+    function addToCart(product: any) {
+        // Products with color/size options need to go through the product
+        // page to actually pick one — silently adding with no variant_id
+        // meant the order would carry no color/size at all, the exact
+        // gap that caused most of this session's variant debugging.
+        if (product.variant_attributes?.length > 0) {
+            router.visit(`/products/${product.slug}`)
+            return
+        }
+        router.post('/cart/add', { product_id: product.id, quantity: 1 }, { preserveScroll: true })
     }
 
     return (
@@ -53,7 +61,7 @@ export default function Wishlist({ items, settings, auth }: Props) {
                                     <div className="text-[10.5px] font-bold uppercase tracking-wider mb-1" style={{ color:'var(--color-primary)' }}>
                                         {product.category?.name}
                                     </div>
-                                    <Link href={`/products/${product.slug}`} className="font-semibold text-[14px] text-gray-900 no-underline hover:text-[var(--color-primary)] line-clamp-2 block mb-2">
+                                    <Link href={`/products/${product.slug}`} className="font-semibold text-[14px] no-underline hover:text-[var(--color-primary)] line-clamp-2 block mb-2" style={{ color: 'var(--color-dark-bg)' }}>
                                         {product.name}
                                     </Link>
                                     <div className="flex items-baseline gap-2 mb-3">
@@ -63,10 +71,10 @@ export default function Wishlist({ items, settings, auth }: Props) {
                                         )}
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => addToCart(product.id)}
+                                        <button onClick={() => addToCart(product)}
                                             className="flex-1 flex items-center justify-center gap-2 h-10 font-bold text-[12.5px] rounded-xl border-none cursor-pointer"
                                             style={{ background:'var(--color-primary)', color:'var(--color-primary-text)' }}>
-                                            <IconShoppingCart size={15}/> Add to Cart
+                                            <IconShoppingCart size={15}/> {product.variant_attributes?.length > 0 ? 'Select Options' : 'Add to Cart'}
                                         </button>
                                         <button onClick={() => removeFromWishlist(product.id)}
                                             className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-red-400 hover:bg-red-50 hover:border-red-300 cursor-pointer bg-white transition-all">

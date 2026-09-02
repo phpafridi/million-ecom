@@ -34,7 +34,7 @@ function SectionHeader({ eyebrow, title, viewAll }: { eyebrow: string; title: st
                 <div className="w-1 h-6 sm:h-7 bg-[var(--color-primary,#00c8ff)] rounded-sm flex-shrink-0" style={{ boxShadow: '0 0 8px rgba(0,200,255,0.4)' }} />
                 <div>
                     <div className="text-[10px] sm:text-[11px] font-bold text-[var(--color-primary,#00c8ff)] uppercase tracking-[.12em]">{eyebrow}</div>
-                    <h2 className="font-manrope font-black text-[18px] sm:text-[21px] text-gray-900 tracking-tight leading-snug">{title}</h2>
+                    <h2 className="font-manrope font-black text-[18px] sm:text-[21px] tracking-tight leading-snug" style={{ color: 'var(--color-dark-bg)' }}>{title}</h2>
                 </div>
             </div>
             {viewAll && (
@@ -219,7 +219,7 @@ export default function Home({ heroSlides, featuredProducts, onSaleProducts, top
                                 <Link href={`/shop?category=${cat.slug}`}
                                     className="bg-white rounded-[16px] border border-gray-200 overflow-hidden text-center no-underline block transition-all hover:border-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]">
                                     <img src={cat.image??'/images/placeholder.jpg'} alt={cat.name} className="w-full aspect-square object-cover block" style={{ objectPosition: 'center 20%' }} loading="lazy" />
-                                    <span className="block text-[13px] font-bold text-gray-900 py-3 px-2 truncate">{cat.name}</span>
+                                    <span className="block text-[13px] font-bold py-3 px-2 truncate" style={{ color: 'var(--color-dark-bg)' }}>{cat.name}</span>
                                 </Link>
                             </motion.div>
                         ))

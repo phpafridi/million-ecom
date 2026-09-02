@@ -25,7 +25,7 @@ class WishlistController extends Controller
     public function index()
     {
         $items = $this->scoped(Wishlist::query())
-            ->with(['product.productImages', 'product.category'])
+            ->with(['product.productImages', 'product.category', 'product.variantAttributes'])
             ->get()
             ->map(fn($w) => $w->product)
             ->filter()

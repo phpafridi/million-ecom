@@ -2,9 +2,9 @@
 <html><head><meta charset="utf-8"><style>
 body{font-family:Manrope,Arial,sans-serif;background:#f5f5f0;margin:0;padding:20px}
 .wrap{max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden}
-.header{background:#0a0a0a;padding:28px 32px;text-align:center}
+.header{background:{{ $primaryColor ?? '#0a0a0a' }};padding:28px 32px;text-align:center}
 .header img{height:40px}
-.header h1{color:#C9A84C;font-size:22px;margin:8px 0 0;letter-spacing:2px}
+.header h1{color:{{ $accentColor ?? '#C9A84C' }};font-size:22px;margin:8px 0 0;letter-spacing:2px}
 .body{padding:32px}
 .status-badge{display:inline-block;padding:8px 20px;border-radius:100px;font-weight:800;font-size:14px;margin-bottom:20px}
 .info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
@@ -53,11 +53,12 @@ body{font-family:Manrope,Arial,sans-serif;background:#f5f5f0;margin:0;padding:20
       <div class="info-row"><span class="info-label">Items</span><span class="info-value">{{ $order->items->count() }} item(s)</span></div>
     </div>
 
-    <a href="{{ $trackUrl }}" class="btn" style="background:#C9A84C;color:#0a0a0a">Track Your Order →</a>
+    <a href="{{ $trackUrl }}" class="btn" style="background:{{ $accentColor ?? '#C9A84C' }};color:{{ $primaryColor ?? '#0a0a0a' }}">Track Your Order →</a>
   </div>
   <div class="footer">
     <p>{{ $siteName }} · {{ $siteUrl }}</p>
     @if($phone)<p>📞 {{ $phone }}</p>@endif
+    @if(!empty($footerText))<p>{{ $footerText }}</p>@endif
     <p>This email was sent because you placed an order with us.</p>
   </div>
 </div>

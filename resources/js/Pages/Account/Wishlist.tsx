@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react'
+import { Head, Link, useForm, router } from '@inertiajs/react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 import AccountSidebar from './Partials/AccountSidebar'
 import { IconHeart, IconShoppingCart, IconTrash } from '@tabler/icons-react'
@@ -82,6 +82,7 @@ export default function AccountWishlist({ items, settings, auth }: Props) {
                                                     <div className="flex gap-2">
                                                         <button
                                                             onClick={() => {
+                                                                if (product.has_variants) { router.visit(`/products/${product.slug}`); return }
                                                                 addForm.setData('product_id', product.id)
                                                                 addForm.post('/cart/add')
                                                             }}
@@ -89,7 +90,7 @@ export default function AccountWishlist({ items, settings, auth }: Props) {
                                                             className="flex-1 h-9 rounded-xl font-bold text-[12.5px] disabled:opacity-50 flex items-center justify-center gap-1.5"
                                                             style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
                                                             <IconShoppingCart size={14} />
-                                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                                            {product.stock === 0 ? 'Out of Stock' : product.has_variants ? 'Select Options' : 'Add to Cart'}
                                                         </button>
                                                         <button
                                                             onClick={() => removeForm.post(`/wishlist/toggle`, { data: { product_id: product.id } })}

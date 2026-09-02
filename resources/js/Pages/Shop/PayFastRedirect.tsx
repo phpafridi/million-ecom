@@ -45,7 +45,7 @@ export default function PayFastRedirect({ payfast_url, data, order, sandbox }: P
                     )}
 
                     {/* Order summary */}
-                    <h1 className="font-black text-[20px] text-gray-900 mb-1">
+                    <h1 className="font-black text-[20px] mb-1" style={{ color: 'var(--color-dark-bg)' }}>
                         Redirecting to PayFast
                     </h1>
                     <p className="text-gray-500 text-[14px] mb-5">

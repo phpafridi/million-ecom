@@ -1,6 +1,7 @@
 <?php
 namespace App\Mail;
 use App\Models\{Order, Setting};
+use App\Traits\EmailBrandingHelper;
 use Illuminate\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
@@ -9,7 +10,7 @@ use Illuminate\Bus\Queueable;
 
 class OrderShippedMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, EmailBrandingHelper;
     public function __construct(
         public Order $order,
         public string $trackingNumber = '',
@@ -22,14 +23,11 @@ class OrderShippedMail extends Mailable implements ShouldQueue
 
     public function content(): Content {
         $s = Setting::allKeyed();
-        return new Content(view: 'emails.order-shipped', with: [
+        return new Content(view: 'emails.order-shipped', with: array_merge($this->emailBranding($s), [
             'order'          => $this->order->load('items'),
-            'storeName'      => $s['site_name']      ?? 'Our Store',
-            'primaryColor'   => $s['dark_bg']         ?? '#0a0e1a',
-            'accentColor'    => $s['primary']          ?? '#00c8ff',
             'whatsapp'       => $s['whatsapp_number']  ?? '',
             'trackingNumber' => $this->trackingNumber,
             'courierName'    => $this->courierName,
-        ]);
+        ]));
     }
 }

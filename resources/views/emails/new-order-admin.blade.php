@@ -8,7 +8,7 @@
          background:#f0f2f5; padding:24px 16px; }
   .wrap { max-width:600px; margin:0 auto; }
   .card { background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
-  .header { background:#1e293b; padding:28px 32px; }
+  .header { background:{{ $primaryColor ?? '#1e293b' }}; padding:28px 32px; }
   .header h1 { color:white; font-size:20px; font-weight:800; margin:0 0 4px; }
   .header p { color:rgba(255,255,255,0.5); font-size:13px; margin:0; }
   .alert { background:#f59e0b; padding:14px 32px; font-size:13px; font-weight:700; color:#1c0a00; }
@@ -34,6 +34,7 @@
 <div class="wrap">
   <div class="card">
     <div class="header">
+      @if($logoUrl)<img src="{{ $logoUrl }}" alt="{{ $storeName }}" style="height:28px;width:auto;margin-bottom:10px;display:block;">@endif
       <h1>🛍 New Order Received</h1>
       <p>{{ now()->format('D, d M Y — H:i') }}</p>
     </div>

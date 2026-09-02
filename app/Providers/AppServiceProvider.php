@@ -43,19 +43,26 @@ class AppServiceProvider extends ServiceProvider
         // WhatsApp/SMS-adjacent mail) would silently use whatever's in
         // .env/config instead of the admin-configured SMTP settings the
         // moment it was actually processed by `php artisan queue:work`.
+        //
+        // Was previously all-or-nothing, gated entirely on mail_host being
+        // non-empty — meaning filling in port/username/password/encryption
+        // correctly but leaving Host blank silently discarded ALL FIVE
+        // fields, with zero indication why. Now each field is applied
+        // independently: whichever ones are actually filled in the admin
+        // panel get used, and only the ones left blank fall back to .env.
         try {
             $settings = \App\Models\Setting::allKeyed();
-            if (!empty($settings['mail_host'])) {
-                config([
-                    'mail.mailers.smtp.host'       => $settings['mail_host'],
-                    'mail.mailers.smtp.port'       => (int)($settings['mail_port'] ?? 587),
-                    'mail.mailers.smtp.username'   => $settings['mail_username'] ?? '',
-                    'mail.mailers.smtp.password'   => $settings['mail_password'] ?? '',
-                    'mail.mailers.smtp.encryption' => $settings['mail_encryption'] ?? 'tls',
-                    'mail.from.address'            => $settings['mail_from_address'] ?? $settings['email'] ?? '',
-                    'mail.from.name'               => $settings['mail_from_name'] ?? $settings['site_name'] ?? config('app.name'),
-                ]);
-            }
+            $mailOverrides = [];
+            if (!empty($settings['mail_host']))       $mailOverrides['mail.mailers.smtp.host']       = $settings['mail_host'];
+            if (!empty($settings['mail_port']))        $mailOverrides['mail.mailers.smtp.port']       = (int) $settings['mail_port'];
+            if (!empty($settings['mail_username']))    $mailOverrides['mail.mailers.smtp.username']   = $settings['mail_username'];
+            if (!empty($settings['mail_password']))    $mailOverrides['mail.mailers.smtp.password']   = $settings['mail_password'];
+            if (!empty($settings['mail_encryption']))  $mailOverrides['mail.mailers.smtp.encryption'] = $settings['mail_encryption'];
+            if (!empty($settings['mail_from_address'])) $mailOverrides['mail.from.address'] = $settings['mail_from_address'];
+            elseif (!empty($settings['email']))         $mailOverrides['mail.from.address'] = $settings['email'];
+            if (!empty($settings['mail_from_name']))   $mailOverrides['mail.from.name'] = $settings['mail_from_name'];
+            elseif (!empty($settings['site_name']))     $mailOverrides['mail.from.name'] = $settings['site_name'];
+            if ($mailOverrides) config($mailOverrides);
         } catch (\Throwable $e) {
             // DB not ready yet (e.g. during migrations) — fall back to .env defaults
         }

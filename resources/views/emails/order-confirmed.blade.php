@@ -75,8 +75,12 @@
     <!-- Header -->
     <div class="header">
       <div class="logo-box">
-        <div class="logo-letter">{{ substr($storeName ?? 'T', 0, 1) }}</div>
-        <div class="store-name">{{ strtoupper($storeName ?? 'Tijar Store') }}</div>
+        @if($logoUrl)
+          <img src="{{ $logoUrl }}" alt="{{ $storeName }}" style="height:40px;width:auto;">
+        @else
+          <div class="logo-letter">{{ substr($storeName ?? 'T', 0, 1) }}</div>
+          <div class="store-name">{{ strtoupper($storeName ?? 'Tijar Store') }}</div>
+        @endif
       </div>
       <div style="font-size:48px;margin-bottom:12px;">✅</div>
       <h1>Order Confirmed!</h1>
@@ -196,6 +200,7 @@
       You're receiving this because you placed an order at <strong>{{ $storeName }}</strong>.<br>
       © {{ date('Y') }} {{ $storeName }}. All rights reserved.
       @if($storeAddress)<br>{{ $storeAddress }}@endif
+      @if(!empty($footerText))<br><span style="color:#c0c4cc">{{ $footerText }}</span>@endif
     </p>
   </div>
 </div>

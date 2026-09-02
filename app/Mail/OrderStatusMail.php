@@ -2,6 +2,7 @@
 namespace App\Mail;
 
 use App\Models\{Order, Setting};
+use App\Traits\EmailBrandingHelper;
 use Illuminate\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
@@ -10,7 +11,7 @@ use Illuminate\Bus\Queueable;
 
 class OrderStatusMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, EmailBrandingHelper;
 
     public function __construct(
         public Order $order,
@@ -34,14 +35,14 @@ class OrderStatusMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         $s = Setting::allKeyed();
-        return new Content(view: 'emails.order-status', with: [
-            'order'     => $this->order->load('items.product'),
-            'status'    => $this->newStatus,
-            'siteName'  => $s['site_name'] ?? 'MILLIONAIRE',
-            'logoUrl'   => isset($s['logo_url']) ? (str_starts_with($s['logo_url'], 'http') ? $s['logo_url'] : url($s['logo_url'])) : null,
-            'siteUrl'   => $s['site_url'] ?? url('/'),
-            'phone'     => $s['phone']     ?? '',
-            'trackUrl'  => url("/track/{$this->order->tracking_token}"),
-        ]);
+        $branding = $this->emailBranding($s);
+        $branding['siteName'] = $branding['storeName'];
+        return new Content(view: 'emails.order-status', with: array_merge($branding, [
+            'order'    => $this->order->load('items.product'),
+            'status'   => $this->newStatus,
+            'siteUrl'  => $s['site_url'] ?? url('/'),
+            'phone'    => $s['phone']    ?? '',
+            'trackUrl' => url("/track/{$this->order->tracking_token}"),
+        ]));
     }
 }

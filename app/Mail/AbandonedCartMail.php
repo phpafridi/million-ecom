@@ -2,6 +2,7 @@
 namespace App\Mail;
 
 use App\Models\Setting;
+use App\Traits\EmailBrandingHelper;
 use Illuminate\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
@@ -10,7 +11,7 @@ use Illuminate\Bus\Queueable;
 
 class AbandonedCartMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, EmailBrandingHelper;
     public function __construct(public array $cartData, public string $customerName = '') {}
 
     public function envelope(): Envelope
@@ -22,12 +23,12 @@ class AbandonedCartMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         $s = Setting::allKeyed();
-        return new Content(view: 'emails.abandoned-cart', with: [
+        $branding = $this->emailBranding($s);
+        $branding['siteName'] = $branding['storeName'];
+        return new Content(view: 'emails.abandoned-cart', with: array_merge($branding, [
             'cartData'     => $this->cartData,
             'customerName' => $this->customerName,
-            'siteName'     => $s['site_name'] ?? 'MILLIONAIRE',
-            'logoUrl'      => $s['logo_url']  ?? null,
             'shopUrl'      => url('/shop'),
-        ]);
+        ]));
     }
 }

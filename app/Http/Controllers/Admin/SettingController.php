@@ -58,6 +58,11 @@ class SettingController extends Controller
             'email_notify_customer'  => 'nullable|string',
             'email_notify_admin'     => 'nullable|string',
             'email_notify_on'        => 'nullable|string',
+            'email_footer_text'      => 'nullable|string|max:200',
+            'email_show_logo'        => 'nullable|string',
+            'email_header_title'     => 'nullable|string|max:100',
+            'email_primary_color'    => 'nullable|string|max:20',
+            'email_accent_color'     => 'nullable|string|max:20',
             'whatsapp_enabled'       => 'nullable|string',
             'whatsapp_api_key'       => 'nullable|string|max:500',
             'whatsapp_phone_id'      => 'nullable|string|max:100',
@@ -91,6 +96,11 @@ class SettingController extends Controller
             'email_notify_customer'  => 'nullable|string',
             'email_notify_admin'     => 'nullable|string',
             'email_notify_on'        => 'nullable|string',
+            'email_footer_text'      => 'nullable|string|max:200',
+            'email_show_logo'        => 'nullable|string',
+            'email_header_title'     => 'nullable|string|max:100',
+            'email_primary_color'    => 'nullable|string|max:20',
+            'email_accent_color'     => 'nullable|string|max:20',
             'whatsapp_enabled'       => 'nullable|string',
             'whatsapp_api_key'       => 'nullable|string|max:500',
             'whatsapp_phone_id'      => 'nullable|string|max:100',
@@ -258,7 +268,7 @@ class SettingController extends Controller
         $adminPathChanged = $newAdminPath !== $oldAdminPath;
 
         $keys = [
-            'site_name','site_tagline','phone','email','admin_email','address','whatsapp_number','mail_host','mail_port','mail_username','mail_password','mail_encryption','mail_from_address','mail_from_name','email_notify_customer','email_notify_admin','email_notify_on','whatsapp_enabled','whatsapp_api_key','whatsapp_phone_id','whatsapp_admin_phone','whatsapp_notify_customer','whatsapp_notify_admin','whatsapp_notify_on','whatsapp_order_template','whatsapp_ship_template','whatsapp_deliver_template','whatsapp_cancel_template','sms_enabled','sms_provider','sms_api_key','sms_api_secret','sms_api_url','sms_sender_id','sms_notify_on','sms_order_template','sms_ship_template','sms_deliver_template','sms_cancel_template',
+            'site_name','site_tagline','phone','email','admin_email','address','whatsapp_number','mail_host','mail_port','mail_username','mail_password','mail_encryption','mail_from_address','mail_from_name','email_notify_customer','email_notify_admin','email_notify_on','email_footer_text','email_show_logo','email_header_title','email_primary_color','email_accent_color','whatsapp_enabled','whatsapp_api_key','whatsapp_phone_id','whatsapp_admin_phone','whatsapp_notify_customer','whatsapp_notify_admin','whatsapp_notify_on','whatsapp_order_template','whatsapp_ship_template','whatsapp_deliver_template','whatsapp_cancel_template','sms_enabled','sms_provider','sms_api_key','sms_api_secret','sms_api_url','sms_sender_id','sms_notify_on','sms_order_template','sms_ship_template','sms_deliver_template','sms_cancel_template',
             'delivery_threshold','shipping_fee','login_max_attempts','login_lockout_minutes','admin_max_attempts','admin_lockout_minutes','facebook_url','instagram_url',
             'twitter_url','youtube_url','topbar_message','admin_path','sale_enabled','sale_label','sale_badge','sale_ends_at','sale_bg','sale_text_color','sale_discount',
             'show_whatsapp_button','show_facebook_button','show_instagram_button',

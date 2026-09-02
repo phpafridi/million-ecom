@@ -31,6 +31,30 @@ function Section({ title, icon, children }: { title: string; icon: string; child
     )
 }
 
+// Empty value = "use the theme default" (shown as placeholder). Picking a
+// color, or typing one, sets an explicit email-only override — Clear
+// resets back to following the theme automatically.
+function EmailSwatch({ label, hint, value, placeholder, onChange }: { label: string; hint?: string; value: string; placeholder: string; onChange: (v: string) => void }) {
+    const display = value || placeholder
+    return (
+        <div>
+            <p className="text-[12px] font-semibold text-gray-600 mb-1">{label}</p>
+            {hint && <p className="text-[10.5px] text-gray-400 mb-1.5">{hint}</p>}
+            <div className="flex items-center gap-2">
+                <div className="relative w-9 h-9 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 cursor-pointer shadow-sm">
+                    <input type="color" value={display} onChange={e => onChange(e.target.value)}
+                        className="absolute inset-0 w-[200%] h-[200%] -top-2 -left-2 cursor-pointer border-none bg-transparent" />
+                </div>
+                <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+                    className="flex-1 h-9 px-3 border border-gray-200 rounded-lg text-[12px] font-mono outline-none focus:border-[var(--color-primary)] transition-colors" />
+                {value && (
+                    <button type="button" onClick={() => onChange('')} className="text-[11px] text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer px-1">Clear</button>
+                )}
+            </div>
+        </div>
+    )
+}
+
 export default function Notifications({ settings }: Props) {
     const { props: _p } = usePage<{ adminPath?: string }>()
     const ap = `/${_p.adminPath ?? 'ml-admin'}`
@@ -50,6 +74,11 @@ export default function Notifications({ settings }: Props) {
         email_notify_customer:    settings.email_notify_customer    ?? '1',
         email_notify_admin:       settings.email_notify_admin       ?? '1',
         email_notify_on:          settings.email_notify_on          ?? 'processing,shipped,delivered,cancelled',
+        email_footer_text:        settings.email_footer_text        ?? '',
+        email_show_logo:          settings.email_show_logo          ?? '1',
+        email_header_title:       settings.email_header_title       ?? '',
+        email_primary_color:      settings.email_primary_color      ?? '',
+        email_accent_color:       settings.email_accent_color       ?? '',
         whatsapp_enabled:         settings.whatsapp_enabled         ?? '0',
         whatsapp_api_key:         settings.whatsapp_api_key         ?? '',
         whatsapp_phone_id:        settings.whatsapp_phone_id        ?? '',
@@ -132,6 +161,28 @@ export default function Notifications({ settings }: Props) {
                     </Field>
                     <Field label="Send Email On" hint="Comma separated statuses">
                         <input className={inputCls} type="text" value={data.email_notify_on} onChange={e => setData('email_notify_on', e.target.value)} placeholder="processing,shipped,delivered,cancelled" />
+                    </Field>
+                </Section>
+
+                <Section title="Email Design" icon="🎨">
+                    <p className="text-[12.5px] text-gray-500 -mt-1">
+                        Colors default to your Theme's colors and can be overridden here specifically for emails — useful if you want emails to look slightly different from the storefront (e.g. a plainer look for better inbox deliverability).
+                    </p>
+                    <Field label="Show Logo in Emails">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={data.email_show_logo !== '0'} onChange={e => setData('email_show_logo', e.target.checked ? '1' : '0')} className="w-4 h-4" style={{ accentColor:'var(--color-primary)' }} />
+                            <span className="text-[13px]">Show your uploaded logo at the top of emails. If off, shows your store name as text instead.</span>
+                        </label>
+                    </Field>
+                    <Field label="Email Header Title" hint="Shown next to/instead of the logo. Leave blank to use your Store Name.">
+                        <input className={inputCls} value={data.email_header_title} onChange={e => setData('email_header_title', e.target.value)} placeholder={settings.site_name || 'Your Store Name'} />
+                    </Field>
+                    <div className="grid grid-cols-2 gap-3">
+                        <EmailSwatch label="Header Background" hint="Defaults to Theme's dark color" value={data.email_primary_color} onChange={v => setData('email_primary_color', v)} placeholder={settings.theme_dark_bg || '#0a0a0a'} />
+                        <EmailSwatch label="Accent Color" hint="Defaults to Theme's primary color" value={data.email_accent_color} onChange={v => setData('email_accent_color', v)} placeholder={settings.theme_primary || '#C9A84C'} />
+                    </div>
+                    <Field label="Email Footer Message" hint="Shown at the bottom of every order email, under the copyright line. Leave blank for none.">
+                        <input className={inputCls} value={data.email_footer_text} onChange={e => setData('email_footer_text', e.target.value)} placeholder="e.g. Follow us @millionaire.pk for new drops" />
                     </Field>
                 </Section>
 

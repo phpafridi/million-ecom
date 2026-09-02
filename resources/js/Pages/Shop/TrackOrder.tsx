@@ -86,6 +86,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                         value={data.query}
                                         onChange={e => setData('query', e.target.value)}
                                         placeholder="e.g. ABC123XYZ or 03001234567"
+                                        required
                                         className="w-full pl-11 pr-4 h-12 rounded-xl border border-gray-200 text-[14px] focus:outline-none focus:ring-2 focus:border-transparent"
                                         style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                                     />

@@ -84,7 +84,7 @@ class AccountController extends Controller
         // the account directly — same bug as everywhere else in this pass
         // (session_id doesn't survive login/session regeneration).
         $items = Wishlist::where('user_id', auth()->id())
-            ->with('product.productImages', 'product.category')
+            ->with('product.productImages', 'product.category', 'product.variantAttributes')
             ->get();
 
         return Inertia::render('Account/Wishlist', [
@@ -100,6 +100,12 @@ class AccountController extends Controller
                     'first_image'  => $w->product->first_image,
                     'stock'        => $w->product->stock,
                     'category'     => $w->product->category?->name,
+                    // Needed so "Add to Cart" here can redirect to the
+                    // product page for anything with color/size options
+                    // instead of silently adding with no variant chosen —
+                    // same gap this whole session's variant debugging was
+                    // ultimately about.
+                    'has_variants' => $w->product->variantAttributes->isNotEmpty(),
                 ],
             ])->toArray(),
             'settings' => Setting::allKeyed(),

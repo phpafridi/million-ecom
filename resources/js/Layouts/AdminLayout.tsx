@@ -147,6 +147,22 @@ export default function AdminLayout({ children, title }: { children: React.React
     const { url, props } = usePage<SharedProps>()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bellOpen, setBellOpen] = useState(false)
+    // "Clear" dismisses the badge until the total genuinely changes again
+    // (a new pending order comes in, more stock runs low, etc.) — not a
+    // deletable list, since these are live counts of real unprocessed
+    // work, not a notification log. Persisted in localStorage so it stays
+    // dismissed across page loads, not just this one render.
+    const [dismissedAt, setDismissedAt] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null
+        const v = window.localStorage.getItem('ml_admin_notifs_dismissed_total')
+        return v ? Number(v) : null
+    })
+    function dismissNotifs() {
+        const total = notifs?.total ?? 0
+        window.localStorage.setItem('ml_admin_notifs_dismissed_total', String(total))
+        setDismissedAt(total)
+        setBellOpen(false)
+    }
 
     const ap       = `/${props.adminPath ?? 'ml-admin'}`
     const siteName = props.settings?.site_name ?? 'MILLIONAIRE'
@@ -271,10 +287,12 @@ export default function AdminLayout({ children, title }: { children: React.React
                                 <button onClick={() => setBellOpen(o => !o)}
                                     className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 border-none cursor-pointer bg-transparent text-gray-600 transition-colors">
                                     <IconBell size={19} />
-                                    <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full text-[9px] font-black flex items-center justify-center px-1 border-2 border-white"
-                                        style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
-                                        {notifs!.total}
-                                    </span>
+                                    {notifs!.total > (dismissedAt ?? -1) && (
+                                        <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] rounded-full text-[9px] font-black flex items-center justify-center px-1 border-2 border-white"
+                                            style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
+                                            {notifs!.total}
+                                        </span>
+                                    )}
                                 </button>
                                 {bellOpen && (
                                     <>
@@ -282,10 +300,10 @@ export default function AdminLayout({ children, title }: { children: React.React
                                         <div className="absolute right-0 top-11 z-50 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                                             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                                                 <span className="font-black text-[14px] text-gray-800">Notifications</span>
-                                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-                                                    style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text,#0a0a0a)' }}>
-                                                    {notifs!.total} new
-                                                </span>
+                                                <button onClick={dismissNotifs}
+                                                    className="text-[11px] font-bold text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer px-1">
+                                                    Clear
+                                                </button>
                                             </div>
                                             <div className="divide-y divide-gray-50">
                                                 {notifs!.pendingOrders > 0 && (

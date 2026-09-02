@@ -1,6 +1,7 @@
 <?php
 namespace App\Mail;
 use App\Models\{Order, Setting};
+use App\Traits\EmailBrandingHelper;
 use Illuminate\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailables\{Content, Envelope};
@@ -9,7 +10,7 @@ use Illuminate\Bus\Queueable;
 
 class NewOrderAdminMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, EmailBrandingHelper;
     public function __construct(public Order $order) {}
 
     public function envelope(): Envelope {
@@ -19,10 +20,9 @@ class NewOrderAdminMail extends Mailable implements ShouldQueue
     public function content(): Content {
         $s        = Setting::allKeyed();
         $adminPath= $s['admin_path'] ?? 'tijar-admin';
-        return new Content(view: 'emails.new-order-admin', with: [
-            'order'     => $this->order->load('items'),
-            'storeName' => $s['site_name'] ?? 'Our Store',
-            'adminUrl'  => url($adminPath),
-        ]);
+        return new Content(view: 'emails.new-order-admin', with: array_merge($this->emailBranding($s), [
+            'order'    => $this->order->load('items'),
+            'adminUrl' => url($adminPath),
+        ]));
     }
 }
