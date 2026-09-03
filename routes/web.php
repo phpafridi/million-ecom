@@ -3,7 +3,6 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Shop;
 use App\Http\Controllers\Shop\PaymentController;
 use App\Http\Controllers\Shop\PayFastController;
-use App\Http\Controllers\Shop\ChatController;
 use App\Http\Controllers\Shop\SupportController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -36,6 +35,7 @@ Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('seo.robots')
 // ── STOREFRONT
 Route::get('/',                [Shop\HomeController::class,    'index'])->name('home');
 Route::get('/shop',            [Shop\ProductController::class, 'index'])->name('shop.index');
+Route::get('/category/{slug}', [Shop\CategoryController::class, 'show'])->name('category.show');
 Route::get('/products/{slug}', [Shop\ProductController::class, 'show'])->name('shop.show');
 Route::post('/products/{product}/reviews', [Shop\ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
 Route::get('/about',   [Shop\PageController::class, 'about'])->name('about');
@@ -44,7 +44,15 @@ Route::post('/contact',[Shop\PageController::class, 'contactSend'])->name('conta
 
 
 // ── PAYMENT GATEWAY ROUTES ──
-$csrf = [\App\Http\Middleware\VerifyCsrfToken::class];
+// Was referencing App\Http\Middleware\VerifyCsrfToken — a file that
+// doesn't exist in this project (Laravel 11+ removed it from the default
+// structure; CSRF is now handled internally by the framework under a
+// different class). ::class on a non-existent class still compiles fine
+// since it's just a string, so this silently excluded nothing — every
+// route below kept enforcing CSRF the whole time, which is exactly why
+// PayFast's ITN callback (and every other gateway's server-to-server
+// callback) was failing with 419 Page Expired.
+$csrf = [\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class];
 
 // JazzCash
 Route::get( '/payment/jazzcash/{order}',          [Shop\PaymentController::class, 'jazzcashRedirect']  )->name('payment.jazzcash');
@@ -166,13 +174,6 @@ Route::get('/pages/shipping-policy', [Shop\PageController::class, 'shippingPolic
 Route::get('/pages/payment-policy',  [Shop\PageController::class, 'paymentPolicy'])->name('pages.payment-policy');
 
 
-
-// ── CHAT ─────────────────────────────────────────────────────────────────────
-Route::post('/chat/start',         [ChatController::class, 'start'])->name('chat.start');
-Route::post('/chat/send',          [ChatController::class, 'send'])->name('chat.send')->middleware('throttle:30,1');
-// chat.poll route removed — poll() method deleted, chat uses Reverb now.
-Route::post('/chat/request-agent', [ChatController::class, 'requestAgent'])->name('chat.request-agent');
-Route::post('/chat/rate',          [ChatController::class, 'rate'])->name('chat.rate');
 
 // ── SUPPORT ───────────────────────────────────────────────────────────────────
 Route::get('/support',            [SupportController::class, 'index'])->name('support.index');
@@ -350,17 +351,6 @@ Route::middleware(['auth', 'admin'])  // Only admin role
     Route::get('support/{id}',         [Admin\SupportTicketController::class, 'show'])->name('support.admin.show');
     Route::post('support/{id}/reply',  [Admin\SupportTicketController::class, 'reply'])->name('support.admin.reply');
     Route::patch('support/{id}',       [Admin\SupportTicketController::class, 'update'])->name('support.admin.update');
-
-    // ── LIVE CHAT ─────────────────────────────────────────────────────────
-    Route::get('chat',                        [Admin\ChatAdminController::class, 'index'])->name('chat.admin.index');
-    Route::post('chat/sessions/{id}/join',    [Admin\ChatAdminController::class, 'join'])->name('chat.admin.join');
-    Route::post('chat/sessions/{id}/reply',   [Admin\ChatAdminController::class, 'reply'])->name('chat.admin.reply');
-    // chat.admin.poll route removed — sessionPoll() method deleted, admin chat panel uses Reverb now.
-    Route::post('chat/sessions/{id}/close',   [Admin\ChatAdminController::class, 'close'])->name('chat.admin.close');
-    Route::post('chat/heartbeat',             [Admin\ChatAdminController::class, 'heartbeat'])->name('chat.admin.heartbeat');
-    Route::get('chat/sessions/{id}/messages', [Admin\ChatAdminController::class, 'sessionMessages'])->name('chat.admin.messages');
-    Route::post('chat/faqs',                  [Admin\ChatAdminController::class, 'storeFaq'])->name('chat.admin.faqs.store');
-    Route::delete('chat/faqs/{id}',           [Admin\ChatAdminController::class, 'destroyFaq'])->name('chat.admin.faqs.destroy');
 
     // ── REPORTS ───────────────────────────────────────────────────────────
     Route::get('reports',        [Admin\ReportsController::class, 'index'])->name('reports.index');

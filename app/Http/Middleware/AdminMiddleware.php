@@ -110,7 +110,6 @@ class AdminMiddleware
                 'reviews'     => 'reviews',
                 'banners'     => 'banners',
                 'hero-slides' => 'hero_slides',
-                'chat'        => 'chat',
                 'support'     => 'support_tickets',
                 'pages'       => 'pages',
                 'returns'     => 'returns',

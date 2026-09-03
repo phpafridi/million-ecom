@@ -48,7 +48,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                         style={{ background: 'var(--color-primary)' }}>
                         <IconCheck size={38} style={{ color: 'var(--color-primary-text)' }}/>
                     </div>
-                    <h1 className="font-manrope font-black text-[28px] sm:text-[32px] mb-2" style={{ color: 'var(--color-dark-bg)' }}>Order Placed!</h1>
+                    <h1 className="font-manrope font-black text-[28px] sm:text-[32px] mb-2" style={{ color: 'var(--color-body-text)' }}>Order Placed!</h1>
                     <p className="text-gray-500 text-[15px]">
                         {order ? `${displayNum} confirmed — ${order.items_count} item${order.items_count !== 1 ? 's' : ''}` : 'Your order has been received.'}
                     </p>
@@ -66,13 +66,13 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                                 {order.items.map((item, i) => (
                                     <div key={i} className="flex justify-between items-start gap-3">
                                         <div className="min-w-0">
-                                            <p className="text-[13.5px] font-semibold truncate" style={{ color: 'var(--color-dark-bg)' }}>{item.product_name}</p>
+                                            <p className="text-[13.5px] font-semibold truncate" style={{ color: 'var(--color-body-text)' }}>{item.product_name}</p>
                                             {item.variant_label && (
                                                 <p className="text-[12px] text-gray-500 mt-0.5">{item.variant_label}</p>
                                             )}
                                             <p className="text-[12px] text-gray-400 mt-0.5">{fmt(item.price)} × {item.quantity}</p>
                                         </div>
-                                        <span className="text-[13.5px] font-bold whitespace-nowrap" style={{ color: 'var(--color-dark-bg)' }}>{fmt(item.subtotal)}</span>
+                                        <span className="text-[13.5px] font-bold whitespace-nowrap" style={{ color: 'var(--color-body-text)' }}>{fmt(item.subtotal)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -87,7 +87,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                             {typeof order.subtotal === 'number' && (
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-[13px] font-semibold text-gray-600">Subtotal</span>
-                                    <span className="text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>{fmt(order.subtotal)}</span>
+                                    <span className="text-[13.5px]" style={{ color: 'var(--color-body-text)' }}>{fmt(order.subtotal)}</span>
                                 </div>
                             )}
                             {!!order.discount && order.discount > 0 && (
@@ -99,7 +99,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                             {typeof order.shipping === 'number' && (
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-[13px] font-semibold text-gray-600">Shipping</span>
-                                    <span className="text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>{order.shipping > 0 ? fmt(order.shipping) : 'Free'}</span>
+                                    <span className="text-[13.5px]" style={{ color: 'var(--color-body-text)' }}>{order.shipping > 0 ? fmt(order.shipping) : 'Free'}</span>
                                 </div>
                             )}
                             <div className="flex justify-between items-center mb-3">
@@ -108,7 +108,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-[13px] font-semibold text-gray-600">Payment Method</span>
-                                <span className="font-semibold text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>{method}</span>
+                                <span className="font-semibold text-[13.5px]" style={{ color: 'var(--color-body-text)' }}>{method}</span>
                             </div>
                         </div>
 
@@ -163,7 +163,7 @@ export default function OrderConfirmed({ order, auth, settings }: Props) {
                                             style={s.done ? { background: 'var(--color-primary)', color: 'var(--color-primary-text)' } : {}}>
                                             {s.done ? '✓' : s.n}
                                         </span>
-                                        <span className={`text-[12.5px] ${s.done ? 'font-semibold' : 'text-gray-500'}`} style={s.done ? { color: 'var(--color-dark-bg)' } : {}}>{s.text}</span>
+                                        <span className={`text-[12.5px] ${s.done ? 'font-semibold' : 'text-gray-500'}`} style={s.done ? { color: 'var(--color-body-text)' } : {}}>{s.text}</span>
                                     </div>
                                 ))}
                             </div>

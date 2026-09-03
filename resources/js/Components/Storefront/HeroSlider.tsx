@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from '@inertiajs/react'
-import { IconBrandWhatsapp, IconChevronLeft, IconChevronRight, IconVolumeOff, IconVolume2 } from '@tabler/icons-react'
+import { IconBrandWhatsapp, IconVolumeOff, IconVolume2 } from '@tabler/icons-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface HeroSlide {
@@ -98,7 +98,7 @@ export default function HeroSlider({ slides, settings }: Props) {
                     ) : imgUrl ? (
                         <motion.img src={imgUrl} alt={s.subtitle ?? s.title}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-                            initial={{ scale: 1.06 }} animate={{ scale: 1 }}
+                            initial={{ scale: 1 }} animate={{ scale: 1.08 }}
                             transition={{ duration: INTERVAL / 1000, ease: 'linear' }} />
                     ) : (
                         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0a0e1a, #1a1f35)' }} />
@@ -128,7 +128,7 @@ export default function HeroSlider({ slides, settings }: Props) {
                         </div>
 
                         {/* Headline */}
-                        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, color: '#fff', lineHeight: 1.04, letterSpacing: '-0.02em', margin: '0 0 clamp(8px,1.4vw,16px)', fontSize: 'clamp(24px, 5.8vw, 68px)' }}>
+                        <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, color: '#fff', lineHeight: 1.02, letterSpacing: '-0.025em', margin: '0 0 clamp(8px,1.4vw,16px)', fontSize: 'clamp(26px, 6.2vw, 76px)' }}>
                             {s.subtitle ?? s.title}
                         </h1>
 
@@ -163,18 +163,6 @@ export default function HeroSlider({ slides, settings }: Props) {
                     </div>
                 </motion.div>
             </AnimatePresence>
-
-            {/* Prev/Next arrows */}
-            {slides.length > 1 && <>
-                {[{ side: 'left', d: -1, icon: <IconChevronLeft size={20} />, n: cur - 1 }, { side: 'right', d: 1, icon: <IconChevronRight size={20} />, n: cur + 1 }].map(({ side, d, icon, n }) => (
-                    <button key={side} onClick={() => go(n, d)}
-                        style={{ position: 'absolute', [side]: 'clamp(8px,2vw,18px)', top: '50%', transform: 'translateY(-50%)', zIndex: 20, width: 'clamp(34px,4vw,48px)', height: 'clamp(34px,4vw,48px)', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.22)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}>
-                        {icon}
-                    </button>
-                ))}
-            </>}
 
             {/* Mute */}
             {vidUrl && (

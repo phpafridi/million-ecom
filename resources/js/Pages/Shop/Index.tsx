@@ -165,7 +165,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                             <IconAdjustmentsHorizontal size={16} /> Filter
                         </button>
                         <span className="text-[12.5px] sm:text-[13px] text-gray-500 flex-shrink-0">
-                            <strong style={{ color: 'var(--color-dark-bg)' }}>{products.total}</strong> products
+                            <strong style={{ color: 'var(--color-body-text)' }}>{products.total}</strong> products
                         </span>
                         <div className="flex gap-1.5 ml-auto flex-wrap">
                             {SORTS.map(s => (

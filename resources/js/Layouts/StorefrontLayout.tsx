@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import React from 'react'
 import { Link, router, usePage } from '@inertiajs/react'
-import ChatWidget from '@/Components/Chat/ChatWidget'
 import FloatingCart from '@/Components/ui/FloatingCart'
 import { getFloatOffset } from '@/utils/floatingButtons'
 import {
@@ -403,7 +402,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
                     <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 lg:hidden overflow-y-auto shadow-2xl">
                         <div className="flex items-center justify-between px-5 h-[60px] border-b border-gray-100">
-                            <div className="font-manrope font-black text-[18px] tracking-[2px]" style={{ color: 'var(--color-dark-bg)' }}>{siteName}</div>
+                            <div className="font-manrope font-black text-[18px] tracking-[2px]" style={{ color: 'var(--color-body-text)' }}>{siteName}</div>
                             <button onClick={() => setMobileOpen(false)} className="text-gray-500 border-none bg-transparent cursor-pointer"><IconX size={22} /></button>
                         </div>
                         <div className="py-1">
@@ -567,7 +566,6 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             })()}
             {/* ── Floating UI — above bottom nav ── */}
             {!hideFloatingCart && <FloatingCart settings={settings ?? {}} />}
-            <ChatWidget settings={settings ?? {}} auth={auth} />
         </div>
     )
 }

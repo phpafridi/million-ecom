@@ -59,7 +59,7 @@ export default function AccountSidebar({ auth }: Props) {
                             style={{ background: 'var(--color-primary)' }}>
                             {user?.name?.charAt(0).toUpperCase()}
                         </div>
-                        <p className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>{user?.name}</p>
+                        <p className="font-bold text-[14px]" style={{ color: 'var(--color-body-text)' }}>{user?.name}</p>
                         <p className="text-gray-400 text-[11.5px] mt-0.5 truncate w-full">{user?.email}</p>
                     </div>
                     <nav className="space-y-0.5">

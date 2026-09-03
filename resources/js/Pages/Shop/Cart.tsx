@@ -168,7 +168,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                 <Head title="Cart" />
                 <div className="max-w-lg mx-auto px-4 py-20 text-center">
                     <div className="text-7xl mb-6">🛒</div>
-                    <h2 className="font-manrope font-black text-[26px] mb-3" style={{ color: 'var(--color-dark-bg)' }}>Your cart is empty</h2>
+                    <h2 className="font-manrope font-black text-[26px] mb-3" style={{ color: 'var(--color-body-text)' }}>Your cart is empty</h2>
                     <p className="text-gray-500 mb-8">Browse our products and add items to your cart.</p>
                     <Link href="/shop" className="inline-flex items-center gap-2 font-black text-[14px] h-12 px-8 rounded-xl no-underline"
                         style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
@@ -211,7 +211,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                             {/* Bank account details */}
                             {hasAny && (
                                 <div>
-                                    <h3 className="font-bold text-[15px] mb-3 flex items-center gap-2" style={{ color: 'var(--color-dark-bg)' }}>
+                                    <h3 className="font-bold text-[15px] mb-3 flex items-center gap-2" style={{ color: 'var(--color-body-text)' }}>
                                         <IconBuildingBank size={17} style={{ color: 'var(--color-primary)' }}/> Bank Account Details
                                     </h3>
                                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2.5">
@@ -243,7 +243,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
 
                             {/* Proof upload */}
                             <form onSubmit={submitWithProof}>
-                                <h3 className="font-bold text-[15px] mb-3 flex items-center gap-2" style={{ color: 'var(--color-dark-bg)' }}>
+                                <h3 className="font-bold text-[15px] mb-3 flex items-center gap-2" style={{ color: 'var(--color-body-text)' }}>
                                     <IconUpload size={17} style={{ color: 'var(--color-primary)' }}/> Upload Payment Receipt
                                     <span className="text-red-500 text-[12px] font-normal">* Required</span>
                                 </h3>
@@ -355,7 +355,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                             </Link>
                                             <div className="flex-1 min-w-0">
                                                 <Link href={`/products/${item.product.slug}`}
-                                                    className="font-semibold text-[14px] no-underline hover:text-[var(--color-primary)] transition-colors line-clamp-2" style={{ color: 'var(--color-dark-bg)' }}>
+                                                    className="font-semibold text-[14px] no-underline hover:text-[var(--color-primary)] transition-colors line-clamp-2" style={{ color: 'var(--color-body-text)' }}>
                                                     {item.product.name}
                                                 </Link>
                                                 <div className="text-[13px] text-gray-500 mt-0.5">{fmt(item.price)} each</div>
@@ -377,7 +377,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="font-manrope font-black text-[16px] flex-shrink-0" style={{ color: 'var(--color-dark-bg)' }}>
+                                            <div className="font-manrope font-black text-[16px] flex-shrink-0" style={{ color: 'var(--color-body-text)' }}>
                                                 {fmt(item.subtotal)}
                                             </div>
                                         </motion.div>
@@ -463,7 +463,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                                         className="mt-1 flex-shrink-0" style={{ accentColor: 'var(--color-primary)' }}/>
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>{gw.name}</span>
+                                                            <span className="font-bold text-[14px]" style={{ color: 'var(--color-body-text)' }}>{gw.name}</span>
                                                             {gw.code === 'cod' && <span className="text-[10.5px] px-2 py-0.5 rounded-full font-bold bg-green-100 text-green-700">No advance needed</span>}
                                                             {gw.code === 'bank_transfer' && <span className="text-[10.5px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">Proof required</span>}
                                                         </div>
@@ -544,7 +544,7 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                         style={{ borderTopColor: 'var(--color-primary)', borderRightColor: 'var(--color-primary)' }}></div>
                                 </div>
                                 <div>
-                                    <p className="font-manrope font-black text-[15px]" style={{ color: 'var(--color-dark-bg)' }}>Placing your order</p>
+                                    <p className="font-manrope font-black text-[15px]" style={{ color: 'var(--color-body-text)' }}>Placing your order</p>
                                     <p className="text-[12.5px] text-gray-500 mt-1">Just a moment — don't close this window</p>
                                 </div>
                             </div>

@@ -15,7 +15,7 @@ export default function PaymentFailed({ auth, settings, reason }: Props) {
                 <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
                     <IconX size={38} className="text-red-500"/>
                 </div>
-                <h1 className="font-manrope font-black text-[28px] mb-3" style={{ color: 'var(--color-dark-bg)' }}>Payment Failed</h1>
+                <h1 className="font-manrope font-black text-[28px] mb-3" style={{ color: 'var(--color-body-text)' }}>Payment Failed</h1>
                 <p className="text-gray-500 text-[15px] mb-2">Your payment was not completed.</p>
                 {reason && <p className="text-red-500 text-[13px] mb-6 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{reason}</p>}
                 <p className="text-gray-400 text-[13px] mb-8">Your order has NOT been placed. No charges were made. Please try again or choose a different payment method.</p>

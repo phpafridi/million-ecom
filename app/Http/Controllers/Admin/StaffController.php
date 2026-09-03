@@ -10,9 +10,9 @@ use Inertia\Inertia;
 class StaffController extends Controller
 {
     public static array $roles = [
-        'manager' => ['label'=>'Manager','description'=>'Full access except billing','color'=>'#7C3AED','permissions'=>['orders','products','customers','categories','coupons','reviews','banners','hero_slides','chat','support']],
+        'manager' => ['label'=>'Manager','description'=>'Full access except billing','color'=>'#7C3AED','permissions'=>['orders','products','customers','categories','coupons','reviews','banners','hero_slides','support']],
         'editor'  => ['label'=>'Editor', 'description'=>'Products and content only',  'color'=>'#2563EB','permissions'=>['products','categories','banners','hero_slides','pages']],
-        'support' => ['label'=>'Support','description'=>'Orders and tickets',          'color'=>'#059669','permissions'=>['orders','customers','support_tickets','chat']],
+        'support' => ['label'=>'Support','description'=>'Orders and tickets',          'color'=>'#059669','permissions'=>['orders','customers','support_tickets']],
         'viewer'  => ['label'=>'Viewer', 'description'=>'Read-only dashboard',         'color'=>'#6B7280','permissions'=>['dashboard']],
     ];
 
@@ -28,7 +28,7 @@ class StaffController extends Controller
     // frontend's PERMISSION_OPTIONS list exactly, so validation can't be
     // bypassed with an arbitrary string that happens to match nothing.
     public static array $validPermissions = ['dashboard','orders','orders_lookup','products','customers','categories','coupons','reviews',
-        'email_campaigns','support_tickets','hero_slides','banners','pages','returns','chat','can_delete'];
+        'email_campaigns','support_tickets','hero_slides','banners','pages','returns','can_delete'];
 
     public function store(Request $request)
     {

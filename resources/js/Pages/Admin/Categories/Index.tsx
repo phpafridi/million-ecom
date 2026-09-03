@@ -1,6 +1,6 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react'
 import { useState } from 'react'
-import { IconPlus, IconPencil, IconTrash, IconX, IconUpload, IconChevronRight, IconChevronDown, IconGripVertical } from '@tabler/icons-react'
+import { IconPlus, IconPencil, IconTrash, IconX, IconUpload, IconChevronRight, IconChevronDown, IconChevronUp, IconGripVertical } from '@tabler/icons-react'
 import AdminLayout from '@/Layouts/AdminLayout'
 import ConfirmDeleteModal from '@/Components/Admin/ConfirmDeleteModal'
 import { DualImageUpload } from '@/Components/Admin/ImageUpload'
@@ -208,11 +208,14 @@ function CatForm({ cat, allCategories, onClose }: {
     )
 }
 
-function CatRow({ cat, depth, allCategories, onEdit, onDelete }: {
+function CatRow({ cat, depth, allCategories, onEdit, onDelete, canMoveUp, canMoveDown, onMoveUp, onMoveDown, moveCategory }: {
     cat: Category; depth: number
     allCategories: Props['allCategories']
     onEdit: (c: Category) => void
     onDelete: (c: Category) => void
+    canMoveUp: boolean; canMoveDown: boolean
+    onMoveUp: () => void; onMoveDown: () => void
+    moveCategory: (siblings: Category[], index: number, direction: -1 | 1) => void
 }) {
     const [open, setOpen] = useState(true)
     const hasChildren = (cat.children?.length ?? 0) > 0
@@ -261,6 +264,14 @@ function CatRow({ cat, depth, allCategories, onEdit, onDelete }: {
                 </td>
                 <td className="px-5 py-3">
                     <div className="flex gap-1.5 ">
+                        <button onClick={onMoveUp} disabled={!canMoveUp}
+                            className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-gray-200 disabled:hover:text-gray-400" title="Move up">
+                            <IconChevronUp size={14}/>
+                        </button>
+                        <button onClick={onMoveDown} disabled={!canMoveDown}
+                            className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-gray-200 disabled:hover:text-gray-400" title="Move down">
+                            <IconChevronDown size={14}/>
+                        </button>
                         <button onClick={() => onEdit(cat)} className="w-8 h-8 rounded-lg border border-gray-200 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center justify-center text-gray-400 bg-white cursor-pointer transition-all" title="Edit">
                             <IconPencil size={14}/>
                         </button>
@@ -270,8 +281,11 @@ function CatRow({ cat, depth, allCategories, onEdit, onDelete }: {
                     </div>
                 </td>
             </tr>
-            {open && hasChildren && cat.children!.map(child => (
-                <CatRow key={child.id} cat={child} depth={depth+1} allCategories={allCategories} onEdit={onEdit} onDelete={onDelete}/>
+            {open && hasChildren && cat.children!.map((child, i) => (
+                <CatRow key={child.id} cat={child} depth={depth+1} allCategories={allCategories} onEdit={onEdit} onDelete={onDelete}
+                    canMoveUp={i > 0} canMoveDown={i < (cat.children?.length ?? 0) - 1}
+                    onMoveUp={() => moveCategory(cat.children!, i, -1)} onMoveDown={() => moveCategory(cat.children!, i, 1)}
+                    moveCategory={moveCategory}/>
             ))}
         </>
     )
@@ -290,6 +304,23 @@ export default function CategoriesIndex({ categories, allCategories }: Props) {
     function confirmDelete() {
         if (!pendingDelete) return
         router.delete(`${ap}/categories/${pendingDelete.id}`, { preserveScroll: true, onFinish: () => setPendingDelete(null) })
+    }
+
+    // Swaps this category's sort_order with its neighbor in the same list
+    // (top-level categories reorder among themselves; subcategories reorder
+    // among their own siblings under the same parent) and saves both in one
+    // call to the reorder endpoint that already existed server-side but had
+    // no UI wired up to it.
+    function moveCategory(siblings: Category[], index: number, direction: -1 | 1) {
+        const targetIndex = index + direction
+        if (targetIndex < 0 || targetIndex >= siblings.length) return
+        const a = siblings[index], b = siblings[targetIndex]
+        router.post(`${ap}/categories/reorder`, {
+            items: [
+                { id: a.id, sort_order: b.sort_order, parent_id: a.parent_id ?? null },
+                { id: b.id, sort_order: a.sort_order, parent_id: b.parent_id ?? null },
+            ],
+        }, { preserveScroll: true })
     }
 
     const total = (cats: Category[]): number => cats.reduce((n,c) => n + 1 + total(c.children??[]), 0)
@@ -335,8 +366,11 @@ export default function CategoriesIndex({ categories, allCategories }: Props) {
                         <tbody>
                             {categories.length === 0
                                 ? <tr><td colSpan={6} className="px-5 py-16 text-center text-gray-400 text-[13px]">No categories yet. Click "Add Category" to create your first.</td></tr>
-                                : categories.map(cat => (
-                                    <CatRow key={cat.id} cat={cat} depth={0} allCategories={allCategories} onEdit={setEditing} onDelete={del}/>
+                                : categories.map((cat, i) => (
+                                    <CatRow key={cat.id} cat={cat} depth={0} allCategories={allCategories} onEdit={setEditing} onDelete={del}
+                                        canMoveUp={i > 0} canMoveDown={i < categories.length - 1}
+                                        onMoveUp={() => moveCategory(categories, i, -1)} onMoveDown={() => moveCategory(categories, i, 1)}
+                                        moveCategory={moveCategory}/>
                                 ))
                             }
                         </tbody>

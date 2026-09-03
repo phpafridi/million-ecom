@@ -39,6 +39,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+        // Belt-and-suspenders alongside the route-level withoutMiddleware()
+        // calls in routes/web.php — this is Laravel's own officially
+        // documented way to exclude CSRF for webhook/callback URLs that
+        // external payment gateways POST to directly (they can't send a
+        // Laravel session CSRF token, so these must always stay excluded).
+        $middleware->validateCsrfTokens(except: [
+            'payment/payfast/itn',
+            'payment/jazzcash/callback',
+            'payment/easypaisa/callback',
+            'payment/razorpay/*/success',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

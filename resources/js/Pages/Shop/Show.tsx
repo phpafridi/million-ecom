@@ -448,7 +448,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {/* Name */}
                         <div>
                             <h1 className="font-black text-[26px] sm:text-[30px] lg:text-[32px] leading-[1.15] tracking-tight"
-                                style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                                style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                 {product.name}
                             </h1>
                             {(product.review_count ?? 0) > 0 && (
@@ -461,7 +461,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {/* Price */}
                         <div className="flex items-baseline gap-4 flex-wrap py-4 border-y border-gray-100">
                             <span className="font-black text-[32px] sm:text-[36px] leading-none"
-                                style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                                style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                 <span style={{ color: _salePct > 0 ? '#DC2626' : 'inherit' }}>{fmt(activePrice)}</span>
                             </span>
                             {activeCompare > activePrice && <>
@@ -536,7 +536,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                         className="w-11 h-12 flex items-center justify-center text-gray-500 hover:bg-gray-50 border-none bg-transparent cursor-pointer transition-colors">
                                         <IconMinus size={15} />
                                     </button>
-                                    <span className="w-12 text-center text-[15px] font-black" style={{ color: 'var(--color-dark-bg)' }}>{qty}</span>
+                                    <span className="w-12 text-center text-[15px] font-black" style={{ color: 'var(--color-body-text)' }}>{qty}</span>
                                     <button onClick={() => setQty(Math.min(activeStock, qty+1))}
                                         className="w-11 h-12 flex items-center justify-center text-gray-500 hover:bg-gray-50 border-none bg-transparent cursor-pointer transition-colors">
                                         <IconPlus size={15} />
@@ -572,7 +572,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                     </button>
                                     <Link href="/cart"
                                         className="flex items-center justify-center gap-2 h-[48px] font-bold text-[13px] rounded-2xl no-underline border-2 transition-all hover:opacity-80"
-                                        style={{ background: 'transparent', borderColor: 'var(--color-dark-bg)', color: 'var(--color-dark-bg)' }}>
+                                        style={{ background: 'transparent', borderColor: 'var(--color-dark-bg)', color: 'var(--color-body-text)' }}>
                                         View Cart
                                     </Link>
                                     <button onClick={() => toggleWishlist()}
@@ -631,7 +631,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {prose && (
                             <div className="p-6 lg:p-8">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                     About This Product
                                 </h2>
                                 <p className="text-[14px] text-gray-600 leading-[1.85] whitespace-pre-line">{prose}</p>
@@ -642,7 +642,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {specs.length > 0 && (
                             <div className="p-6 lg:p-8">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                     Specifications
                                 </h2>
                                 <div className="divide-y divide-gray-50">
@@ -660,7 +660,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                         {!prose && specs.length === 0 && product.description && (
                             <div className="p-6 lg:p-8 lg:col-span-2">
                                 <h2 className="font-black text-[15px] uppercase tracking-wider mb-4 pb-3 border-b border-gray-100"
-                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                                    style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                     Product Details
                                 </h2>
                                 <p className="text-[14px] text-gray-600 leading-[1.85]">{product.description}</p>
@@ -673,7 +673,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                 <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-6 lg:p-8">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h2 className="font-black text-[20px]" style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                            <h2 className="font-black text-[20px]" style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                                 Customer Reviews
                             </h2>
                             {reviews.length > 0 && (
@@ -755,7 +755,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between flex-wrap gap-2">
-                                                <span className="font-bold text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>{r.name}</span>
+                                                <span className="font-bold text-[13.5px]" style={{ color: 'var(--color-body-text)' }}>{r.name}</span>
                                                 <span className="text-[11.5px] text-gray-400">{new Date(r.created_at).toLocaleDateString()}</span>
                                             </div>
                                             <div className="flex gap-0.5 mt-1">
@@ -765,7 +765,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                             </div>
                                         </div>
                                     </div>
-                                    {r.title && <p className="font-bold text-[13.5px] mb-1 ml-13" style={{ color: 'var(--color-dark-bg)' }}>{r.title}</p>}
+                                    {r.title && <p className="font-bold text-[13.5px] mb-1 ml-13" style={{ color: 'var(--color-body-text)' }}>{r.title}</p>}
                                     {r.body && <p className="text-[13.5px] text-gray-600 leading-relaxed">{r.body}</p>}
                                 </div>
                             ))}
@@ -776,7 +776,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                 {/* ═══ RELATED PRODUCTS ════════════════════════════════════════════════ */}
                 {related.length > 0 && (
                     <div className="mt-8">
-                        <h2 className="font-black text-[20px] mb-5" style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                        <h2 className="font-black text-[20px] mb-5" style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                             You May Also Like
                         </h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
@@ -813,7 +813,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                     padding: '10px 14px', alignItems: 'center', gap: 12,
                 }}>
                     <div style={{ minWidth: 0, flexShrink: 0 }}>
-                        <div className="font-black" style={{ fontSize: 16, whiteSpace: 'nowrap', color: 'var(--color-dark-bg)' }}>{fmt(rawPrice)}</div>
+                        <div className="font-black" style={{ fontSize: 16, whiteSpace: 'nowrap', color: 'var(--color-body-text)' }}>{fmt(rawPrice)}</div>
                         {rawCompare > rawPrice && (
                             <div style={{ fontSize: 11, color: '#9CA3AF', textDecoration: 'line-through' }}>{fmt(rawCompare)}</div>
                         )}

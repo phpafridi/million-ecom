@@ -67,7 +67,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                             style={{ background: 'var(--color-primary)' }}>
                             <IconTruck size={32} color="white" />
                         </div>
-                        <h1 className="font-black text-3xl mb-2" style={{ color: 'var(--color-dark-bg)' }}>
+                        <h1 className="font-black text-3xl mb-2" style={{ color: 'var(--color-body-text)' }}>
                             Track Your Order
                         </h1>
                         <p className="text-gray-500 text-[15px]">
@@ -115,7 +115,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                 <div className="flex items-start justify-between mb-5">
                                     <div>
                                         <p className="text-gray-400 text-[12px] font-semibold uppercase tracking-wide mb-1">Order #{order.id}</p>
-                                        <p className="font-black text-xl" style={{ color: 'var(--color-dark-bg)' }}>
+                                        <p className="font-black text-xl" style={{ color: 'var(--color-body-text)' }}>
                                             {order.customer_name}
                                         </p>
                                         <p className="text-gray-400 text-[13px] mt-0.5">{order.customer_phone} · {order.created_at}</p>
@@ -200,7 +200,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
 
                             {/* Order Items */}
                             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>
+                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-body-text)' }}>
                                     Order Items
                                 </h3>
                                 <div className="space-y-3">
@@ -220,7 +220,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                                 )}
                                                 <p className="text-gray-400 text-[12px] mt-0.5">Qty: {item.quantity} × {fmt(item.price)}</p>
                                             </div>
-                                            <p className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                            <p className="font-bold text-[14px]" style={{ color: 'var(--color-body-text)' }}>
                                                 {fmt(item.subtotal)}
                                             </p>
                                         </div>
@@ -243,7 +243,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                         </div>
                                     )}
                                     <div className="flex justify-between font-black text-[16px] pt-2 border-t border-gray-100">
-                                        <span style={{ color: 'var(--color-dark-bg)' }}>Total</span>
+                                        <span style={{ color: 'var(--color-body-text)' }}>Total</span>
                                         <span style={{ color: 'var(--color-primary)' }}>{fmt(order.total)}</span>
                                     </div>
                                 </div>
@@ -252,7 +252,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                             {/* Status History */}
                             {order.history.length > 0 && (
                                 <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                                    <h3 className="font-black text-[16px] mb-5" style={{ color: 'var(--color-dark-bg)' }}>
+                                    <h3 className="font-black text-[16px] mb-5" style={{ color: 'var(--color-body-text)' }}>
                                         Tracking History
                                     </h3>
                                     <div className="relative space-y-0">
@@ -266,7 +266,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                                                     )}
                                                 </div>
                                                 <div className="pb-1">
-                                                    <p className="font-bold text-[13.5px] capitalize" style={{ color: 'var(--color-dark-bg)' }}>
+                                                    <p className="font-bold text-[13.5px] capitalize" style={{ color: 'var(--color-body-text)' }}>
                                                         {h.status}
                                                     </p>
                                                     {h.note && <p className="text-gray-500 text-[12.5px] mt-0.5">{h.note}</p>}

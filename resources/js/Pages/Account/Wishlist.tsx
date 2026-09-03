@@ -29,7 +29,7 @@ export default function AccountWishlist({ items, settings, auth }: Props) {
                         <div className="lg:col-span-3">
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 <div className="flex items-center justify-between mb-5">
-                                    <h2 className="font-black text-[18px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                    <h2 className="font-black text-[18px]" style={{ color: 'var(--color-body-text)' }}>
                                         My Wishlist <span className="text-gray-400 font-normal text-[14px] ml-1">({items.length})</span>
                                     </h2>
                                     {items.length > 0 && (
@@ -68,7 +68,7 @@ export default function AccountWishlist({ items, settings, auth }: Props) {
                                                     )}
                                                     <Link href={`/products/${product.slug}`}
                                                         className="font-bold text-[13.5px] no-underline line-clamp-2 leading-snug mb-3 block"
-                                                        style={{ color: 'var(--color-dark-bg)' }}>
+                                                        style={{ color: 'var(--color-body-text)' }}>
                                                         {product.name}
                                                     </Link>
                                                     <div className="flex items-center gap-2 mb-4">

@@ -50,7 +50,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 <div className="flex items-start justify-between mb-4">
                                     <div>
-                                        <h2 className="font-black text-xl" style={{ color: 'var(--color-dark-bg)' }}>Order #{order.id}</h2>
+                                        <h2 className="font-black text-xl" style={{ color: 'var(--color-body-text)' }}>Order #{order.id}</h2>
                                         <p className="text-gray-400 text-[13px] mt-0.5">Placed on {order.created_at}</p>
                                     </div>
                                     <span className={`text-[12px] font-bold px-3 py-1 rounded-full border ${STATUS_COLOR[order.status] || ''}`}>
@@ -118,7 +118,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Items */}
                                 <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:col-span-2">
-                                    <h3 className="font-black text-[15px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>Items</h3>
+                                    <h3 className="font-black text-[15px] mb-4" style={{ color: 'var(--color-body-text)' }}>Items</h3>
                                     <div className="space-y-3">
                                         {order.items.map((item: any, i: number) => (
                                             <div key={i} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
@@ -130,10 +130,10 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                                                     </div>
                                                 )}
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-[13px] truncate" style={{ color: 'var(--color-dark-bg)' }}>{item.name}</p>
+                                                    <p className="font-semibold text-[13px] truncate" style={{ color: 'var(--color-body-text)' }}>{item.name}</p>
                                                     <p className="text-gray-400 text-[11.5px]">Qty {item.quantity} × {fmt(item.price)}</p>
                                                 </div>
-                                                <p className="font-bold text-[13.5px] shrink-0" style={{ color: 'var(--color-dark-bg)' }}>{fmt(item.subtotal)}</p>
+                                                <p className="font-bold text-[13.5px] shrink-0" style={{ color: 'var(--color-body-text)' }}>{fmt(item.subtotal)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -148,7 +148,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                                             </div>
                                         )}
                                         <div className="flex justify-between font-black text-[15px] pt-2 border-t border-gray-100">
-                                            <span style={{ color: 'var(--color-dark-bg)' }}>Total</span>
+                                            <span style={{ color: 'var(--color-body-text)' }}>Total</span>
                                             <span style={{ color: 'var(--color-primary)' }}>{fmt(order.total)}</span>
                                         </div>
                                     </div>
@@ -156,7 +156,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
 
                                 {/* Delivery Info */}
                                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                    <h3 className="font-black text-[15px] mb-3" style={{ color: 'var(--color-dark-bg)' }}>Delivery</h3>
+                                    <h3 className="font-black text-[15px] mb-3" style={{ color: 'var(--color-body-text)' }}>Delivery</h3>
                                     <div className="space-y-2 text-[13px]">
                                         <p className="font-semibold">{order.customer_name}</p>
                                         <p className="text-gray-500">{order.customer_phone}</p>
@@ -168,7 +168,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
 
                                 {/* Payment Info */}
                                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                    <h3 className="font-black text-[15px] mb-3" style={{ color: 'var(--color-dark-bg)' }}>Payment</h3>
+                                    <h3 className="font-black text-[15px] mb-3" style={{ color: 'var(--color-body-text)' }}>Payment</h3>
                                     <div className="space-y-2 text-[13px]">
                                         <div className="flex justify-between">
                                             <span className="text-gray-400">Method</span>
@@ -187,7 +187,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                             {/* Status History */}
                             {order.history?.length > 0 && (
                                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                    <h3 className="font-black text-[15px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>Status History</h3>
+                                    <h3 className="font-black text-[15px] mb-4" style={{ color: 'var(--color-body-text)' }}>Status History</h3>
                                     <div className="space-y-0">
                                         {order.history.map((h: any, i: number) => (
                                             <div key={i} className="flex gap-4 pb-5 last:pb-0">
@@ -197,7 +197,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                                                     {i < order.history.length - 1 && <div className="w-px flex-1 bg-gray-100 mt-1" />}
                                                 </div>
                                                 <div className="pb-1 min-w-0">
-                                                    <p className="font-bold text-[13px] capitalize" style={{ color: 'var(--color-dark-bg)' }}>{h.status}</p>
+                                                    <p className="font-bold text-[13px] capitalize" style={{ color: 'var(--color-body-text)' }}>{h.status}</p>
                                                     {h.note && <p className="text-gray-500 text-[12px] mt-0.5">{h.note}</p>}
                                                     <p className="text-gray-400 text-[11px] mt-1">{h.date}</p>
                                                 </div>

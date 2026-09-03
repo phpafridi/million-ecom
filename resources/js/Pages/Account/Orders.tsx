@@ -47,7 +47,7 @@ export default function AccountOrders({ orders, filters, settings, auth }: Props
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-4">
-                                    <h2 className="font-black text-[18px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                    <h2 className="font-black text-[18px]" style={{ color: 'var(--color-body-text)' }}>
                                         My Orders
                                         <span className="text-gray-400 font-normal text-[13px] ml-2">({orders.total})</span>
                                     </h2>
@@ -88,7 +88,7 @@ export default function AccountOrders({ orders, filters, settings, auth }: Props
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-0.5">
-                                                        <p className="font-bold text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                                        <p className="font-bold text-[14px]" style={{ color: 'var(--color-body-text)' }}>
                                                             {(order as any).order_number ?? `Order #${order.id}`}
                                                         </p>
                                                         {order.tracking_token && (
@@ -103,7 +103,7 @@ export default function AccountOrders({ orders, filters, settings, auth }: Props
                                                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${STATUS_COLOR[order.status] || ''}`}>
                                                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                                     </span>
-                                                    <p className="font-black text-[15px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                                    <p className="font-black text-[15px]" style={{ color: 'var(--color-body-text)' }}>
                                                         {fmt(order.total)}
                                                     </p>
                                                     <IconChevronRight size={16} className="text-gray-300 group-hover:text-gray-400" />

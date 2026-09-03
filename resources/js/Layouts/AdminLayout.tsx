@@ -85,7 +85,6 @@ const NAV = [
             { label: 'Reports',   icon: IconChartBar,      path: '/reports',      adminOnly: true },
             { label: 'Payments',  icon: IconCreditCard,    path: '/payments',     adminOnly: true },
             { label: 'Returns',   icon: IconChevronLeft,   path: '/returns',      perm: 'returns' },
-            { label: 'Live Chat', icon: IconMessageCircle, path: '/chat',         perm: 'chat' },
             { label: 'Staff',     icon: IconUserCheck,     path: '/staff',        adminOnly: true },
             // WhatsApp link removed — settings consolidated into Settings page
             { label: 'Theme',     icon: IconPalette,       path: '/theme',        adminOnly: true },

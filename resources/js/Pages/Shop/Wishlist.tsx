@@ -61,7 +61,7 @@ export default function Wishlist({ items, settings, auth }: Props) {
                                     <div className="text-[10.5px] font-bold uppercase tracking-wider mb-1" style={{ color:'var(--color-primary)' }}>
                                         {product.category?.name}
                                     </div>
-                                    <Link href={`/products/${product.slug}`} className="font-semibold text-[14px] no-underline hover:text-[var(--color-primary)] line-clamp-2 block mb-2" style={{ color: 'var(--color-dark-bg)' }}>
+                                    <Link href={`/products/${product.slug}`} className="font-semibold text-[14px] no-underline hover:text-[var(--color-primary)] line-clamp-2 block mb-2" style={{ color: 'var(--color-body-text)' }}>
                                         {product.name}
                                     </Link>
                                     <div className="flex items-baseline gap-2 mb-3">

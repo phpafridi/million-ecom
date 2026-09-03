@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete();
                 $table->foreignId('variant_value_id')->constrained()->cascadeOnDelete();
-                $table->unique(['product_variant_id', 'variant_value_id']);
+                $table->unique(['product_variant_id', 'variant_value_id'], 'pvv_variant_value_unique');
             });
         }
     }

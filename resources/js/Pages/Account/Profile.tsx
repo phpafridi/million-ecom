@@ -173,7 +173,7 @@ export default function AccountProfile({ user, addresses, settings, auth }: Prop
                                                 <div key={addr.id} className="flex items-start justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <span className="font-bold text-[13px]" style={{ color: 'var(--color-dark-bg)' }}>{addr.label}</span>
+                                                            <span className="font-bold text-[13px]" style={{ color: 'var(--color-body-text)' }}>{addr.label}</span>
                                                             {addr.is_default && (
                                                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
                                                                     style={{ background: 'var(--color-primary)' }}>Default</span>
@@ -199,7 +199,7 @@ export default function AccountProfile({ user, addresses, settings, auth }: Prop
                                                 </button>
                                             ) : (
                                                 <div className="border border-gray-200 rounded-xl p-4">
-                                                    <p className="font-bold text-[14px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>New Address</p>
+                                                    <p className="font-bold text-[14px] mb-4" style={{ color: 'var(--color-body-text)' }}>New Address</p>
                                                     <div className="grid grid-cols-2 gap-3">
                                                         {[
                                                             { label: 'Label',     field: 'label',     type: 'text',  placeholder: 'Home / Office' },

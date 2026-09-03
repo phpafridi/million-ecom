@@ -26,7 +26,6 @@ const PERMISSION_OPTIONS: { key: string; label: string }[] = [
     { key: 'banners',          label: 'Banners' },
     { key: 'pages',            label: 'Pages' },
     { key: 'returns',          label: 'Returns' },
-    { key: 'chat',             label: 'Live Chat' },
 ]
 
 export default function StaffIndex({ staff, roles }:Props) {

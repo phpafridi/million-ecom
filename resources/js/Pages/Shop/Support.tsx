@@ -39,7 +39,7 @@ export default function Support({ settings, orders, auth }: Props) {
                 {/* Header */}
                 <div className="text-center mb-10">
                     <h1 className="font-black text-[32px] sm:text-[40px]"
-                        style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-dark-bg)' }}>
+                        style={{ fontFamily: 'Manrope,sans-serif', color: 'var(--color-body-text)' }}>
                         How Can We Help?
                     </h1>
                     <p className="text-gray-500 text-[16px] mt-2">We reply within 24 hours — usually much faster</p>

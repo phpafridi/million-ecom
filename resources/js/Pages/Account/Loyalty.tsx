@@ -69,7 +69,7 @@ export default function Loyalty({ points, points_value, total_earned, level, tra
 
                             {/* How to earn */}
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>
+                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-body-text)' }}>
                                     How to Earn Points
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -84,7 +84,7 @@ export default function Loyalty({ points, points_value, total_earned, level, tra
                                         <div key={e.label} className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
                                             <span className="text-xl">{e.icon}</span>
                                             <div>
-                                                <p className="font-bold text-[12.5px]" style={{ color: 'var(--color-dark-bg)' }}>{e.label}</p>
+                                                <p className="font-bold text-[12.5px]" style={{ color: 'var(--color-body-text)' }}>{e.label}</p>
                                                 <p className="text-[11.5px] font-semibold" style={{ color: 'var(--color-primary)' }}>{e.value}</p>
                                             </div>
                                         </div>
@@ -94,7 +94,7 @@ export default function Loyalty({ points, points_value, total_earned, level, tra
 
                             {/* Level Benefits */}
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>
+                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-body-text)' }}>
                                     Membership Levels
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -128,7 +128,7 @@ export default function Loyalty({ points, points_value, total_earned, level, tra
 
                             {/* Transaction History */}
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-dark-bg)' }}>
+                                <h3 className="font-black text-[16px] mb-4" style={{ color: 'var(--color-body-text)' }}>
                                     Points History
                                 </h3>
                                 {transactions.data.length === 0 ? (
@@ -148,7 +148,7 @@ export default function Loyalty({ points, points_value, total_earned, level, tra
                                                             : <IconArrowDown size={16} className="text-red-500" />}
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-[13px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                                        <p className="font-semibold text-[13px]" style={{ color: 'var(--color-body-text)' }}>
                                                             {t.description}
                                                         </p>
                                                         <p className="text-gray-400 text-[11.5px]">{t.created_at}</p>

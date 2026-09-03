@@ -126,6 +126,16 @@
             --color-dark-bg:       {{ $t['dark_bg'] }};
             --color-dark-bg2:      {{ $t['dark_bg2'] }};
             --color-body-bg:       {{ $t['body_bg'] }};
+            /* New — was missing entirely. Every page-content text fix this
+               session used --color-dark-bg directly, which is your fixed
+               brand dark color (for things like the footer/logo box) and
+               never changes — not a "text that adapts to light vs dark
+               mode" variable. Using this new one instead means flipping
+               dark mode below actually does something, instead of always
+               rendering dark text no matter what. Defaults to the exact
+               same value as --color-dark-bg so nothing changes visually
+               for anyone not using dark mode. */
+            --color-body-text:     {{ $t['dark_bg'] }};
             --radius:              {{ $t['radius'] }};
             --color-topbar-bg:     {{ $t['topbar_bg'] }};
             --color-navbar-bg:     {{ $t['navbar_bg'] }};
@@ -137,6 +147,31 @@
             --color-header-text:   {{ $t['header_text'] }};
             --color-header-border: {{ $t['header_border'] }};
         }
+        /* This block never existed at all — the dark mode toggle has been
+           flipping a CSS class with nothing attached to it since it was
+           built. Overrides the core variables so the toggle actually
+           produces a real dark theme: dark body, light readable text,
+           dark header/nav so they don't stay stranded as bright white
+           bars on an otherwise-dark page. */
+        html.dark {
+            --color-body-bg:       #121212;
+            --color-body-text:     #f1f1f1;
+            --color-header-bg:     #161616;
+            --color-header-text:   #f1f1f1;
+            --color-header-border: #2a2a2a;
+            --color-navbar-bg:     #161616;
+            --color-navbar-text:   #f1f1f1;
+            --color-navbar-border: #2a2a2a;
+            --color-subnav-bg:     #1a1a1a;
+        }
+        html.dark body { background: var(--color-body-bg); color: var(--color-body-text); }
+        /* Cards/panels across the app use plain white backgrounds with no
+           variable at all — this keeps them from staying stark white
+           islands on a dark page without needing to touch every single
+           page's markup individually. */
+        html.dark .bg-white { background-color: #1c1c1c !important; }
+        html.dark .bg-gray-50 { background-color: #191919 !important; }
+        html.dark .border-gray-100, html.dark .border-gray-200 { border-color: #2a2a2a !important; }
         *, *::before, *::after { box-sizing: border-box; }
         /* Mobile optimizations */
         @media (max-width: 1024px) {

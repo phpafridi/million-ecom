@@ -80,7 +80,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                                             style={{ background: s.color + '15' }}>
                                             <s.icon size={18} style={{ color: s.color }} />
                                         </div>
-                                        <p className="font-black text-[20px]" style={{ color: 'var(--color-dark-bg)' }}>{s.value}</p>
+                                        <p className="font-black text-[20px]" style={{ color: 'var(--color-body-text)' }}>{s.value}</p>
                                         <p className="text-gray-400 text-[11.5px] mt-0.5">{s.label}</p>
                                     </div>
                                 ))}
@@ -89,7 +89,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                             {/* Recent Orders */}
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="font-black text-[16px]" style={{ color: 'var(--color-dark-bg)' }}>Recent Orders</h3>
+                                    <h3 className="font-black text-[16px]" style={{ color: 'var(--color-body-text)' }}>Recent Orders</h3>
                                     <Link href="/account/orders" className="text-[12.5px] font-bold no-underline flex items-center gap-1"
                                         style={{ color: 'var(--color-primary)' }}>
                                         View all <IconChevronRight size={14} />
@@ -116,7 +116,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                                                         <IconTruck size={18} style={{ color: 'var(--color-primary)' }} />
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-[13.5px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                                        <p className="font-bold text-[13.5px]" style={{ color: 'var(--color-body-text)' }}>
                                                             {(order as any).order_number ?? `Order #${order.id}`}
                                                         </p>
                                                         <p className="text-gray-400 text-[11.5px]">
@@ -128,7 +128,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                                                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${STATUS_COLOR[order.status] || ''}`}>
                                                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                                     </span>
-                                                    <p className="font-black text-[14px]" style={{ color: 'var(--color-dark-bg)' }}>
+                                                    <p className="font-black text-[14px]" style={{ color: 'var(--color-body-text)' }}>
                                                         {fmt(order.total)}
                                                     </p>
                                                     <IconChevronRight size={16} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
@@ -153,7 +153,7 @@ export default function AccountIndex({ orders, stats, settings, auth }: Props) {
                                             <q.icon size={18} style={{ color: 'var(--color-primary)' }} />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="font-bold text-[13px]" style={{ color: 'var(--color-dark-bg)' }}>{q.label}</p>
+                                            <p className="font-bold text-[13px]" style={{ color: 'var(--color-body-text)' }}>{q.label}</p>
                                             <p className="text-gray-400 text-[11.5px] truncate">{q.sub}</p>
                                         </div>
                                         <IconChevronRight size={15} className="text-gray-300 ml-auto group-hover:text-gray-400 shrink-0" />

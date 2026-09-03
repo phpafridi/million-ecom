@@ -19,7 +19,7 @@ export default function OrderConfirmation({ order, settings, auth }: Props) {
                         style={{ background: 'var(--color-primary)' }}>
                         <IconCheck size={36} style={{ color: 'var(--color-primary-text)' }} strokeWidth={3} />
                     </div>
-                    <h1 className="font-manrope font-black text-[26px] mb-2" style={{ color: 'var(--color-dark-bg)' }}>Order Confirmed!</h1>
+                    <h1 className="font-manrope font-black text-[26px] mb-2" style={{ color: 'var(--color-body-text)' }}>Order Confirmed!</h1>
                     <p className="text-gray-500 text-[14px] mb-6">
                         Thank you, <strong>{order.shipping_address?.name}</strong>! Your order <strong>#{order.id}</strong> has been placed.
                     </p>

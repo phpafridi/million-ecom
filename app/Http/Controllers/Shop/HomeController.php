@@ -25,28 +25,7 @@ class HomeController extends Controller
         // whenever a product actually changes, so admins don't have to wait
         // out the cache window to see their own edits.
         $homeData = Cache::remember('home_products', 900, function () {
-            $topCategories = Category::active()
-                ->whereNull('parent_id')
-                ->with(['children' => fn($q) => $q->where('is_active', true)])
-                ->orderBy('nav_order')
-                ->orderBy('sort_order')
-                ->get();
-
-            $categoryProducts = [];
-            foreach ($topCategories as $cat) {
-                $childIds = $cat->children->pluck('id')->toArray();
-                $allIds   = array_merge([$cat->id], $childIds);
-                $categoryProducts[$cat->slug] = Product::active()
-                    ->whereIn('category_id', $allIds)
-                    ->with('category', 'productImages')
-                    ->orderBy('sort_order')
-                    ->take(12)
-                    ->get();
-            }
-
             return [
-                'topCategories'    => $topCategories,
-                'categoryProducts' => $categoryProducts,
                 'featuredProducts' => Product::active()->featured()->with('category','productImages')->orderBy('sort_order')->take(12)->get(),
                 'onSaleProducts'   => Product::active()->onSale()->with('category','productImages')->take(12)->get(),
                 'topRatedProducts' => Product::active()->with('category','productImages')->take(12)->get(),
