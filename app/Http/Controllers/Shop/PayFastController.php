@@ -74,8 +74,9 @@ class PayFastController extends Controller
         return md5($pfOutput);
     }
 
-    public function redirect(Order $order)
+    public function redirect(string $orderNumber)
     {
+        $order = \App\Models\Order::where('order_number', $orderNumber)->firstOrFail();
         $creds = $this->creds();
 
         if (!$creds['merchant_id'] || !$creds['merchant_key']) {

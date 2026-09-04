@@ -93,7 +93,7 @@ Route::get('/payment/flutterwave/{orderId}/callback',[Shop\PaymentController::cl
 Route::get('/payment/flutterwave/{orderId}/cancel', [Shop\PaymentController::class, 'flutterwaveCancel'] )->name('payment.flutterwave.cancel');
 
 // ── PAYFAST ──────────────────────────────────────────────────────────────────
-Route::get( '/payment/payfast/{order}',          [PayFastController::class, 'redirect']  )->name('payment.payfast');
+Route::get( '/payment/payfast/{orderNumber}',          [PayFastController::class, 'redirect']  )->name('payment.payfast');
 Route::post('/payment/payfast/itn',              [PayFastController::class, 'itn']       )->name('payment.payfast.itn')->withoutMiddleware($csrf);
 Route::get( '/payment/payfast/{orderNumber}/return', [PayFastController::class, 'returnUrl'] )->name('payment.payfast.return');
 Route::get( '/payment/payfast/{orderNumber}/cancel', [PayFastController::class, 'cancel']    )->name('payment.payfast.cancel');

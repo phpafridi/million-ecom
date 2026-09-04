@@ -416,7 +416,12 @@ class CartController extends Controller
         ];
 
         if (isset($paymentRoutes[$gatewayCode])) {
-            return redirect()->route($paymentRoutes[$gatewayCode], $order->id);
+            // PayFast specifically uses order_number in its URLs (fixed
+            // separately, to stop leaking sequential order counts on its
+            // payment page) — every other gateway here still binds by
+            // raw id, so only PayFast gets the different parameter.
+            $routeParam = $gatewayCode === 'payfast' ? $order->order_number : $order->id;
+            return redirect()->route($paymentRoutes[$gatewayCode], $routeParam);
         }
 
         return redirect()->route('order.confirmed', ['id' => $order->id]);
