@@ -75,6 +75,7 @@ class OrderTrackingController extends Controller
 
         return [
             'id'             => $order->id,
+            'order_number'   => $order->order_number,
             'tracking_token' => $order->tracking_token,
             'customer_name'  => $order->customer_name,
             // Only first 2 and last 1 digit shown now (was first 4 + last 2

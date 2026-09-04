@@ -36,7 +36,7 @@ function PayFastRedirect({ payfast_url, data, order, sandbox }) {
           /* @__PURE__ */ jsx("h1", { className: "font-black text-[20px] mb-1", style: { color: "var(--color-body-text)" }, children: "Redirecting to PayFast" }),
           /* @__PURE__ */ jsxs("p", { className: "text-gray-500 text-[14px] mb-5", children: [
             "Secure payment for Order #",
-            order.id
+            order.order_number ?? order.id
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "bg-gray-50 rounded-xl p-4 mb-6 text-left space-y-2", children: [
             /* @__PURE__ */ jsxs("div", { className: "flex justify-between text-[13.5px]", children: [

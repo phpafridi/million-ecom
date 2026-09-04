@@ -33,7 +33,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
 
     return (
         <StorefrontLayout auth={auth} settings={settings}>
-            <Head title={`Order #${order.id}`} />
+            <Head title={`Order #${order.order_number ?? order.id}`} />
             <div className="min-h-screen py-0 lg:py-8 px-0 lg:px-4" style={{ background: 'var(--color-body-bg)' }}>
                 <div className="max-w-5xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
@@ -50,7 +50,7 @@ export default function OrderDetail({ order, settings, auth }: Props) {
                             <div className="bg-white rounded-2xl border border-gray-100 p-5">
                                 <div className="flex items-start justify-between mb-4">
                                     <div>
-                                        <h2 className="font-black text-xl" style={{ color: 'var(--color-body-text)' }}>Order #{order.id}</h2>
+                                        <h2 className="font-black text-xl" style={{ color: 'var(--color-body-text)' }}>Order #{order.order_number ?? order.id}</h2>
                                         <p className="text-gray-400 text-[13px] mt-0.5">Placed on {order.created_at}</p>
                                     </div>
                                     <span className={`text-[12px] font-bold px-3 py-1 rounded-full border ${STATUS_COLOR[order.status] || ''}`}>

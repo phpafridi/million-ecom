@@ -13,7 +13,7 @@ class SupportController extends Controller
     {
         return Inertia::render('Shop/Support', [
             'settings' => Setting::allKeyed(),
-            'orders'   => auth()->check() ? DB::table('orders')->where('user_id', auth()->id())->select('id','status','created_at')->latest()->take(10)->get() : [],
+            'orders'   => auth()->check() ? DB::table('orders')->where('user_id', auth()->id())->select('id','order_number','status','created_at')->latest()->take(10)->get() : [],
         ]);
     }
 

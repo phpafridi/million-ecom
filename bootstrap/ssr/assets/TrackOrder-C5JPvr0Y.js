@@ -82,7 +82,7 @@ function TrackOrder({ order: initialOrder, settings, auth }) {
             /* @__PURE__ */ jsxs("div", { children: [
               /* @__PURE__ */ jsxs("p", { className: "text-gray-400 text-[12px] font-semibold uppercase tracking-wide mb-1", children: [
                 "Order #",
-                order.id
+                order.order_number ?? order.id
               ] }),
               /* @__PURE__ */ jsx("p", { className: "font-black text-xl", style: { color: "var(--color-body-text)" }, children: order.customer_name }),
               /* @__PURE__ */ jsxs("p", { className: "text-gray-400 text-[13px] mt-0.5", children: [

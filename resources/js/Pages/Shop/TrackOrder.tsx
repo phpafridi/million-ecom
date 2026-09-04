@@ -9,6 +9,7 @@ interface TrackingHistory { status: string; note?: string; created_by: string; d
 
 interface TrackingResult {
     id: number
+    order_number?: string
     tracking_token: string
     customer_name: string
     customer_phone: string
@@ -114,7 +115,7 @@ export default function TrackOrder({ order: initialOrder, settings, auth }: Prop
                             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                                 <div className="flex items-start justify-between mb-5">
                                     <div>
-                                        <p className="text-gray-400 text-[12px] font-semibold uppercase tracking-wide mb-1">Order #{order.id}</p>
+                                        <p className="text-gray-400 text-[12px] font-semibold uppercase tracking-wide mb-1">Order #{order.order_number ?? order.id}</p>
                                         <p className="font-black text-xl" style={{ color: 'var(--color-body-text)' }}>
                                             {order.customer_name}
                                         </p>

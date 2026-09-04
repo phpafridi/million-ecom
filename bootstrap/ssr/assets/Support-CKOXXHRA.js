@@ -194,7 +194,7 @@ function Support({ settings, orders, auth }) {
                       /* @__PURE__ */ jsx("option", { value: "", children: "None" }),
                       orders.map((o) => /* @__PURE__ */ jsxs("option", { value: o.id, children: [
                         "Order #",
-                        o.id,
+                        o.order_number ?? o.id,
                         " — ",
                         o.status
                       ] }, o.id))

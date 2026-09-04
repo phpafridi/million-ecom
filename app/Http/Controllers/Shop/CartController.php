@@ -404,7 +404,7 @@ class CartController extends Controller
 
         $gatewayCode = $data['gateway'];
         if (in_array($gatewayCode, ['cod', 'bank_transfer'])) {
-            return redirect()->route('order.confirmed', ['id' => $order->id]);
+            return redirect()->route('order.confirmed', ['orderNumber' => $order->order_number]);
         }
 
         $paymentRoutes = [
@@ -424,6 +424,6 @@ class CartController extends Controller
             return redirect()->route($paymentRoutes[$gatewayCode], $routeParam);
         }
 
-        return redirect()->route('order.confirmed', ['id' => $order->id]);
+        return redirect()->route('order.confirmed', ['orderNumber' => $order->order_number]);
     }
 }

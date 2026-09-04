@@ -141,9 +141,10 @@ class PayFastController extends Controller
             'payfast_url' => $this->baseUrl($creds['sandbox']),
             'data'        => $pfData,
             'order'       => [
-                'id'    => $order->id,
-                'total' => $order->total,
-                'name'  => $order->customer_name,
+                'id'           => $order->id,
+                'order_number' => $order->order_number,
+                'total'        => $order->total,
+                'name'         => $order->customer_name,
             ],
             'sandbox' => $creds['sandbox'],
         ]);
@@ -224,7 +225,7 @@ class PayFastController extends Controller
     public function returnUrl(Request $request, string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
-        return redirect()->route('order.confirmed', $order->id)
+        return redirect()->route('order.confirmed', $order->order_number)
             ->with('success', $order->payment_status === 'paid' ? '✅ Payment successful!' : '⏳ Payment processing...');
     }
 

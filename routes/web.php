@@ -111,8 +111,8 @@ Route::delete('/cart/coupon',  [Shop\CartController::class, 'removeCoupon'])->na
 Route::post('/cart/points/redeem', [Shop\CartController::class, 'redeemPoints'])->name('cart.points.redeem');
 Route::post('/cart/points/remove', [Shop\CartController::class, 'removePoints'])->name('cart.points.remove');
 Route::post('/cart/checkout',  [Shop\CartController::class, 'checkout'])->name('cart.checkout')->middleware('throttle:5,1');
-Route::get('/order/{id}/confirmed', function(int $id) {
-    $order = \App\Models\Order::with('items')->find($id);
+Route::get('/order/{orderNumber}/confirmed', function(string $orderNumber) {
+    $order = \App\Models\Order::with('items')->where('order_number', $orderNumber)->first();
     if (!$order) abort(404);
     return inertia('Shop/OrderConfirmed', [
         'order' => [

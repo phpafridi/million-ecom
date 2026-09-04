@@ -29,7 +29,7 @@ function OrderDetail({ order, settings, auth }) {
     setTimeout(() => setCopied(false), 2e3);
   };
   return /* @__PURE__ */ jsxs(StorefrontLayout, { auth, settings, children: [
-    /* @__PURE__ */ jsx(Head_default, { title: `Order #${order.id}` }),
+    /* @__PURE__ */ jsx(Head_default, { title: `Order #${order.order_number ?? order.id}` }),
     /* @__PURE__ */ jsx("div", { className: "min-h-screen py-0 lg:py-8 px-0 lg:px-4", style: { background: "var(--color-body-bg)" }, children: /* @__PURE__ */ jsx("div", { className: "max-w-5xl mx-auto", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-4 gap-5", children: [
       /* @__PURE__ */ jsx(AccountSidebar, { auth, active: "orders" }),
       /* @__PURE__ */ jsxs("div", { className: "lg:col-span-3 space-y-4 px-4 pt-5 lg:px-0 lg:pt-0", children: [
@@ -42,7 +42,7 @@ function OrderDetail({ order, settings, auth }) {
             /* @__PURE__ */ jsxs("div", { children: [
               /* @__PURE__ */ jsxs("h2", { className: "font-black text-xl", style: { color: "var(--color-body-text)" }, children: [
                 "Order #",
-                order.id
+                order.order_number ?? order.id
               ] }),
               /* @__PURE__ */ jsxs("p", { className: "text-gray-400 text-[13px] mt-0.5", children: [
                 "Placed on ",

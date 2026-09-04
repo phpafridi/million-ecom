@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/react'
 interface Props {
     payfast_url: string
     data: Record<string, string>
-    order: { id: number; total: number; name: string }
+    order: { id: number; order_number?: string; total: number; name: string }
     sandbox: boolean
 }
 
@@ -49,7 +49,7 @@ export default function PayFastRedirect({ payfast_url, data, order, sandbox }: P
                         Redirecting to PayFast
                     </h1>
                     <p className="text-gray-500 text-[14px] mb-5">
-                        Secure payment for Order #{order.id}
+                        Secure payment for Order #{order.order_number ?? order.id}
                     </p>
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left space-y-2">

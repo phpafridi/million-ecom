@@ -191,7 +191,7 @@ class PaymentController extends Controller
         }
 
         return $code === '000'
-            ? redirect()->route('order.confirmed', $order->id)
+            ? redirect()->route('order.confirmed', $order->order_number)
             : redirect()->route('payment.failed')->with('reason', 'JazzCash payment was not completed (code: '.$code.').');
     }
 
@@ -276,7 +276,7 @@ class PaymentController extends Controller
 
         if (in_array($responseCode, ['00', '0000', '200'])) {
             $this->markPaid($order, $epOrderId);
-            return redirect()->route('order.confirmed', $order->id);
+            return redirect()->route('order.confirmed', $order->order_number);
         }
 
         $this->markFailed($order, "Easypaisa code: {$responseCode}");
@@ -352,14 +352,14 @@ class PaymentController extends Controller
 
             if (($session['payment_status'] ?? '') === 'paid') {
                 $this->markPaid($order, $sessionId);
-                return redirect()->route('order.confirmed', $orderId);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
 
             $this->markFailed($order, 'Stripe session not paid: ' . ($session['payment_status'] ?? 'unknown'));
             return redirect()->route('payment.failed')->with('reason', 'Payment was not completed on Stripe.');
         }
 
-        return redirect()->route('order.confirmed', $orderId);
+        return redirect()->route('order.confirmed', $order->order_number);
     }
 
     public function stripeCancel(int $orderId)
@@ -431,7 +431,7 @@ class PaymentController extends Controller
             if ($captureStatus === 'COMPLETED') {
                 $txnId = $captureRes->json('purchase_units.0.payments.captures.0.id') ?? $request->token;
                 $this->markPaid($order, $txnId);
-                return redirect()->route('order.confirmed', $orderId);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
 
             $this->markFailed($order, "PayPal capture status: {$captureStatus}");
@@ -509,7 +509,7 @@ class PaymentController extends Controller
         }
 
         $this->markPaid($order, $tracker);
-        return redirect()->route('order.confirmed', $orderId);
+        return redirect()->route('order.confirmed', $order->order_number);
     }
 
     public function safepayCancel(int $orderId)
@@ -732,7 +732,7 @@ HTML);
             $expected = hash_hmac('sha256', $rzOrderId . '|' . $paymentId, $secret);
             if (hash_equals($expected, $signature)) {
                 $this->markPaid($order, $paymentId);
-                return redirect()->route('order.confirmed', $orderId);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
             $this->markFailed($order, 'Razorpay signature mismatch');
             return redirect()->route('payment.failed')->with('reason', 'Payment verification failed.');
@@ -754,7 +754,7 @@ HTML);
             $res = Http::withToken($secret)->get("https://api.paystack.co/transaction/verify/{$ref}");
             if ($res->json('data.status') === 'success') {
                 $this->markPaid($order, $ref);
-                return redirect()->route('order.confirmed', $orderId);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
             $this->markFailed($order, 'Paystack: ' . ($res->json('data.gateway_response') ?? 'failed'));
         }
@@ -775,7 +775,7 @@ HTML);
             $res = Http::withToken($secret)->get("https://api.flutterwave.com/v3/transactions/{$txId}/verify");
             if ($res->json('data.status') === 'successful') {
                 $this->markPaid($order, $txId);
-                return redirect()->route('order.confirmed', $orderId);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
             $this->markFailed($order, 'Flutterwave: ' . ($res->json('data.processor_response') ?? 'failed'));
         }
@@ -867,7 +867,7 @@ HTML);
             $payment = $response->json();
             if (($payment['status'] ?? '') === 'Authorized' || ($payment['status'] ?? '') === 'Captured') {
                 $this->markPaid($order, $payment['id'] ?? $sessionId);
-                return redirect()->route('order.confirmed', $order->id);
+                return redirect()->route('order.confirmed', $order->order_number);
             }
         }
 
@@ -1002,7 +1002,7 @@ HTML);
     {
         $order = Order::findOrFail($orderId);
         if ($order->payment_status === 'paid') {
-            return redirect()->route('order.confirmed', $order->id);
+            return redirect()->route('order.confirmed', $order->order_number);
         }
         return redirect()->route('payment.failed');
     }

@@ -161,7 +161,7 @@ export default function Support({ settings, orders, auth }: Props) {
                                                 value={data.order_id} onChange={e => setData('order_id', e.target.value)}>
                                                 <option value="">None</option>
                                                 {orders.map(o => (
-                                                    <option key={o.id} value={o.id}>Order #{o.id} — {o.status}</option>
+                                                    <option key={o.id} value={o.id}>Order #{o.order_number ?? o.id} — {o.status}</option>
                                                 ))}
                                             </select>
                                         </div>
