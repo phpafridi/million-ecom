@@ -10,7 +10,7 @@ import {
 } from '@tabler/icons-react'
 
 interface NavItem { label: string; href: string; children?: NavItem[] }
-interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string>; hideFloatingCart?: boolean }
+interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string>; hideFloatingCart?: boolean; hideHeader?: boolean; hideFooter?: boolean }
 
 
 function SaleCountdownBar({ label, badge, endsAt, bg, color }: {
@@ -49,7 +49,7 @@ function SaleCountdownBar({ label, badge, endsAt, bg, color }: {
     )
 }
 
-export default function StorefrontLayout({ children, auth, settings, hideFloatingCart }: Props) {
+export default function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHeader, hideFooter }: Props) {
     const [search, setSearch]           = useState('')
     const [mobileOpen, setMobileOpen]   = useState(false)
     const [searchOpen, setSearchOpen]   = useState(false)
@@ -175,6 +175,8 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             )}
 
             {/* ── TOPBAR — uses CSS vars so it changes with theme ── */}
+            {!hideHeader && (
+            <>
             <div className="hidden md:flex h-9 items-center justify-between px-6 lg:px-10 border-b"
                 style={{ background: 'var(--color-topbar-bg, var(--color-dark-bg, #0a0a0a))', borderColor: 'rgba(255,255,255,0.06)' }}>
                 <div className="flex items-center gap-5">
@@ -355,6 +357,8 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     </div>
                 )}
             </header>
+            </>
+            )}
 
             {/* ── DESKTOP NAV ── */}
             <nav className="hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[72px] z-40" ref={dropdownRef}>
@@ -436,6 +440,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             <main className="flex-1 min-h-screen pb-14 lg:pb-0">{children}</main>
 
             {/* ── FOOTER ── */}
+            {!hideFooter && (
             <footer style={{ background: 'var(--color-dark-bg, #0a0a0a)', color: 'white' }}>
                 {/* Newsletter */}
                 <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
@@ -520,6 +525,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     </div>
                 </div>
             </footer>
+            )}
 
             {/* ── Mobile Bottom Navigation ── */}
             <nav className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9970, background: 'white', borderTop: '1.5px solid #E5E7EB', paddingBottom: 'env(safe-area-inset-bottom, 0px)', boxShadow: '0 -2px 16px rgba(0,0,0,0.07)' }}>

@@ -7,26 +7,20 @@
   "resources/js/Components/Admin/ImageUpload.tsx": [
     "/build/assets/ImageUpload-zHhWKIfi.js"
   ],
-  "resources/js/Components/Storefront/HeroSlider.tsx": [
-    "/build/assets/Home-C1MqlsjE.js"
-  ],
   "resources/js/Components/Storefront/ProductCard.tsx": [
     "/build/assets/ProductCard-B4XFm4Gt.js"
-  ],
-  "resources/js/Components/Storefront/ProductScroller.tsx": [
-    "/build/assets/Home-C1MqlsjE.js"
   ],
   "resources/js/Components/ui/Button.tsx": [
     "/build/assets/Button-CI0-xv_v.js"
   ],
   "resources/js/Components/ui/FloatingCart.tsx": [
-    "/build/assets/StorefrontLayout-Cs1s_TRO.js"
+    "/build/assets/StorefrontLayout-B20RMF_j.js"
   ],
   "resources/js/Components/ui/Input.tsx": [
     "/build/assets/Button-CI0-xv_v.js"
   ],
   "resources/js/Components/ui/Skeleton.tsx": [
-    "/build/assets/Skeleton-Di_tqBU2.js"
+    "/build/assets/Index-BvHMXrAl.js"
   ],
   "resources/js/Components/ui/cn.ts": [
     "/build/assets/cn-H80jjgLf.js"
@@ -35,28 +29,28 @@
     "/build/assets/AdminLayout-MgAg6rU1.js"
   ],
   "resources/js/Layouts/StorefrontLayout.tsx": [
-    "/build/assets/StorefrontLayout-Cs1s_TRO.js"
+    "/build/assets/StorefrontLayout-B20RMF_j.js"
   ],
   "resources/js/Pages/Account/Index.tsx": [
-    "/build/assets/Index-pZ3_fxC0.js"
+    "/build/assets/Index-BX4SpX3L.js"
   ],
   "resources/js/Pages/Account/Loyalty.tsx": [
-    "/build/assets/Loyalty-DHxNGEER.js"
+    "/build/assets/Loyalty-AD3Ch5PA.js"
   ],
   "resources/js/Pages/Account/OrderDetail.tsx": [
-    "/build/assets/OrderDetail-A8AQQsIZ.js"
+    "/build/assets/OrderDetail-CVahe9Ea.js"
   ],
   "resources/js/Pages/Account/Orders.tsx": [
-    "/build/assets/Orders-DZNRFosk.js"
+    "/build/assets/Orders-D7kDfy8V.js"
   ],
   "resources/js/Pages/Account/Partials/AccountSidebar.tsx": [
     "/build/assets/AccountSidebar-D8KVmMRb.js"
   ],
   "resources/js/Pages/Account/Profile.tsx": [
-    "/build/assets/Profile-DO_2NeUo.js"
+    "/build/assets/Profile-r3KAdZZt.js"
   ],
   "resources/js/Pages/Account/Wishlist.tsx": [
-    "/build/assets/Wishlist-BfRamcY5.js"
+    "/build/assets/Wishlist-BQ2L3B2-.js"
   ],
   "resources/js/Pages/Admin/Analytics/Index.tsx": [
     "/build/assets/Index-GZdXWw38.js"
@@ -167,55 +161,55 @@
     "/build/assets/Register-Ddkse3UX.js"
   ],
   "resources/js/Pages/Home.tsx": [
-    "/build/assets/Home-C1MqlsjE.js"
+    "/build/assets/Home-DlhrEISV.js"
   ],
   "resources/js/Pages/Info/About.tsx": [
-    "/build/assets/About-CYXrGADu.js"
+    "/build/assets/About-4t1_qut5.js"
   ],
   "resources/js/Pages/Info/Contact.tsx": [
-    "/build/assets/Contact-CH5lXoBl.js"
+    "/build/assets/Contact-BnCH-siU.js"
   ],
   "resources/js/Pages/Info/Policy.tsx": [
-    "/build/assets/Policy-B75rTmHp.js"
+    "/build/assets/Policy-DMHgisUB.js"
   ],
   "resources/js/Pages/Shop/Cart.tsx": [
-    "/build/assets/Cart-B6AbhKFc.js"
+    "/build/assets/Cart-GJKLYtZt.js"
   ],
   "resources/js/Pages/Shop/CategoryLanding.tsx": [
-    "/build/assets/CategoryLanding-BihJcSge.js"
+    "/build/assets/CategoryLanding-Ds7xO0zZ.js"
   ],
   "resources/js/Pages/Shop/Index.tsx": [
-    "/build/assets/Index-Cme1yBRH.js"
+    "/build/assets/Index-BvHMXrAl.js"
   ],
   "resources/js/Pages/Shop/OrderConfirmation.tsx": [
-    "/build/assets/OrderConfirmation-D1ProXwW.js"
+    "/build/assets/OrderConfirmation-CJDICmFY.js"
   ],
   "resources/js/Pages/Shop/OrderConfirmed.tsx": [
-    "/build/assets/OrderConfirmed-BKjc3Exa.js"
+    "/build/assets/OrderConfirmed-Bzoti9PQ.js"
   ],
   "resources/js/Pages/Shop/PayFastRedirect.tsx": [
-    "/build/assets/PayFastRedirect-j1B64wDu.js"
+    "/build/assets/PayFastRedirect-CZGqgxsr.js"
   ],
   "resources/js/Pages/Shop/PaymentFailed.tsx": [
-    "/build/assets/PaymentFailed-M8i6XwtP.js"
+    "/build/assets/PaymentFailed-D5Fo1cZW.js"
   ],
   "resources/js/Pages/Shop/Show.tsx": [
-    "/build/assets/Show-IluKXLIO.js"
+    "/build/assets/Show-BRLM7Sqt.js"
   ],
   "resources/js/Pages/Shop/Support.tsx": [
-    "/build/assets/Support-CKOXXHRA.js"
+    "/build/assets/Support-D5LRQT-r.js"
   ],
   "resources/js/Pages/Shop/TrackOrder.tsx": [
-    "/build/assets/TrackOrder-C5JPvr0Y.js"
+    "/build/assets/TrackOrder-CnUN2Pqk.js"
   ],
   "resources/js/Pages/Shop/Wishlist.tsx": [
-    "/build/assets/Wishlist-DOzlOnSZ.js"
+    "/build/assets/Wishlist-Chb4ZU4W.js"
   ],
   "resources/js/constants/imageSpecs.ts": [
     "/build/assets/Index-CiSZb9Lw.js"
   ],
   "resources/js/ssr.tsx": [],
   "resources/js/utils/floatingButtons.ts": [
-    "/build/assets/StorefrontLayout-Cs1s_TRO.js"
+    "/build/assets/StorefrontLayout-B20RMF_j.js"
   ]
 }

@@ -3,12 +3,15 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Category, Setting};
+use App\Traits\SeoHelper;
 use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
 class CategoryController extends Controller
 {
+    use SeoHelper;
+
     // Categories with subcategories (e.g. Millionaire Optical) show a
     // landing page of full-cover subcategory cards first — same visual
     // pattern as the homepage's category section. Leaf categories (no
@@ -29,6 +32,11 @@ class CategoryController extends Controller
             'category'  => $category,
             'children'  => $children,
             'settings'  => Setting::allKeyed(),
+            // Was missing entirely — Men/Women (and any other category
+            // landing page) fell back to generic site-wide SEO instead of
+            // anything specific to that category, since app.blade.php's
+            // fallback only kicks in when this prop is absent.
+            'seo'       => $this->categorySeo($category, config('app.url')),
         ]);
     }
 }

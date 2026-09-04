@@ -8,77 +8,56 @@ use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
-    // Search terms are deliberately different from the display name —
-    // "Millionaire Clothing" means nothing to a photo search, "mens
-    // fashion clothing" does. Kept in one place so they're easy to tune
-    // if a particular result doesn't land well.
+    // Men and Women are now the only two top-level categories — the
+    // landing page shows just these two as full-bleed picture tiles.
+    // Everything that used to be top-level (Clothing, Shoes, Watches,
+    // Optical, Accessories, Perfumes) is now a subcategory under each,
+    // so clicking Men/Women shows these as the next set of full-cover
+    // picture tiles, exactly like Optical's drill-down already worked.
     private const TREE = [
-        'Millionaire Clothing' => [
-            'search' => 'mens fashion clothing',
+        'Men' => [
+            'search' => 'mens fashion editorial',
             'subs' => [
-                "Men's Clothing"   => 'mens streetwear fashion',
-                "Women's Clothing" => 'womens fashion clothing',
-                'Kids Clothing'    => 'kids fashion clothing',
+                "Men's Clothing"     => 'mens streetwear fashion',
+                "Men's Shoes"        => 'mens leather shoes',
+                "Men's Watches"      => 'mens luxury watch',
+                "Men's Optical"      => 'mens sunglasses eyewear',
+                "Men's Accessories"  => 'mens fashion accessories',
+                "Men's Perfumes"     => 'mens cologne bottle',
             ],
         ],
-        'Millionaire Shoes' => [
-            'search' => 'sneakers shoes fashion',
+        'Women' => [
+            'search' => 'womens fashion editorial',
             'subs' => [
-                "Men's Shoes"  => 'mens leather shoes',
-                "Women's Shoes" => 'womens shoes fashion',
-                'Sneakers'      => 'sneakers streetwear',
-            ],
-        ],
-        'Millionaire Watches' => [
-            'search' => 'luxury wristwatch',
-            'subs' => [
-                "Men's Watches"  => 'mens luxury watch',
-                "Women's Watches" => 'womens watch elegant',
-                'Smart Watches'   => 'smartwatch technology',
-            ],
-        ],
-        'Millionaire Optical' => [
-            'search' => 'sunglasses eyewear',
-            'subs' => [
-                'Sunglasses'                => 'aviator sunglasses gold',
-                'Optical Frames'            => 'eyeglasses frames',
-                'Prescription Frames'       => 'prescription glasses frames',
-                'Premium / Luxury Frames'   => 'luxury designer eyeglasses',
-            ],
-        ],
-        'Millionaire Accessories' => [
-            'search' => 'mens fashion accessories',
-            'subs' => [
-                'Belts'    => 'leather belt fashion',
-                'Wallets'  => 'leather wallet',
-                'Caps'     => 'baseball cap fashion',
-                'Jewelry'  => 'jewelry bracelet fashion',
-            ],
-        ],
-        'Millionaire Perfumes' => [
-            'search' => 'luxury perfume bottle',
-            'subs' => [
-                "Men's Perfumes"   => 'mens cologne bottle',
-                "Women's Perfumes" => 'womens perfume bottle',
-                'Gift Sets'         => 'perfume gift set',
+                "Women's Clothing"    => 'womens fashion clothing',
+                "Women's Shoes"       => 'womens shoes fashion',
+                "Women's Watches"     => 'womens watch elegant',
+                "Women's Optical"     => 'womens sunglasses eyewear',
+                "Women's Accessories" => 'womens fashion accessories',
+                "Women's Perfumes"    => 'womens perfume bottle',
             ],
         ],
     ];
 
     public function run(): void
     {
-        // Cleans up the earlier Men/Women top-level attempt, in case that
-        // version of this seeder already ran — this version keeps your
-        // original 6 categories at the top level instead.
-        $genderIds = Category::whereIn('slug', ['men', 'women'])->pluck('id');
-        if ($genderIds->isNotEmpty()) {
-            Category::whereIn('parent_id', $genderIds)->update(['is_active' => false, 'show_in_nav' => false]);
-            Category::whereIn('id', $genderIds)->update(['is_active' => false, 'show_in_nav' => false]);
-        }
+        // Deactivate the old flat 6-category structure — replaced by the
+        // Men/Women tree, not deleted (existing seeded products stay
+        // safely linked to their category_id, just hidden from nav).
+        Category::whereIn('slug', [
+            'millionaire-clothing', 'millionaire-shoes', 'millionaire-watches',
+            'millionaire-optical', 'millionaire-accessories', 'millionaire-perfumes',
+            'mens-clothing', 'womens-clothing', 'kids-clothing',
+            'mens-shoes', 'womens-shoes', 'sneakers',
+            'mens-watches', 'womens-watches', 'smart-watches',
+            'sunglasses', 'optical-frames', 'prescription-frames', 'premium-luxury-frames',
+            'belts', 'wallets', 'caps', 'jewelry',
+            'mens-perfumes', 'womens-perfumes', 'gift-sets',
+        ])->update(['is_active' => false, 'show_in_nav' => false]);
 
         $unsplash = new UnsplashService();
-
         $topOrder = 1;
+
         foreach (self::TREE as $topName => $data) {
             $photo = $unsplash->photoUrl($data['search']);
 
@@ -92,8 +71,6 @@ class CategorySeeder extends Seeder
                     'show_in_nav'         => true,
                     'image'               => $photo,
                     'mobile_image'        => $photo,
-                    'banner_image'        => $photo,
-                    'mobile_banner_image' => $photo,
                 ], fn($v) => $v !== null)
             );
             $topOrder++;
@@ -113,8 +90,6 @@ class CategorySeeder extends Seeder
                         'show_in_nav'         => true,
                         'image'               => $subPhoto,
                         'mobile_image'        => $subPhoto,
-                        'banner_image'        => $subPhoto,
-                        'mobile_banner_image' => $subPhoto,
                     ], fn($v) => $v !== null)
                 );
                 $subOrder++;

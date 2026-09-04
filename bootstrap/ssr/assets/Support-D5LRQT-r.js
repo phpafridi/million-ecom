@@ -1,6 +1,6 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { u as usePage, a as useForm, H as Head_default, L as Link_default } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-Cs1s_TRO.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
 import { IconBrandWhatsapp, IconPhone, IconMail, IconTicket, IconCheck, IconSend } from "@tabler/icons-react";
 import "react-dom/server";
 import "@inertiajs/core";

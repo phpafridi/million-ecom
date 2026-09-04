@@ -1,6 +1,6 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { H as Head_default, L as Link_default } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-Cs1s_TRO.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
 import AccountSidebar from "./AccountSidebar-D8KVmMRb.js";
 import { IconPackage, IconShoppingBag, IconStar, IconTrendingUp, IconChevronRight, IconTruck } from "@tabler/icons-react";
 import "react-dom/server";

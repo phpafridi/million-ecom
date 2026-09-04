@@ -2,18 +2,32 @@ import { jsxs, jsx, Fragment } from "react/jsx-runtime";
 import { useState, useEffect } from "react";
 import { r as router3, H as Head_default } from "../ssr.js";
 import { IconX, IconAdjustmentsHorizontal } from "@tabler/icons-react";
-import { S as StorefrontLayout } from "./StorefrontLayout-Cs1s_TRO.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
 import { P as ProductCard } from "./ProductCard-B4XFm4Gt.js";
-import { P as ProductCardSkeleton } from "./Skeleton-Di_tqBU2.js";
+import { c as cn } from "./cn-H80jjgLf.js";
 import { motion } from "framer-motion";
 import "react-dom/server";
 import "@inertiajs/core";
 import "react-dom";
 import "lodash-es";
 import "laravel-precognition";
-import "./cn-H80jjgLf.js";
 import "clsx";
 import "tailwind-merge";
+function Skeleton({ className, style }) {
+  return /* @__PURE__ */ jsx("div", { className: cn("skeleton-shimmer rounded-xl", className), style });
+}
+function ProductCardSkeleton() {
+  return /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-[13px] border border-gray-100 overflow-hidden", children: [
+    /* @__PURE__ */ jsx(Skeleton, { className: "w-full aspect-square rounded-none" }),
+    /* @__PURE__ */ jsxs("div", { className: "p-3.5 space-y-2.5", children: [
+      /* @__PURE__ */ jsx(Skeleton, { className: "h-3 w-20 rounded-full" }),
+      /* @__PURE__ */ jsx(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ jsx(Skeleton, { className: "h-5 w-24 mt-1" }),
+      /* @__PURE__ */ jsx(Skeleton, { className: "h-9 w-full mt-2 rounded-lg" })
+    ] })
+  ] });
+}
 const SORTS = [
   { value: "default", label: "Default" },
   { value: "price_asc", label: "Price ↑" },
