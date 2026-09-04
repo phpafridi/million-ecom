@@ -97,9 +97,11 @@ class PayFastController extends Controller
         $pfData['merchant_id']  = $creds['merchant_id'];
         $pfData['merchant_key'] = $creds['merchant_key'];
 
-        // URLs
-        $pfData['return_url'] = route('payment.payfast.return', $order->id);
-        $pfData['cancel_url'] = route('payment.payfast.cancel', $order->id);
+        // URLs — order_number, not the raw sequential id, since these
+        // land in the customer's browser address bar during the PayFast
+        // redirect flow (same reasoning as item_name above).
+        $pfData['return_url'] = route('payment.payfast.return', $order->order_number);
+        $pfData['cancel_url'] = route('payment.payfast.cancel', $order->order_number);
         $pfData['notify_url'] = route('payment.payfast.itn');
 
         // Buyer info (only if present)
@@ -112,7 +114,12 @@ class PayFastController extends Controller
         // Transaction
         $pfData['m_payment_id'] = (string) $order->id;
         $pfData['amount']       = number_format((float) $order->total, 2, '.', '');
-        $pfData['item_name']    = 'Millionaire Order ' . $order->id;
+        // Customer-visible on PayFast's own payment page — was using the
+        // raw sequential DB id ("Millionaire Order 2"), directly revealing
+        // total order volume to anyone who completes checkout. order_number
+        // is the same randomized identifier already shown everywhere else
+        // customer-facing (order confirmation, tracking, etc).
+        $pfData['item_name']    = 'Millionaire Order ' . $order->order_number;
 
         // Custom fields to identify order in ITN callback
         $pfData['custom_int1']  = (string) $order->id;
@@ -213,16 +220,16 @@ class PayFastController extends Controller
         return response('OK', 200);
     }
 
-    public function returnUrl(Request $request, int $orderId)
+    public function returnUrl(Request $request, string $orderNumber)
     {
-        $order = Order::findOrFail($orderId);
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
         return redirect()->route('order.confirmed', $order->id)
             ->with('success', $order->payment_status === 'paid' ? '✅ Payment successful!' : '⏳ Payment processing...');
     }
 
-    public function cancel(Request $request, int $orderId)
+    public function cancel(Request $request, string $orderNumber)
     {
-        $order = Order::find($orderId);
+        $order = Order::where('order_number', $orderNumber)->first();
         if ($order && $order->payment_status === 'pending') {
             $this->handleFailed($order, 'Customer cancelled');
         }
