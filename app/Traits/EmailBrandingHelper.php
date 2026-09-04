@@ -18,9 +18,9 @@ trait EmailBrandingHelper
 
         return [
             'logoUrl'      => $showLogo ? $logoUrl : null,
-            'storeName'    => $s['email_header_title'] ?: ($s['site_name'] ?? 'Our Store'),
-            'primaryColor' => $s['email_primary_color'] ?: ($s['theme_dark_bg'] ?? '#0a0a0a'),
-            'accentColor'  => $s['email_accent_color']  ?: ($s['theme_primary'] ?? '#C9A84C'),
+            'storeName'    => ($s['email_header_title'] ?? null) ?: ($s['site_name'] ?? 'Our Store'),
+            'primaryColor' => ($s['email_primary_color'] ?? null) ?: ($s['theme_dark_bg'] ?? '#0a0a0a'),
+            'accentColor'  => ($s['email_accent_color'] ?? null)  ?: ($s['theme_primary'] ?? '#C9A84C'),
             'footerText'   => $s['email_footer_text'] ?? '',
         ];
     }

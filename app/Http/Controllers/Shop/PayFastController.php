@@ -53,11 +53,16 @@ class PayFastController extends Controller
         // PayFast signs in DOCUMENT ORDER (the order fields are defined)
         // NOT alphabetically — do NOT use ksort here
         // Source: PayFast PHP sample code pfHost parameter
+        //
+        // CONFIRMED BUG (2026-09-04): this used to skip empty/null fields
+        // entirely, but PayFast's actual algorithm includes every field
+        // that was present in the payload, even blank ones, as `key=&`.
+        // Verified by reproducing a real ITN signature byte-for-byte —
+        // skipping empties produced a different hash every time; including
+        // them (even though empty) matched PayFast's signature exactly.
         $pfOutput = '';
         foreach ($data as $key => $val) {
-            if ($val !== '' && $val !== null) {
-                $pfOutput .= $key . '=' . urlencode(trim((string) $val)) . '&';
-            }
+            $pfOutput .= $key . '=' . urlencode(trim((string) $val)) . '&';
         }
         $pfOutput = rtrim($pfOutput, '&');
 
