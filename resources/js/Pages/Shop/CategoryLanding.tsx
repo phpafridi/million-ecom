@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { IconArrowLeft, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import { IconArrowLeft, IconChevronLeft, IconChevronRight, IconChevronDown } from '@tabler/icons-react'
 import { motion } from 'framer-motion'
 import type { PageProps } from '@/types'
 
@@ -18,7 +18,7 @@ interface Props extends PageProps {
 // opens that subcategory's shop; swipe left or click the left arrow goes
 // back to the Home tiles. The tile itself stays fully clickable too,
 // exactly like before — these are additions, not a replacement.
-function CategoryTile({ child }: { child: CategoryLite }) {
+function CategoryTile({ child, isLast }: { child: CategoryLite; isLast: boolean }) {
     // Swipe threshold in px — has to be a deliberate drag, not an
     // accidental brush, before it commits to navigating anywhere.
     const THRESHOLD = 80
@@ -58,21 +58,42 @@ function CategoryTile({ child }: { child: CategoryLite }) {
             </Link>
 
             {/* Centered arrows — vertically centered so they're actually
-                noticeable, not tucked in a corner. Work as real click
-                targets on desktop; on mobile they double as a visible hint
-                that the tile is swipeable in both directions. */}
+                noticeable, not tucked in a corner. Text labels under each
+                one because "chevron with no words" tested confusing —
+                people couldn't tell what either arrow actually did. */}
             <button onClick={() => router.visit('/')}
                 aria-label="Back to home"
                 className="no-underline"
-                style={{ position: 'absolute', top: '50%', left: 16, transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', border: 'none', cursor: 'pointer' }}>
-                <IconChevronLeft size={20} />
+                style={{ position: 'absolute', top: '50%', left: 16, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
+                <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <IconChevronLeft size={18} />
+                </span>
+                <span style={{ color: '#fff', fontSize: 9, fontWeight: 600, letterSpacing: '0.05em', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>HOME</span>
             </button>
             <button onClick={() => router.visit(`/category/${child.slug}`)}
                 aria-label={`Shop ${child.name}`}
                 className="no-underline"
-                style={{ position: 'absolute', top: '50%', right: 16, transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', border: 'none', cursor: 'pointer' }}>
-                <IconChevronRight size={20} />
+                style={{ position: 'absolute', top: '50%', right: 16, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
+                <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <IconChevronRight size={18} />
+                </span>
+                <span style={{ color: '#fff', fontSize: 9, fontWeight: 600, letterSpacing: '0.05em', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>SHOP</span>
             </button>
+
+            {/* Scroll-down hint — only on tiles that actually have another
+                one below them, so it never shows on the last item where
+                there's nothing further to scroll to. Animated deliberately
+                (not static) specifically to catch a first-time visitor's
+                eye — a still icon blends into the photo and gets ignored. */}
+            {!isLast && (
+                <motion.div
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{ position: 'absolute', bottom: 14, left: 0, right: 0, textAlign: 'center', pointerEvents: 'none' }}>
+                    <IconChevronDown size={18} style={{ color: 'rgba(255,255,255,0.75)' }} />
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 8, letterSpacing: '0.15em', marginTop: 2 }}>MORE CATEGORIES</div>
+                </motion.div>
+            )}
         </motion.div>
     )
 }
@@ -102,7 +123,7 @@ export default function CategoryLanding({ category, children, settings }: Props)
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2">
-                {children.map(child => <CategoryTile key={child.id} child={child} />)}
+                {children.map((child, i) => <CategoryTile key={child.id} child={child} isLast={i === children.length - 1} />)}
             </div>
         </>
     )
