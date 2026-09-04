@@ -59,7 +59,7 @@ export default function PayFastRedirect({ payfast_url, data, order, sandbox }: P
                         </div>
                         <div className="flex justify-between text-[13.5px]">
                             <span className="text-gray-500">Order</span>
-                            <span className="font-semibold text-gray-800">#{order.id}</span>
+                            <span className="font-semibold text-gray-800">#{order.order_number ?? order.id}</span>
                         </div>
                         <div className="flex justify-between text-[15px] font-black border-t border-gray-200 pt-2 mt-2">
                             <span className="text-gray-700">Amount</span>
