@@ -93,6 +93,7 @@ function Branding({ settings }) {
     ticker_live_bg: settings.ticker_live_bg ?? "#00c8ff",
     ticker_live_text: settings.ticker_live_text ?? "#0a0e1a",
     ticker_text_color: settings.ticker_text_color ?? "#6b7280",
+    category_page_bg_color: settings.category_page_bg_color ?? "",
     brands_show: settings.brands_show ?? "1",
     brands_title: settings.brands_title ?? "Top Brands",
     brands_subtitle: settings.brands_subtitle ?? "Official Partners",
@@ -311,6 +312,30 @@ function Branding({ settings }) {
                 )
               ] })
             ] }, key)) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "pt-4 border-t border-gray-100", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-700 mb-1", children: "Category Page Background" }),
+            /* @__PURE__ */ jsx("p", { className: "text-[11.5px] text-gray-400 mb-3", children: "Background color for the Men/Women subcategory grid pages — independent from your main Theme's dark color, so this page can differ from the rest of the site if you want. Leave blank to just follow the Theme color instead." }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 max-w-[200px]", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "color",
+                  value: data.category_page_bg_color || "#0a0a0a",
+                  onChange: (e) => setData("category_page_bg_color", e.target.value),
+                  className: "w-9 h-9 rounded-lg border-2 border-gray-200 cursor-pointer p-0.5 bg-white flex-shrink-0"
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  value: data.category_page_bg_color,
+                  onChange: (e) => setData("category_page_bg_color", e.target.value),
+                  className: "flex-1 h-9 px-2 border border-gray-200 rounded-lg text-[11.5px] font-mono outline-none focus:border-[var(--color-primary)]",
+                  placeholder: "Follows Theme"
+                }
+              )
+            ] })
           ] })
         ] }),
         /* @__PURE__ */ jsx(Section, { title: "Homepage Section Divider", icon: "✨", children: /* @__PURE__ */ jsx(Field, { label: "Divider Text", hint: "The badge text shown in the decorative divider between New Arrivals and Featured Products on the homepage", children: /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_divider_text, onChange: (e) => setData("home_divider_text", e.target.value), placeholder: "Fresh Drops Meet Fan Favorites" }) }) }),

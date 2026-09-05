@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Head, Link } from '@inertiajs/react'
-import { IconTruck, IconMapPin, IconHeadset } from '@tabler/icons-react'
+import { IconTruck, IconHeadset } from '@tabler/icons-react'
+import { motion } from 'framer-motion'
 import type { PageProps } from '@/types'
 
 interface CategoryLite {
@@ -14,10 +16,19 @@ interface Props extends PageProps {
 
 // Deliberately standalone — does NOT use StorefrontLayout at all, so
 // there is no code path by which any header/nav component can possibly
-// render on this page, regardless of any prop wiring. If this still
-// shows a nav bar, the cause is not in this project's React code.
+// render on this page, regardless of any prop wiring.
 export default function Home({ categories, settings }: Props) {
     const tiles = categories.slice(0, 2)
+
+    // Utility cards start expanded with labels (so a first-time visitor
+    // actually learns what they are), then collapse to icon-only circles
+    // after a few seconds — stays out of the way once the point's made.
+    // Clicking either one works identically in both states.
+    const [expanded, setExpanded] = useState(true)
+    useEffect(() => {
+        const t = setTimeout(() => setExpanded(false), 3000)
+        return () => clearTimeout(t)
+    }, [])
 
     return (
         <>
@@ -41,6 +52,24 @@ export default function Home({ categories, settings }: Props) {
                     )}
                 </div>
 
+                {/* Utility cards — Track Order + Support only. Replaces the
+                    old 3-item bottom footer-style row entirely; this is
+                    the only place these two links live now. */}
+                <div style={{ position: 'absolute', top: 20, right: 16, zIndex: 6, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <motion.a href="/track-order" className="no-underline" layout
+                        transition={{ duration: 0.35, ease: 'easeInOut' }}
+                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: expanded ? 10 : 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: expanded ? '8px 14px' : 0, width: expanded ? 'auto' : 34, height: expanded ? 'auto' : 34, overflow: 'hidden' }}>
+                        <IconTruck size={16} style={{ color: '#C9A84C', flexShrink: 0 }} />
+                        {expanded && <span style={{ color: '#fff', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>Track Order</span>}
+                    </motion.a>
+                    <motion.a href="/contact" className="no-underline" layout
+                        transition={{ duration: 0.35, ease: 'easeInOut' }}
+                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: expanded ? 10 : 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: expanded ? '8px 14px' : 0, width: expanded ? 'auto' : 34, height: expanded ? 'auto' : 34, overflow: 'hidden' }}>
+                        <IconHeadset size={16} style={{ color: '#C9A84C', flexShrink: 0 }} />
+                        {expanded && <span style={{ color: '#fff', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>Support 24/7</span>}
+                    </motion.a>
+                </div>
+
                 <div className="flex flex-col sm:flex-row" style={{ height: '100dvh' }}>
                     {tiles.map(cat => (
                         <Link key={cat.id} href={`/category/${cat.slug}`}
@@ -62,21 +91,6 @@ export default function Home({ categories, settings }: Props) {
                         </Link>
                     ))}
                 </div>
-            </div>
-
-            <div className="grid grid-cols-3" style={{ background: '#f7f5f0' }}>
-                <Link href="/track-order" className="flex flex-col items-center gap-2 no-underline py-6">
-                    <IconTruck size={22} style={{ color: 'var(--color-primary)' }} />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight" style={{ color: '#555' }}>ORDER<br />TRACKING</span>
-                </Link>
-                <Link href="/contact" className="flex flex-col items-center gap-2 no-underline py-6">
-                    <IconMapPin size={22} style={{ color: 'var(--color-primary)' }} />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight" style={{ color: '#555' }}>STORE<br />LOCATOR</span>
-                </Link>
-                <Link href="/contact" className="flex flex-col items-center gap-2 no-underline py-6">
-                    <IconHeadset size={22} style={{ color: 'var(--color-primary)' }} />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight" style={{ color: '#555' }}>SUPPORT<br />24/7</span>
-                </Link>
             </div>
         </>
     )

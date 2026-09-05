@@ -217,6 +217,7 @@ class SettingController extends Controller
             'theme_dark_bg2'          => 'nullable|string|max:20',
             'theme_body_bg'           => 'nullable|string|max:20',
             'theme_border_radius'     => 'nullable|string|max:5',
+            'category_page_bg_color'  => 'nullable|string|max:20',
             // Cart & Chat
             'cart_bubble_color'       => 'nullable|string|max:20',
             'cart_bubble_text_color'  => 'nullable|string|max:20',
@@ -244,6 +245,7 @@ class SettingController extends Controller
             'theme_dark_bg2'      => 'nullable|string|max:20',
             'theme_body_bg'       => 'nullable|string|max:20',
             'theme_border_radius' => 'nullable|string|max:5',
+            'category_page_bg_color' => 'nullable|string|max:20',
 
             // Analytics
             'ga_enabled'             => 'nullable|string|max:1',
@@ -287,6 +289,7 @@ class SettingController extends Controller
             'ticker_items',
             'topbar_bg','theme_primary','theme_primary_dark','theme_primary_text',
             'theme_accent','theme_dark_bg','theme_dark_bg2','theme_body_bg','theme_border_radius',
+            'category_page_bg_color',
             'ga_enabled','ga_measurement_id','ga_api_secret',
             'gtm_enabled','gtm_id',
             'fb_pixel_enabled','fb_pixel_id',

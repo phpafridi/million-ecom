@@ -1,14 +1,20 @@
 import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
 import { H as Head_default, L as Link_default } from "../ssr.js";
-import { IconTruck, IconMapPin, IconHeadset } from "@tabler/icons-react";
+import { IconTruck, IconHeadset } from "@tabler/icons-react";
+import { motion } from "framer-motion";
 import "react-dom/server";
 import "@inertiajs/core";
-import "react";
 import "react-dom";
 import "lodash-es";
 import "laravel-precognition";
 function Home({ categories, settings }) {
   const tiles = categories.slice(0, 2);
+  const [expanded, setExpanded] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setExpanded(false), 3e3);
+    return () => clearTimeout(t);
+  }, []);
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx(Head_default, { title: "Home" }),
     /* @__PURE__ */ jsxs("div", { style: { position: "relative" }, children: [
@@ -25,6 +31,36 @@ function Home({ categories, settings }) {
           /* @__PURE__ */ jsx("span", { style: { color: "#fff", fontSize: "clamp(20px,3vw,28px)", fontWeight: 500, letterSpacing: "0.15em", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }, children: (settings == null ? void 0 : settings.site_name) ?? "MILLIONAIRE" })
         ] }),
         (settings == null ? void 0 : settings.site_tagline) && /* @__PURE__ */ jsx("div", { style: { color: "rgba(255,255,255,0.85)", fontSize: "clamp(10px,1.3vw,13px)", letterSpacing: "0.2em", marginTop: 8, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }, children: settings.site_tagline.toUpperCase() })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { style: { position: "absolute", top: 20, right: 16, zIndex: 6, display: "flex", flexDirection: "column", gap: 8 }, children: [
+        /* @__PURE__ */ jsxs(
+          motion.a,
+          {
+            href: "/track-order",
+            className: "no-underline",
+            layout: true,
+            transition: { duration: 0.35, ease: "easeInOut" },
+            style: { background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: expanded ? 10 : 999, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: expanded ? "8px 14px" : 0, width: expanded ? "auto" : 34, height: expanded ? "auto" : 34, overflow: "hidden" },
+            children: [
+              /* @__PURE__ */ jsx(IconTruck, { size: 16, style: { color: "#C9A84C", flexShrink: 0 } }),
+              expanded && /* @__PURE__ */ jsx("span", { style: { color: "#fff", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }, children: "Track Order" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          motion.a,
+          {
+            href: "/contact",
+            className: "no-underline",
+            layout: true,
+            transition: { duration: 0.35, ease: "easeInOut" },
+            style: { background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: expanded ? 10 : 999, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: expanded ? "8px 14px" : 0, width: expanded ? "auto" : 34, height: expanded ? "auto" : 34, overflow: "hidden" },
+            children: [
+              /* @__PURE__ */ jsx(IconHeadset, { size: 16, style: { color: "#C9A84C", flexShrink: 0 } }),
+              expanded && /* @__PURE__ */ jsx("span", { style: { color: "#fff", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }, children: "Support 24/7" })
+            ]
+          }
+        )
       ] }),
       /* @__PURE__ */ jsx("div", { className: "flex flex-col sm:flex-row", style: { height: "100dvh" }, children: tiles.map((cat) => /* @__PURE__ */ jsxs(
         Link_default,
@@ -54,32 +90,6 @@ function Home({ categories, settings }) {
         },
         cat.id
       )) })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-3", style: { background: "#f7f5f0" }, children: [
-      /* @__PURE__ */ jsxs(Link_default, { href: "/track-order", className: "flex flex-col items-center gap-2 no-underline py-6", children: [
-        /* @__PURE__ */ jsx(IconTruck, { size: 22, style: { color: "var(--color-primary)" } }),
-        /* @__PURE__ */ jsxs("span", { className: "text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight", style: { color: "#555" }, children: [
-          "ORDER",
-          /* @__PURE__ */ jsx("br", {}),
-          "TRACKING"
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxs(Link_default, { href: "/contact", className: "flex flex-col items-center gap-2 no-underline py-6", children: [
-        /* @__PURE__ */ jsx(IconMapPin, { size: 22, style: { color: "var(--color-primary)" } }),
-        /* @__PURE__ */ jsxs("span", { className: "text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight", style: { color: "#555" }, children: [
-          "STORE",
-          /* @__PURE__ */ jsx("br", {}),
-          "LOCATOR"
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxs(Link_default, { href: "/contact", className: "flex flex-col items-center gap-2 no-underline py-6", children: [
-        /* @__PURE__ */ jsx(IconHeadset, { size: 22, style: { color: "var(--color-primary)" } }),
-        /* @__PURE__ */ jsxs("span", { className: "text-[9px] sm:text-[10px] font-bold tracking-wider text-center leading-tight", style: { color: "#555" }, children: [
-          "SUPPORT",
-          /* @__PURE__ */ jsx("br", {}),
-          "24/7"
-        ] })
-      ] })
     ] })
   ] });
 }
