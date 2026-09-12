@@ -59,6 +59,7 @@ class ProductController extends Controller
         $product = Product::create($data);
         $this->saveImages($request, $product);
         \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
 
         return redirect()->route('admin.products.index')->with('success', "Product \"{$product->name}\" created.");
@@ -92,6 +93,7 @@ class ProductController extends Controller
         $product->update($data);
         $this->saveImages($request, $product);
         \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
 
         return redirect()->route('admin.products.index')->with('success', "Product \"{$product->name}\" updated.");
@@ -105,6 +107,7 @@ class ProductController extends Controller
         }
         $product->delete();
         \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', 'Product deleted.');
     }
@@ -137,6 +140,7 @@ class ProductController extends Controller
 
         $count = count($data['product_ids']);
         \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', "{$count} product(s) {$data['action']}d.");
     }
@@ -207,6 +211,7 @@ class ProductController extends Controller
         }
 
         \Illuminate\Support\Facades\Cache::forget('home_products');
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('sitemap_xml');
         return back()->with('success', "Import complete: {$created} created, {$updated} updated.");
     }

@@ -10,10 +10,10 @@ import "@inertiajs/core";
 import "react-dom";
 import "lodash-es";
 import "laravel-precognition";
-const CAT_IMAGE_DESKTOP = { w: 900, h: 1080, label: "Category Image (Desktop)", hint: "Nearly square — shown as a square card on desktop grid" };
-const CAT_IMAGE_MOBILE = { w: 600, h: 600, label: "Category Image (Mobile)", hint: "Square — shown as a square card on mobile scroll" };
-const CAT_BANNER_DESKTOP = { w: 1920, h: 380, label: "Category Banner (Desktop)", hint: "Wide landscape — shown between product sections on desktop" };
-const CAT_BANNER_MOBILE = { w: 900, h: 540, label: "Category Banner (Mobile)", hint: "Landscape 5:3 — shown on mobile. Falls back to desktop banner if not set" };
+const CAT_IMAGE_DESKTOP = { w: 900, h: 1200, label: "Category Image (Desktop)", hint: "3:4 portrait — shown in the Shop by Category grid, and cropped to a circle in carousel rows" };
+const CAT_IMAGE_MOBILE = { w: 600, h: 800, label: "Category Image (Mobile)", hint: "3:4 portrait — same image, smaller file size for mobile" };
+const CAT_BANNER_DESKTOP = { w: 1920, h: 500, label: "Category Banner (Desktop)", hint: "Wide landscape — shown at the top of this category's shop page" };
+const CAT_BANNER_MOBILE = { w: 900, h: 500, label: "Category Banner (Mobile)", hint: "Landscape — shown on mobile. Falls back to desktop banner if not set" };
 function CatForm({ cat, allCategories, onClose }) {
   const { props: pageProps } = usePage();
   const ap = `/${pageProps.adminPath ?? "ml-admin"}`;

@@ -1,7 +1,7 @@
 import { jsxs, Fragment, jsx } from "react/jsx-runtime";
 import React, { useState, useRef, useEffect } from "react";
 import { u as usePage, L as Link_default, r as router3 } from "../ssr.js";
-import { IconX, IconShoppingCart, IconArrowRight, IconCreditCard, IconPhone, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram, IconMenu, IconSearch, IconSun, IconMoon, IconHeart, IconInfoCircle, IconMessageCircle, IconUser, IconChevronDown } from "@tabler/icons-react";
+import { IconX, IconShoppingCart, IconArrowRight, IconCreditCard, IconMenu, IconSearch, IconSun, IconMoon, IconHeart, IconInfoCircle, IconMessageCircle, IconUser, IconTruck, IconMapPin, IconBrandWhatsapp, IconChevronDown } from "@tabler/icons-react";
 const SIZE_PX = {
   sm: { diameter: 48, gap: 12 },
   md: { diameter: 56, gap: 16 },
@@ -183,6 +183,20 @@ function FloatingCart({ settings }) {
         /* @__PURE__ */ jsx("span", { style: { color: "#fff", fontSize: 12.5, fontWeight: 800, flexShrink: 0 }, children: fmt(item.subtotal) })
       ] }, item.id)) }),
       /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", gap: 8 }, children: [
+        /* @__PURE__ */ jsx("button", { onClick: () => setOpen(false), style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          background: "transparent",
+          color: "rgba(255,255,255,0.6)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          padding: "10px 14px",
+          borderRadius: 11,
+          cursor: "pointer",
+          fontSize: 12.5,
+          fontWeight: 700
+        }, children: "Continue Shopping" }),
         /* @__PURE__ */ jsxs(Link_default, { href: "/cart", onClick: () => setOpen(false), style: {
           display: "flex",
           alignItems: "center",
@@ -271,12 +285,12 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
   const logoUrl = (settings == null ? void 0 : settings.logo_url) ?? null;
   const tagline = (settings == null ? void 0 : settings.site_tagline) ?? "";
   const showWhatsapp = (settings == null ? void 0 : settings.show_whatsapp_button) !== "0";
-  const showFacebook = (settings == null ? void 0 : settings.show_facebook_button) === "1";
-  const showInstagram = (settings == null ? void 0 : settings.show_instagram_button) === "1";
-  const showPhone = (settings == null ? void 0 : settings.show_phone_button) !== "0";
+  (settings == null ? void 0 : settings.show_facebook_button) === "1";
+  (settings == null ? void 0 : settings.show_instagram_button) === "1";
+  (settings == null ? void 0 : settings.show_phone_button) !== "0";
   (settings == null ? void 0 : settings.contact_method) ?? "whatsapp";
-  const fbUrl = (settings == null ? void 0 : settings.facebook_url) ?? "";
-  const igUrl = (settings == null ? void 0 : settings.instagram_url) ?? "";
+  (settings == null ? void 0 : settings.facebook_url) ?? "";
+  (settings == null ? void 0 : settings.instagram_url) ?? "";
   const page = usePage();
   const cartCount = page.props.cartCount ?? 0;
   const wishlistCount = page.props.wishlistCount ?? 0;
@@ -321,7 +335,9 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
   function isActive(link) {
     if (link.href === "/") return currentUrl === "/";
     const cat = link.href.split("category=")[1];
-    return cat ? currentUrl.includes(cat) : currentUrl.startsWith(link.href);
+    if (!cat) return currentUrl.startsWith(link.href);
+    const currentCat = new URLSearchParams(currentUrl.split("?")[1] ?? "").get("category");
+    return currentCat === cat;
   }
   function MobileNavItem({ item, depth = 0 }) {
     var _a2;
@@ -365,59 +381,13 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
         color: settings.sale_text_color ?? "#ffffff"
       }
     ),
-    !hideHeader && /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsxs(
-        "div",
-        {
-          className: "hidden md:flex h-9 items-center justify-between px-6 lg:px-10 border-b",
-          style: { background: "var(--color-topbar-bg, var(--color-dark-bg, #0a0a0a))", borderColor: "rgba(255,255,255,0.06)" },
-          children: [
-            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-5", children: [
-              phone && showPhone && /* @__PURE__ */ jsxs(
-                "a",
-                {
-                  href: `tel:${phone}`,
-                  className: "flex items-center gap-1.5 text-[11.5px] no-underline transition-colors hover:opacity-80",
-                  style: { color: "rgba(255,255,255,0.65)" },
-                  children: [
-                    /* @__PURE__ */ jsx(IconPhone, { size: 12 }),
-                    " ",
-                    phone
-                  ]
-                }
-              ),
-              showWhatsapp && whatsapp && /* @__PURE__ */ jsxs(
-                "a",
-                {
-                  href: `https://wa.me/${whatsapp}`,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  className: "flex items-center gap-1.5 text-[11.5px] no-underline hover:opacity-80",
-                  style: { color: "#25D366" },
-                  children: [
-                    /* @__PURE__ */ jsx(IconBrandWhatsapp, { size: 12 }),
-                    " WhatsApp"
-                  ]
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx("div", { className: "text-[11.5px] font-semibold hidden lg:block", style: { color: "rgba(255,255,255,0.7)" }, children: (settings == null ? void 0 : settings.topbar_message) ?? "" }),
-            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
-              showFacebook && fbUrl && /* @__PURE__ */ jsx("a", { href: fbUrl, target: "_blank", rel: "noopener noreferrer", className: "no-underline hover:opacity-80", style: { color: "rgba(255,255,255,0.6)" }, children: /* @__PURE__ */ jsx(IconBrandFacebook, { size: 15 }) }),
-              showInstagram && igUrl && /* @__PURE__ */ jsx("a", { href: igUrl, target: "_blank", rel: "noopener noreferrer", className: "no-underline hover:opacity-80", style: { color: "rgba(255,255,255,0.6)" }, children: /* @__PURE__ */ jsx(IconBrandInstagram, { size: 15 }) }),
-              /* @__PURE__ */ jsx(Link_default, { href: "/about", className: "text-[11.5px] no-underline transition-colors hover:opacity-80", style: { color: "rgba(255,255,255,0.6)" }, children: "About" }),
-              /* @__PURE__ */ jsx(Link_default, { href: "/contact", className: "text-[11.5px] no-underline transition-colors hover:opacity-80", style: { color: "rgba(255,255,255,0.6)" }, children: "Contact" })
-            ] })
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxs(
-        "header",
-        {
-          className: `sticky top-0 z-50 transition-shadow duration-200 overflow-hidden ${scrolled ? "shadow-[0_2px_20px_rgba(0,0,0,0.08)]" : "border-b"}`,
-          style: { background: "var(--color-header-bg, #ffffff)", borderColor: "var(--color-header-border, #e5e7eb)", color: "var(--color-header-text, #0a0a0a)" },
-          children: [
-            /* @__PURE__ */ jsx("style", { children: `
+    !hideHeader && /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(
+      "header",
+      {
+        className: `sticky top-0 z-50 transition-shadow duration-200 overflow-hidden ${scrolled ? "shadow-[0_2px_20px_rgba(0,0,0,0.08)]" : "border-b"}`,
+        style: { background: "var(--color-header-bg, #0a0a0a)", borderColor: "var(--color-header-border, rgba(255,255,255,0.1))", color: "var(--color-header-text, #ffffff)" },
+        children: [
+          /* @__PURE__ */ jsx("style", { children: `
                     @media (max-width: 1023px) {
                         .ml-header-row {
                             display: grid !important;
@@ -441,192 +411,199 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
                         }
                     }
                 ` }),
-            /* @__PURE__ */ jsxs("div", { className: "ml-header-row px-3 sm:px-6 lg:px-10 h-[58px] sm:h-[72px] flex items-center gap-2 sm:gap-3 overflow-hidden", children: [
-              /* @__PURE__ */ jsx(
-                "button",
+          /* @__PURE__ */ jsxs("div", { className: "ml-header-row px-3 sm:px-6 lg:px-10 h-[58px] sm:h-[72px] flex items-center gap-2 sm:gap-3 overflow-hidden lg:relative", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                className: "lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-[var(--color-header-text,#ffffff)]",
+                onClick: () => {
+                  setMobileOpen(!mobileOpen);
+                  setSearchOpen(false);
+                },
+                children: mobileOpen ? /* @__PURE__ */ jsx(IconX, { size: 22 }) : /* @__PURE__ */ jsx(IconMenu, { size: 22 })
+              }
+            ),
+            /* @__PURE__ */ jsxs(Link_default, { href: "/", className: "ml-header-logo flex items-center gap-1.5 sm:gap-2 flex-shrink-0 no-underline min-w-0", children: [
+              /* @__PURE__ */ jsx("div", { className: "h-[38px] sm:h-[50px] flex-shrink-0 flex items-center justify-center overflow-hidden", style: { height: 38, maxHeight: 38 }, children: logoUrl ? /* @__PURE__ */ jsx(
+                "img",
                 {
-                  className: "lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]",
-                  onClick: () => {
-                    setMobileOpen(!mobileOpen);
-                    setSearchOpen(false);
-                  },
-                  children: mobileOpen ? /* @__PURE__ */ jsx(IconX, { size: 22 }) : /* @__PURE__ */ jsx(IconMenu, { size: 22 })
+                  src: logoUrl,
+                  alt: siteName,
+                  className: "h-full w-auto max-w-[130px] sm:max-w-[200px] object-contain",
+                  style: { height: "100%", maxHeight: 38, width: "auto", maxWidth: 130, objectFit: "contain", display: "block" }
                 }
-              ),
-              /* @__PURE__ */ jsxs(Link_default, { href: "/", className: "ml-header-logo flex items-center gap-1.5 sm:gap-2 flex-shrink-0 no-underline min-w-0", children: [
-                /* @__PURE__ */ jsx("div", { className: "h-[38px] sm:h-[50px] flex-shrink-0 flex items-center justify-center overflow-hidden", style: { height: 38, maxHeight: 38 }, children: logoUrl ? /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: logoUrl,
-                    alt: siteName,
-                    className: "h-full w-auto max-w-[130px] sm:max-w-[200px] object-contain",
-                    style: { height: "100%", maxHeight: 38, width: "auto", maxWidth: 130, objectFit: "contain", display: "block" }
-                  }
-                ) : /* @__PURE__ */ jsx("span", { className: "font-manrope font-black text-xl sm:text-2xl", style: { color: "var(--color-primary)" }, children: siteName[0] }) }),
-                /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ jsx("div", { className: "font-manrope font-black text-[15px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none truncate", style: { color: (settings == null ? void 0 : settings.header_title_color) || "var(--color-header-text, var(--color-dark-bg))" }, children: siteName }),
-                  tagline && /* @__PURE__ */ jsx("div", { className: "text-[8px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5 truncate", style: { color: (settings == null ? void 0 : settings.header_subtitle_color) || "var(--color-primary)" }, children: tagline })
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxs(
-                "form",
-                {
-                  onSubmit: doSearch,
-                  className: "hidden lg:flex flex-1 max-w-[500px] h-[44px] border-2 rounded-[12px] overflow-hidden transition-shadow",
-                  style: { borderColor: "var(--color-primary)" },
-                  children: [
-                    /* @__PURE__ */ jsx(
-                      "input",
-                      {
-                        value: search,
-                        onChange: (e) => setSearch(e.target.value),
-                        placeholder: "Search products, brands…",
-                        className: "flex-1 border-none outline-none px-4 text-[13.5px] placeholder:text-gray-400",
-                        style: { color: (settings == null ? void 0 : settings.search_text_color) || "var(--color-header-text, #1f2937)", background: "var(--color-header-bg, #ffffff)" }
-                      }
-                    ),
-                    /* @__PURE__ */ jsxs(
-                      "button",
-                      {
-                        type: "submit",
-                        className: "px-5 font-black text-[13px] flex items-center gap-2 flex-shrink-0 border-none cursor-pointer",
-                        style: { background: "var(--color-primary)", color: "var(--color-primary-text)" },
-                        children: [
-                          /* @__PURE__ */ jsx(IconSearch, { size: 16 }),
-                          " Search"
-                        ]
-                      }
-                    )
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  className: "lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]",
-                  onClick: () => {
-                    setSearchOpen(!searchOpen);
-                    setMobileOpen(false);
-                  },
-                  children: /* @__PURE__ */ jsx(IconSearch, { size: 20 })
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  onClick: toggleDark,
-                  className: "lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]",
-                  title: darkMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode",
-                  children: darkMode === "dark" ? /* @__PURE__ */ jsx(IconSun, { size: 19 }) : /* @__PURE__ */ jsx(IconMoon, { size: 19 })
-                }
-              ),
-              /* @__PURE__ */ jsxs(
-                Link_default,
-                {
-                  href: "/wishlist",
-                  className: "relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]",
-                  title: "My Wishlist",
-                  children: [
-                    /* @__PURE__ */ jsx(IconHeart, { size: 21 }),
-                    wishlistCount > 0 && /* @__PURE__ */ jsx(
-                      "span",
-                      {
-                        className: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1",
-                        style: { background: "var(--color-accent, #e91e63)" },
-                        children: wishlistCount > 9 ? "9+" : wishlistCount
-                      }
-                    )
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsxs(Link_default, { href: "/cart", className: "relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]", children: [
-                /* @__PURE__ */ jsx(IconShoppingCart, { size: 21 }),
-                cartCount > 0 && /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    className: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1",
-                    style: { background: "var(--color-primary)" },
-                    children: cartCount > 9 ? "9+" : cartCount
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  onClick: toggleDark,
-                  className: "flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]",
-                  title: darkMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode",
-                  children: darkMode === "dark" ? /* @__PURE__ */ jsx(IconSun, { size: 19 }) : /* @__PURE__ */ jsx(IconMoon, { size: 19 })
-                }
-              ),
-              /* @__PURE__ */ jsxs("div", { className: "hidden lg:flex items-center gap-1 ml-1", children: [
-                /* @__PURE__ */ jsxs(Link_default, { href: "/about", className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline", children: [
-                  /* @__PURE__ */ jsx(IconInfoCircle, { size: 16 }),
-                  " About"
-                ] }),
-                /* @__PURE__ */ jsxs(Link_default, { href: "/contact", className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline", children: [
-                  /* @__PURE__ */ jsx(IconMessageCircle, { size: 16 }),
-                  " Contact"
-                ] }),
-                (auth == null ? void 0 : auth.user) ? /* @__PURE__ */ jsxs(
-                  Link_default,
-                  {
-                    href: "/account",
-                    className: "flex items-center gap-2 h-[38px] pl-2 pr-3 rounded-[10px] text-[13px] font-semibold hover:bg-gray-50 transition-all no-underline",
-                    style: { color: "var(--color-primary)" },
-                    children: [
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          className: "w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0",
-                          style: { background: "var(--color-primary)", color: "var(--color-primary-text,#0a0a0a)" },
-                          children: ((_d = (_c = auth.user.name) == null ? void 0 : _c[0]) == null ? void 0 : _d.toUpperCase()) ?? "A"
-                        }
-                      ),
-                      /* @__PURE__ */ jsx("span", { children: (_e = auth.user.name) == null ? void 0 : _e.split(" ")[0] })
-                    ]
-                  }
-                ) : /* @__PURE__ */ jsxs(
-                  Link_default,
-                  {
-                    href: "/login",
-                    className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline",
-                    children: [
-                      /* @__PURE__ */ jsx(IconUser, { size: 16 }),
-                      " Login"
-                    ]
-                  }
-                )
+              ) : /* @__PURE__ */ jsx("span", { className: "font-manrope font-black text-xl sm:text-2xl", style: { color: "var(--color-primary)" }, children: siteName[0] }) }),
+              /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                /* @__PURE__ */ jsx("div", { className: "font-manrope font-black text-[15px] sm:text-[19px] tracking-[1px] sm:tracking-[2px] leading-none truncate", style: { color: (settings == null ? void 0 : settings.header_title_color) || "var(--color-header-text, var(--color-dark-bg))" }, children: siteName }),
+                tagline && /* @__PURE__ */ jsx("div", { className: "text-[8px] sm:text-[8px] tracking-[.15em] font-bold uppercase mt-0.5 truncate", style: { color: (settings == null ? void 0 : settings.header_subtitle_color) || "var(--color-primary)" }, children: tagline })
               ] })
             ] }),
-            searchOpen && /* @__PURE__ */ jsx("div", { className: "lg:hidden px-4 pb-3 border-t border-gray-100 pt-2", children: /* @__PURE__ */ jsxs("form", { onSubmit: doSearch, className: "flex border-2 rounded-xl overflow-hidden h-10", style: { borderColor: "var(--color-primary)" }, children: [
-              /* @__PURE__ */ jsx(
-                "input",
+            /* @__PURE__ */ jsxs(
+              "form",
+              {
+                onSubmit: doSearch,
+                className: "hidden lg:flex flex-1 max-w-[500px] h-[44px] border-2 rounded-[12px] overflow-hidden transition-shadow",
+                style: { borderColor: "var(--color-primary)" },
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "input",
+                    {
+                      value: search,
+                      onChange: (e) => setSearch(e.target.value),
+                      placeholder: "Search products, brands…",
+                      className: "flex-1 border-none outline-none px-4 text-[13.5px] placeholder:text-gray-400",
+                      style: { color: (settings == null ? void 0 : settings.search_text_color) || "var(--color-header-text, #ffffff)", background: "var(--color-header-bg, #0a0a0a)" }
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs(
+                    "button",
+                    {
+                      type: "submit",
+                      className: "px-5 font-black text-[13px] flex items-center gap-2 flex-shrink-0 border-none cursor-pointer",
+                      style: { background: "var(--color-primary)", color: "var(--color-primary-text)" },
+                      children: [
+                        /* @__PURE__ */ jsx(IconSearch, { size: 16 }),
+                        " Search"
+                      ]
+                    }
+                  )
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                className: "lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#ffffff)]",
+                onClick: () => {
+                  setSearchOpen(!searchOpen);
+                  setMobileOpen(false);
+                },
+                children: /* @__PURE__ */ jsx(IconSearch, { size: 20 })
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: toggleDark,
+                className: "lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#ffffff)]",
+                title: darkMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode",
+                children: darkMode === "dark" ? /* @__PURE__ */ jsx(IconSun, { size: 19 }) : /* @__PURE__ */ jsx(IconMoon, { size: 19 })
+              }
+            ),
+            /* @__PURE__ */ jsxs(
+              Link_default,
+              {
+                href: "/wishlist",
+                className: "relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#ffffff)]",
+                title: "My Wishlist",
+                children: [
+                  /* @__PURE__ */ jsx(IconHeart, { size: 21 }),
+                  wishlistCount > 0 && /* @__PURE__ */ jsx(
+                    "span",
+                    {
+                      className: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1",
+                      style: { background: "var(--color-accent, #e91e63)" },
+                      children: wishlistCount > 9 ? "9+" : wishlistCount
+                    }
+                  )
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxs(Link_default, { href: "/cart", className: "relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#ffffff)]", children: [
+              /* @__PURE__ */ jsx(IconShoppingCart, { size: 21 }),
+              cartCount > 0 && /* @__PURE__ */ jsx(
+                "span",
                 {
-                  value: search,
-                  onChange: (e) => setSearch(e.target.value),
-                  placeholder: "Search…",
-                  autoFocus: true,
-                  className: "flex-1 px-4 text-[13.5px] outline-none border-none",
-                  style: { color: (settings == null ? void 0 : settings.search_text_color) || "var(--color-header-text, #1f2937)", background: "var(--color-header-bg, #ffffff)" }
+                  className: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1",
+                  style: { background: "var(--color-primary)" },
+                  children: cartCount > 9 ? "9+" : cartCount
                 }
-              ),
-              /* @__PURE__ */ jsx("button", { type: "submit", className: "px-4 border-none cursor-pointer", style: { background: "var(--color-primary)", color: "var(--color-primary-text)" }, children: /* @__PURE__ */ jsx(IconSearch, { size: 17 }) })
-            ] }) })
-          ]
+              )
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: toggleDark,
+                className: "flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-[var(--color-header-text,#ffffff)]",
+                title: darkMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode",
+                children: darkMode === "dark" ? /* @__PURE__ */ jsx(IconSun, { size: 19 }) : /* @__PURE__ */ jsx(IconMoon, { size: 19 })
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "hidden lg:flex items-center gap-1 ml-1", children: [
+              /* @__PURE__ */ jsxs(Link_default, { href: "/about", className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline", children: [
+                /* @__PURE__ */ jsx(IconInfoCircle, { size: 16 }),
+                " About"
+              ] }),
+              /* @__PURE__ */ jsxs(Link_default, { href: "/contact", className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline", children: [
+                /* @__PURE__ */ jsx(IconMessageCircle, { size: 16 }),
+                " Contact"
+              ] }),
+              (auth == null ? void 0 : auth.user) ? /* @__PURE__ */ jsxs(
+                Link_default,
+                {
+                  href: "/account",
+                  className: "flex items-center gap-2 h-[38px] pl-2 pr-3 rounded-[10px] text-[13px] font-semibold hover:bg-gray-50 transition-all no-underline",
+                  style: { color: "var(--color-primary)" },
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "div",
+                      {
+                        className: "w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0",
+                        style: { background: "var(--color-primary)", color: "var(--color-primary-text,#0a0a0a)" },
+                        children: ((_d = (_c = auth.user.name) == null ? void 0 : _c[0]) == null ? void 0 : _d.toUpperCase()) ?? "A"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { children: (_e = auth.user.name) == null ? void 0 : _e.split(" ")[0] })
+                  ]
+                }
+              ) : /* @__PURE__ */ jsxs(
+                Link_default,
+                {
+                  href: "/login",
+                  className: "flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline",
+                  children: [
+                    /* @__PURE__ */ jsx(IconUser, { size: 16 }),
+                    " Login"
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          searchOpen && /* @__PURE__ */ jsx("div", { className: "lg:hidden px-4 pb-3 border-t border-gray-100 pt-2", children: /* @__PURE__ */ jsxs("form", { onSubmit: doSearch, className: "flex border-2 rounded-xl overflow-hidden h-10", style: { borderColor: "var(--color-primary)" }, children: [
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: search,
+                onChange: (e) => setSearch(e.target.value),
+                placeholder: "Search…",
+                autoFocus: true,
+                className: "flex-1 px-4 text-[13.5px] outline-none border-none",
+                style: { color: (settings == null ? void 0 : settings.search_text_color) || "var(--color-header-text, #ffffff)", background: "var(--color-header-bg, #0a0a0a)" }
+              }
+            ),
+            /* @__PURE__ */ jsx("button", { type: "submit", className: "px-4 border-none cursor-pointer", style: { background: "var(--color-primary)", color: "var(--color-primary-text)" }, children: /* @__PURE__ */ jsx(IconSearch, { size: 17 }) })
+          ] }) })
+        ]
+      }
+    ) }),
+    /* @__PURE__ */ jsx("nav", { className: "hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[72px] z-40", ref: dropdownRef, children: /* @__PURE__ */ jsxs("div", { className: "px-6 lg:px-10 grid grid-cols-[1fr_auto_1fr] items-stretch h-[46px]", children: [
+      /* @__PURE__ */ jsx("div", { className: "flex items-center", children: /* @__PURE__ */ jsx(
+        "button",
+        {
+          onClick: () => setMobileOpen(true),
+          "aria-label": "Menu",
+          className: "flex items-center justify-center w-[32px] h-[32px] border-none bg-transparent cursor-pointer text-gray-700 hover:opacity-70 transition-opacity",
+          children: /* @__PURE__ */ jsx(IconMenu, { size: 22 })
         }
-      )
-    ] }),
-    /* @__PURE__ */ jsx("nav", { className: "hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[72px] z-40", ref: dropdownRef, children: /* @__PURE__ */ jsxs("div", { className: "px-6 lg:px-10 flex items-stretch h-[46px]", children: [
-      navItems.map((link) => {
-        var _a2;
-        const hasChildren = (((_a2 = link.children) == null ? void 0 : _a2.length) ?? 0) > 0;
+      ) }),
+      /* @__PURE__ */ jsx("div", { className: "flex items-stretch", children: navItems.map((link) => {
+        const hasChildren = false;
         const active = isActive(link);
         return /* @__PURE__ */ jsxs(
           "div",
           {
             className: "relative",
-            onMouseEnter: () => hasChildren && setActiveDropdown(link.href),
+            onMouseEnter: () => hasChildren,
             onMouseLeave: () => setActiveDropdown(null),
             children: [
               /* @__PURE__ */ jsxs(
@@ -638,27 +615,17 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
                   style: { color: active ? "var(--color-primary)" : void 0, borderBottomColor: active ? "var(--color-primary)" : void 0 },
                   children: [
                     link.label,
-                    hasChildren && /* @__PURE__ */ jsx(IconChevronDown, { size: 11, className: `transition-transform ${activeDropdown === link.href ? "rotate-180" : ""}` })
+                    hasChildren
                   ]
                 }
               ),
-              hasChildren && activeDropdown === link.href && /* @__PURE__ */ jsx("div", { className: "absolute top-full left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 min-w-[180px] z-50", children: link.children.map((child) => /* @__PURE__ */ jsx(
-                Link_default,
-                {
-                  href: child.href,
-                  onClick: () => setActiveDropdown(null),
-                  className: "flex items-center gap-2 px-4 py-2.5 text-[12.5px] font-semibold text-gray-700 hover:bg-gray-50 no-underline transition-colors",
-                  style: { color: isActive(child) ? "var(--color-primary)" : void 0 },
-                  children: child.label
-                },
-                child.href
-              )) })
+              hasChildren
             ]
           },
           link.href
         );
-      }),
-      /* @__PURE__ */ jsx("div", { className: "ml-auto flex items-center py-1.5 flex-shrink-0", children: /* @__PURE__ */ jsxs(
+      }) }),
+      /* @__PURE__ */ jsx("div", { className: "flex items-center justify-end gap-3 py-1.5", children: /* @__PURE__ */ jsxs(
         Link_default,
         {
           href: "/contact",
@@ -672,21 +639,73 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
       ) })
     ] }) }),
     mobileOpen && /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx("div", { className: "fixed inset-0 bg-black/40 z-40 lg:hidden", onClick: () => setMobileOpen(false) }),
-      /* @__PURE__ */ jsxs("div", { className: "fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 lg:hidden overflow-y-auto shadow-2xl", children: [
+      /* @__PURE__ */ jsx("div", { className: "fixed inset-0 bg-black/40 z-[60]", onClick: () => setMobileOpen(false) }),
+      /* @__PURE__ */ jsxs("div", { className: "fixed top-0 left-0 bottom-0 w-[280px] bg-white z-[70] overflow-y-auto shadow-2xl", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between px-5 h-[60px] border-b border-gray-100", children: [
           /* @__PURE__ */ jsx("div", { className: "font-manrope font-black text-[18px] tracking-[2px]", style: { color: "var(--color-body-text)" }, children: siteName }),
           /* @__PURE__ */ jsx("button", { onClick: () => setMobileOpen(false), className: "text-gray-500 border-none bg-transparent cursor-pointer", children: /* @__PURE__ */ jsx(IconX, { size: 22 }) })
         ] }),
         /* @__PURE__ */ jsx("div", { className: "py-1", children: navItems.map((item) => /* @__PURE__ */ jsx(MobileNavItem, { item }, item.href)) }),
+        /* @__PURE__ */ jsxs("div", { className: "px-5 py-4 border-t border-gray-100", children: [
+          /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-800 mb-2", children: "Subscribe for updates" }),
+          /* @__PURE__ */ jsxs(
+            "form",
+            {
+              onSubmit: (e) => {
+                var _a2;
+                e.preventDefault();
+                const inp = e.currentTarget.querySelector("input");
+                if (inp == null ? void 0 : inp.value) {
+                  fetch("/newsletter/subscribe", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": ((_a2 = document.querySelector("meta[name=csrf-token]")) == null ? void 0 : _a2.content) || "" }, body: JSON.stringify({ email: inp.value }) });
+                  inp.value = "";
+                  alert("Subscribed! Thank you.");
+                }
+              },
+              className: "flex gap-0 rounded-full overflow-hidden border border-gray-200",
+              children: [
+                /* @__PURE__ */ jsx(
+                  "input",
+                  {
+                    type: "email",
+                    placeholder: "Enter your email",
+                    required: true,
+                    className: "flex-1 min-w-0 px-3.5 py-2.5 text-[12.5px] border-none outline-none"
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "submit",
+                    className: "px-4 text-[11px] font-bold text-white border-none cursor-pointer",
+                    style: { background: "var(--color-primary)" },
+                    children: "Subscribe"
+                  }
+                )
+              ]
+            }
+          )
+        ] }),
         /* @__PURE__ */ jsxs("div", { className: "border-t border-gray-100 py-2", children: [
-          /* @__PURE__ */ jsxs(Link_default, { href: "/about", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
-            /* @__PURE__ */ jsx(IconInfoCircle, { size: 18 }),
-            " About Us"
+          /* @__PURE__ */ jsxs(Link_default, { href: (auth == null ? void 0 : auth.user) ? "/account" : "/login", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
+            /* @__PURE__ */ jsx(IconUser, { size: 18 }),
+            " ",
+            (auth == null ? void 0 : auth.user) ? "My Account" : "Login / Create Account"
+          ] }),
+          /* @__PURE__ */ jsxs(Link_default, { href: "/track-order", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
+            /* @__PURE__ */ jsx(IconTruck, { size: 18 }),
+            " Track Your Order"
           ] }),
           /* @__PURE__ */ jsxs(Link_default, { href: "/contact", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
             /* @__PURE__ */ jsx(IconMessageCircle, { size: 18 }),
             " Contact Us"
+          ] }),
+          /* @__PURE__ */ jsxs(Link_default, { href: "/contact", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
+            /* @__PURE__ */ jsx(IconMapPin, { size: 18 }),
+            " Store Locator"
+          ] }),
+          /* @__PURE__ */ jsxs(Link_default, { href: "/about", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
+            /* @__PURE__ */ jsx(IconInfoCircle, { size: 18 }),
+            " About Us"
           ] }),
           /* @__PURE__ */ jsxs(Link_default, { href: "/wishlist", onClick: () => setMobileOpen(false), className: "flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline", children: [
             /* @__PURE__ */ jsx(IconHeart, { size: 18 }),
@@ -845,10 +864,10 @@ function StorefrontLayout({ children, auth, settings, hideFloatingCart, hideHead
     ] }),
     /* @__PURE__ */ jsx("nav", { className: "lg:hidden", style: { position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9970, background: "white", borderTop: "1.5px solid #E5E7EB", paddingBottom: "env(safe-area-inset-bottom, 0px)", boxShadow: "0 -2px 16px rgba(0,0,0,0.07)" }, children: /* @__PURE__ */ jsx("div", { style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", height: 56 }, children: [
       { href: "/", label: "Home", d: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
-      { href: "/shop", label: "Shop", d: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" },
-      { href: "/cart", label: "Cart", d: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z", badge: cartCount },
-      { href: "/wishlist", label: "Wishlist", d: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" },
-      { href: (auth == null ? void 0 : auth.user) ? "/account" : "/login", label: (auth == null ? void 0 : auth.user) ? "Account" : "Login", d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" }
+      { href: "/shop?category=men", label: "Men", d: "M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 110-8 4 4 0 010 8z" },
+      { href: "/shop?category=women", label: "Women", d: "M12 10a4 4 0 110-8 4 4 0 010 8zm-3.5 2h7l-2 10h-3l-2-10z" },
+      { href: "/shop?category=kids", label: "Kids", d: "M12 12a2 2 0 100-4 2 2 0 000 4zM3 5l7 5-7 5V5zm18 0v10l-7-5 7-5z" },
+      { href: (auth == null ? void 0 : auth.user) ? "/account" : "/login", label: (auth == null ? void 0 : auth.user) ? "Profile" : "Login", d: "M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a3 3 0 110 6 3 3 0 010-6zm0 12.2a6.2 6.2 0 01-5-2.53c.03-1.66 3.33-2.57 5-2.57s4.97.91 5 2.57A6.2 6.2 0 0112 18.2z" }
     ].map((item) => {
       const isActive2 = typeof window !== "undefined" && (window.location.pathname === item.href || item.href !== "/" && window.location.pathname.startsWith(item.href));
       return /* @__PURE__ */ jsxs(Link_default, { href: item.href, style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, textDecoration: "none", position: "relative", color: isActive2 ? "var(--color-primary)" : "#9CA3AF" }, children: [

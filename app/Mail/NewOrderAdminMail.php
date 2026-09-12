@@ -19,7 +19,7 @@ class NewOrderAdminMail extends Mailable implements ShouldQueue
 
     public function content(): Content {
         $s        = Setting::allKeyed();
-        $adminPath= $s['admin_path'] ?? 'tijar-admin';
+        $adminPath= $s['admin_path'] ?? 'million-admin';
         return new Content(view: 'emails.new-order-admin', with: array_merge($this->emailBranding($s), [
             'order'    => $this->order->load('items'),
             'adminUrl' => url($adminPath),

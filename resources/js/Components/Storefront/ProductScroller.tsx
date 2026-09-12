@@ -12,6 +12,8 @@ interface Props {
     products: Product[]
     whatsapp?: string
     loading?: boolean
+    hideTitle?: boolean
+    noPad?: boolean
 }
 
 // How many cards visible at once by breakpoint
@@ -24,7 +26,7 @@ function getVisible(): number {
 }
 
 export default function ProductScroller({
-    title, eyebrow, viewAllHref, products, whatsapp, loading
+    title, eyebrow, viewAllHref, products, whatsapp, loading, hideTitle, noPad
 }: Props) {
     const trackRef   = useRef<HTMLDivElement>(null)
     const [index,    setIndex]   = useState(0)          // current left-most card index
@@ -121,7 +123,7 @@ export default function ProductScroller({
 
     if (!loading && products.length === 0) return null
 
-    const pad      = 'clamp(16px,5vw,48px)'
+    const pad      = noPad ? '0px' : 'clamp(16px,5vw,48px)'
     const canLeft  = index > 0
     const canRight = index < max
 
@@ -132,8 +134,12 @@ export default function ProductScroller({
     return (
         <section style={{ padding:'32px 0', width:'100%', boxSizing:'border-box' }}>
 
-            {/* Header */}
-            <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', padding:`0 ${pad}`, marginBottom:22 }}>
+            {/* Header — title/eyebrow suppressed when hideTitle is set,
+                since the side-column layout in Home.tsx renders its own
+                title instead, positioned to the left of this whole
+                component rather than stacked above it. */}
+            <div style={{ display:'flex', alignItems:'flex-end', justifyContent: hideTitle ? 'flex-end' : 'space-between', padding:`0 ${pad}`, marginBottom:22 }}>
+                {!hideTitle && (
                 <div>
                     <p style={{ fontSize:11, fontWeight:800, color:'var(--color-primary)', textTransform:'uppercase', letterSpacing:'0.12em', margin:'0 0 4px' }}>
                         {eyebrow}
@@ -142,6 +148,7 @@ export default function ProductScroller({
                         {title}
                     </h2>
                 </div>
+                )}
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                     {viewAllHref && (
                         <Link href={viewAllHref}

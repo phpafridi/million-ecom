@@ -187,6 +187,14 @@ export default function FloatingCart({ settings }: Props) {
                         )}
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <button onClick={() => setOpen(false)} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)',
+                                padding: '10px 14px', borderRadius: 11, cursor: 'pointer',
+                                fontSize: 12.5, fontWeight: 700,
+                            }}>
+                                Continue Shopping
+                            </button>
                             <Link href="/cart" onClick={() => setOpen(false)} style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                 background: 'rgba(255,255,255,0.08)', color: '#fff',

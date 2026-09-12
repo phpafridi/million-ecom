@@ -25,7 +25,8 @@ class HandleInertiaRequests extends Middleware
         $navCategories = Cache::remember('nav_categories', 1800, function () {
             try {
                 return Category::active()->navVisible()->topLevel()
-                    ->with(['children' => fn($q) => $q->where('is_active', true)->select('id','name','slug','parent_id','sort_order')])
+                    ->with(['children' => fn($q) => $q->where('is_active', true)->select('id','name','slug','parent_id','sort_order','mobile_image','image'),
+                            'children.children' => fn($q) => $q->select('id','name','slug','parent_id','sort_order')])
                     ->orderBy('nav_order')->orderBy('sort_order')
                     ->get(['id','name','slug','nav_order','sort_order'])
                     ->map(fn($c) => [
@@ -34,6 +35,19 @@ class HandleInertiaRequests extends Middleware
                         'children' => $c->children->map(fn($ch) => [
                             'label' => $ch->name,
                             'href'  => "/shop?category={$ch->slug}",
+                            // Small circular thumbnail in the mega-menu —
+                            // mobile_image first since it's the smaller
+                            // file, falls back to the desktop image if
+                            // that's the only one set.
+                            'image' => $ch->mobile_image ?? $ch->image ?? null,
+                            // 3rd level — used to render multi-column
+                            // mega-menu panels (Clothing, Optical, etc.
+                            // each as their own column header with items
+                            // listed below), matching the reference.
+                            'items' => $ch->children->map(fn($it) => [
+                                'label' => $it->name,
+                                'href'  => "/shop?category={$it->slug}",
+                            ])->values(),
                         ])->values(),
                     ])->toArray();
             } catch (\Throwable $e) {

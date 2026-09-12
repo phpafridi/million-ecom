@@ -12,7 +12,7 @@ export function useAdminPath(): string {
 
 /**
  * Returns a function that builds admin URLs.
- * Usage: const ap = useAdminUrl(); ap('/products') => '/tijar-admin/products'
+ * Usage: const ap = useAdminUrl(); ap('/products') => '/million-admin/products'
  */
 export function useAdminUrl(): (path?: string) => string {
     const base = useAdminPath()

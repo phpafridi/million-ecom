@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Head, router } from '@inertiajs/react'
+import { useState, useEffect, useRef } from 'react'
+import { Head, router, Link } from '@inertiajs/react'
 import { IconAdjustmentsHorizontal, IconX, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 import ProductCard from '@/Components/Storefront/ProductCard'
@@ -12,6 +12,7 @@ interface Props extends PageProps {
     categories: Category[]
     filters: { q?: string; category?: string; max_price?: number; sort?: string }
     settings: Record<string, string>
+    activeCategory?: { name: string; slug: string; banner_image?: string; children?: { name: string; slug: string; image?: string; mobile_image?: string }[] } | null
 }
 
 const SORTS = [
@@ -30,12 +31,58 @@ const PRICES = [
     { label: 'Rs 200,000+',      max: 9999999 },
 ]
 
-export default function ShopIndex({ products, categories, filters: rawFilters, settings, auth }: Props) {
+export default function ShopIndex({ products: initialProducts, categories, filters: rawFilters, settings, auth, activeCategory }: Props) {
     const filters = rawFilters ?? {}
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [sort, setSort] = useState(filters.sort ?? 'default')
     const [loading, setLoading] = useState(false)
     const whatsapp = settings?.whatsapp_number ?? '923001234567'
+
+    // Infinite scroll — accumulates pages client-side instead of the old
+    // click Prev/Next pagination. Starts with whatever the server sent
+    // for page 1, appends more as the user scrolls near the bottom.
+    const [items, setItems] = useState(initialProducts.data)
+    const [page, setPage] = useState(initialProducts.current_page)
+    const [hasMore, setHasMore] = useState(initialProducts.current_page < initialProducts.last_page)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+    // Any filter/sort change resets back to a fresh page-1 list — without
+    // this, switching category would just keep appending to the old list.
+    useEffect(() => {
+        setItems(initialProducts.data)
+        setPage(initialProducts.current_page)
+        setHasMore(initialProducts.current_page < initialProducts.last_page)
+    }, [initialProducts])
+
+    useEffect(() => {
+        if (!hasMore) return
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !loadingMore) loadMore()
+        }, { rootMargin: '400px' }) // starts fetching before the sentinel is actually on screen, so it feels instant
+        if (sentinelRef.current) observer.observe(sentinelRef.current)
+        return () => observer.disconnect()
+    }, [hasMore, loadingMore, page, filters])
+
+    function loadMore() {
+        setLoadingMore(true)
+        const params: Record<string, any> = { ...filters, page: page + 1 }
+        Object.keys(params).forEach(k => { if (params[k] == null || params[k] === '') delete params[k] })
+        const qs = new URLSearchParams(params as any).toString()
+        fetch(`/shop?${qs}`, { headers: { 'X-Inertia': 'true', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html, application/xhtml+xml' } })
+            .then(res => res.json())
+            .then(data => {
+                const fresh = data.props?.products
+                if (!fresh) { setHasMore(false); return }
+                setItems(prev => [...prev, ...fresh.data])
+                setPage(fresh.current_page)
+                setHasMore(fresh.current_page < fresh.last_page)
+            })
+            .catch(() => setHasMore(false))
+            .finally(() => setLoadingMore(false))
+    }
+
+    const products = { ...initialProducts, data: items }
 
     // Show skeletons while a filter/sort/page change is in flight (preserveState requests still
     // round-trip the server, so there's a real gap worth covering with a loading state)
@@ -56,38 +103,90 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
     const title = filters.q
         ? `"${filters.q}"`
         : filters.category
-            ? categories.find(c => c.slug === filters.category)?.name ?? filters.category
+            ? activeCategory?.name ?? filters.category
             : 'All Products'
 
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title={title} />
 
-            {/* Page header */}
-            <div className="px-4 sm:px-6 lg:px-10 py-4 sm:py-5"
-                style={{ background: 'var(--color-dark-bg,#0a0a0a)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.1em] mb-1"
-                    style={{ color: 'var(--color-primary,#C9A84C)' }}>
-                    {filters.q ? 'Search Results' : 'Shop'}
+            {/* Page header — matches the reference exactly: plain banner
+                photo on top (no text overlay), then the category title
+                centered on a plain white background below it. Falls back
+                to the dark title bar only when there's no category image
+                (browsing "All Products" or a search). */}
+            {activeCategory?.banner_image ? (
+                <>
+                    <div style={{ height: 'clamp(180px, 26vw, 340px)', position: 'relative', overflow: 'hidden' }}>
+                        <img src={activeCategory.banner_image} alt={activeCategory.name} className="w-full h-full object-cover" style={{ display: 'block' }} />
+                    </div>
+                    <div className="bg-white text-center py-6 px-4 border-b border-gray-100" style={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+                        <div className="text-[11.5px] text-gray-400 mb-2">
+                            <Link href="/" className="no-underline text-gray-400">Home</Link>
+                            <span className="mx-1.5">›</span>
+                            <span className="text-gray-600 font-semibold">{activeCategory.name}</span>
+                        </div>
+                        <h1 className="font-manrope font-black text-[22px] sm:text-[32px] tracking-tight text-gray-900" style={{ margin: 0 }}>{title}</h1>
+                    </div>
+                </>
+            ) : (
+                <div className="px-4 sm:px-6 lg:px-10 py-4 sm:py-5"
+                    style={{ background: 'var(--color-dark-bg,#0a0a0a)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.1em] mb-1"
+                        style={{ color: 'var(--color-primary,#C9A84C)' }}>
+                        {filters.q ? 'Search Results' : 'Shop'}
+                    </div>
+                    <h1 className="font-manrope font-black text-[22px] sm:text-[26px] tracking-tight"
+                        style={{ color: '#ffffff' }}>{title}</h1>
                 </div>
-                <h1 className="font-manrope font-black text-[22px] sm:text-[26px] tracking-tight"
-                    style={{ color: '#ffffff' }}>{title}</h1>
-            </div>
+            )}
+
+            {/* Circular subcategory shortcuts — works at ANY category
+                depth now (was only working for top-level categories
+                before, since it searched the top-level `categories` array;
+                activeCategory is resolved server-side by slug directly,
+                so it correctly finds children for 2nd-level categories
+                like "Men's Clothing" too, enabling the 3rd-level carousel). */}
+            {(() => {
+                const kids = activeCategory?.children
+                if (!kids || kids.length === 0) return null
+                return (
+                    <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-10 py-6" style={{ position: 'relative', zIndex: 1 }}>
+                        <div className="flex gap-6 sm:gap-8 overflow-x-auto justify-center flex-wrap" style={{ scrollbarWidth: 'none', rowGap: 20 }}>
+                            {kids.map((sub: any) => (
+                                <button key={sub.slug} onClick={() => apply({ category: sub.slug })}
+                                    className="flex flex-col items-center gap-2.5 flex-shrink-0 border-none bg-transparent cursor-pointer p-0 group">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gray-100 border-2 transition-all"
+                                        style={{ borderColor: filters.category === sub.slug ? 'var(--color-primary)' : 'transparent' }}>
+                                        {sub.image && <img src={sub.image} alt={sub.name ?? sub.label} className="w-full h-full object-cover" />}
+                                    </div>
+                                    <span className="text-[10.5px] sm:text-[11.5px] font-bold uppercase tracking-wide text-gray-700 group-hover:opacity-70 whitespace-nowrap">
+                                        {sub.name ?? sub.label}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )
+            })()}
 
             <div className="flex min-h-0 items-start">
-                {/* SIDEBAR — drawer on mobile, sticky on desktop */}
+                {/* SIDEBAR — click-to-open overlay panel on ALL screen
+                    sizes now, matching the reference exactly. Was
+                    previously always-visible on desktop (a permanent
+                    static column) — now hidden by default everywhere,
+                    only appearing when "Filter" is clicked. */}
                 <>
-                    {/* Mobile overlay */}
-                    {sidebarOpen && <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+                    {/* Overlay backdrop — now shows on desktop too */}
+                    {sidebarOpen && <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSidebarOpen(false)} />}
 
                     <aside className={`
                         bg-white border-r border-gray-100 flex-shrink-0 overflow-y-auto transition-all duration-300
-                        fixed top-0 left-0 bottom-0 z-40 w-72 shadow-2xl lg:shadow-none
-                        lg:static lg:w-56 lg:block lg:sticky lg:top-[116px] lg:z-0 lg:max-h-[calc(100vh-116px)]
-                        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                        fixed top-0 left-0 bottom-0 z-40 w-72 shadow-2xl
+                        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     `}>
-                        {/* Mobile close */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100 lg:hidden">
+                        {/* Close button — now shows on all screen sizes */}
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100">
                             <span className="font-bold text-[15px]">Filters</span>
                             <button onClick={() => setSidebarOpen(false)} className="border-none bg-transparent cursor-pointer text-gray-500"><IconX size={20} /></button>
                         </div>
@@ -97,7 +196,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                             <div>
                                 <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
                                 <div className="space-y-0.5">
-                                    <label className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-gray-50 cursor-pointer group">
+                                    <label className="flex items-center justify-between px-0 py-2.5 border-b border-gray-50 cursor-pointer group">
                                         <div className="flex items-center gap-2.5">
                                             <input type="radio" name="cat" value="" checked={!filters.category}
                                                 onChange={() => apply({ category: undefined })} className="accent-[var(--color-primary,#00c8ff)] w-4 h-4 cursor-pointer" />
@@ -107,7 +206,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                                     </label>
                                     {categories.map(cat => (
                                         <div key={cat.id}>
-                                            <label className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-gray-50 cursor-pointer group">
+                                            <label className="flex items-center justify-between px-0 py-2.5 border-b border-gray-50 cursor-pointer group">
                                                 <div className="flex items-center gap-2.5">
                                                     <input type="radio" name="cat" value={cat.slug} checked={filters.category === cat.slug}
                                                         onChange={() => { apply({ category: cat.slug }); setSidebarOpen(false) }}
@@ -116,7 +215,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                                                 </div>
                                             </label>
                                             {(cat as any).children?.map((sub: any) => (
-                                                <label key={sub.id} className="flex items-center justify-between pl-8 pr-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer group">
+                                                <label key={sub.id} className="flex items-center justify-between pl-5 pr-0 py-2 cursor-pointer group">
                                                     <div className="flex items-center gap-2.5">
                                                         <input type="radio" name="cat" value={sub.slug} checked={filters.category === sub.slug}
                                                             onChange={() => { apply({ category: sub.slug }); setSidebarOpen(false) }}
@@ -135,7 +234,7 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                                 <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-3">Price Range</h3>
                                 <div className="space-y-0.5">
                                     {PRICES.map((r, i) => (
-                                        <label key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-gray-50 cursor-pointer group">
+                                        <label key={i} className="flex items-center gap-2.5 px-0 py-2.5 border-b border-gray-50 cursor-pointer group">
                                             <input type="radio" name="price" className="accent-[var(--color-primary,#00c8ff)] w-4 h-4 cursor-pointer"
                                                 checked={filters.max_price === r.max}
                                                 onChange={() => { apply({ max_price: r.max }); setSidebarOpen(false) }} />
@@ -161,20 +260,21 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                     {/* Sort + filter bar */}
                     <div className="bg-white border border-gray-100 rounded-2xl flex items-center flex-wrap px-3 sm:px-4 py-2.5 mb-4 gap-2 sm:gap-3">
                         <button onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden flex items-center gap-2 text-[13px] font-semibold text-gray-600 hover:text-[var(--color-primary,#00c8ff)] border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer transition-colors flex-shrink-0">
+                            className="flex items-center gap-2 text-[13px] font-semibold text-gray-600 hover:text-[var(--color-primary,#00c8ff)] border border-gray-200 rounded-xl px-3 py-2 bg-white cursor-pointer transition-colors flex-shrink-0">
                             <IconAdjustmentsHorizontal size={16} /> Filter
                         </button>
                         <span className="text-[12.5px] sm:text-[13px] text-gray-500 flex-shrink-0">
                             <strong style={{ color: 'var(--color-body-text)' }}>{products.total}</strong> products
                         </span>
-                        <div className="flex gap-1.5 ml-auto flex-wrap">
-                            {SORTS.map(s => (
-                                <button key={s.value} onClick={() => { setSort(s.value); apply({ sort: s.value }) }}
-                                    className={`px-2.5 sm:px-3 py-1.5 rounded-[10px] text-[11px] sm:text-[12px] font-semibold transition-all border-none cursor-pointer whitespace-nowrap
-                                        ${sort === s.value ? 'bg-[var(--color-primary,#00c8ff)] text-[var(--color-dark-bg,#0a0e1a)]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                                    {s.label}
-                                </button>
-                            ))}
+                        {/* Real dropdown, not button pills — matches
+                            "SORT BY: [Date, New to Old ▾]" from the
+                            reference exactly, rather than a row of chips. */}
+                        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-gray-500 whitespace-nowrap hidden sm:inline">SORT BY:</span>
+                            <select value={sort} onChange={(e) => { setSort(e.target.value); apply({ sort: e.target.value }) }}
+                                className="text-[12px] sm:text-[13px] font-semibold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 bg-white cursor-pointer outline-none focus:border-[var(--color-primary)]">
+                                {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                            </select>
                         </div>
                     </div>
 
@@ -216,24 +316,23 @@ export default function ShopIndex({ products, categories, filters: rawFilters, s
                         </div>
                     )}
 
-                    {/* Pagination */}
-                    {products.last_page > 1 && (
-                        <div className="flex items-center justify-center gap-2 mt-6">
-                            {products.current_page > 1 && (
-                                <button onClick={() => apply({ page: products.current_page - 1 })}
-                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] bg-white cursor-pointer transition-all">
-                                    ← Prev
-                                </button>
+                    {/* Infinite scroll sentinel — invisible marker that
+                        triggers loading the next page once it nears the
+                        viewport (see rootMargin above), replacing the old
+                        click Prev/Next pagination entirely. */}
+                    {hasMore && (
+                        <div ref={sentinelRef} className="flex items-center justify-center py-8">
+                            {loadingMore && (
+                                <div className="flex items-center gap-2 text-[13px] text-gray-400">
+                                    <div className="w-4 h-4 border-2 border-gray-300 border-t-[var(--color-primary)] rounded-full animate-spin" />
+                                    Loading more...
+                                </div>
                             )}
-                            <span className="text-[12.5px] sm:text-[13px] text-gray-500 px-3 sm:px-4">
-                                {products.current_page} / {products.last_page}
-                            </span>
-                            {products.current_page < products.last_page && (
-                                <button onClick={() => apply({ page: products.current_page + 1 })}
-                                    className="h-9 sm:h-10 px-4 sm:px-5 text-[12.5px] sm:text-[13px] font-semibold border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] bg-white cursor-pointer transition-all">
-                                    Next →
-                                </button>
-                            )}
+                        </div>
+                    )}
+                    {!hasMore && products.data.length > 0 && (
+                        <div className="text-center py-8 text-[12.5px] text-gray-400">
+                            You've seen all {products.total} products
                         </div>
                     )}
                 </div>

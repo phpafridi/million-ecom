@@ -35,7 +35,6 @@ Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('seo.robots')
 // ── STOREFRONT
 Route::get('/',                [Shop\HomeController::class,    'index'])->name('home');
 Route::get('/shop',            [Shop\ProductController::class, 'index'])->name('shop.index');
-Route::get('/category/{slug}', [Shop\CategoryController::class, 'show'])->name('category.show');
 Route::get('/products/{slug}', [Shop\ProductController::class, 'show'])->name('shop.show');
 Route::post('/products/{product}/reviews', [Shop\ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
 Route::get('/about',   [Shop\PageController::class, 'about'])->name('about');

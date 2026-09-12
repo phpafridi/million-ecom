@@ -1,7 +1,7 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { H as Head_default, L as Link_default } from "../ssr.js";
 import { IconCheck, IconHome, IconShoppingBag } from "@tabler/icons-react";
-import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
 import "react-dom/server";
 import "@inertiajs/core";
 import "react";

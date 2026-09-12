@@ -1,97 +1,135 @@
-import { useState, useEffect } from 'react'
 import { Head, Link } from '@inertiajs/react'
-import { IconTruck, IconHeadset } from '@tabler/icons-react'
-import { motion } from 'framer-motion'
+import StorefrontLayout from '@/Layouts/StorefrontLayout'
+import HeroSlider from '@/Components/Storefront/HeroSlider'
+import ProductScroller from '@/Components/Storefront/ProductScroller'
 import type { PageProps } from '@/types'
 
 interface CategoryLite {
     id: number; name: string; slug: string
     image?: string; mobile_image?: string
+    children?: CategoryLite[]
 }
+interface HeroSlideT { id: number; title: string; subtitle?: string; image?: string; cta_text?: string; cta_url?: string }
+interface ProductT { id: number; name: string; slug: string; price: number; compare_price?: number; first_image?: string; category?: { name: string } }
 
 interface Props extends PageProps {
-    categories: CategoryLite[]
+    heroSlides: HeroSlideT[]
+    topCategories: CategoryLite[]
+    newProducts: ProductT[]
+    onSaleProducts: ProductT[]
     settings: Record<string, string>
 }
 
-// Deliberately standalone — does NOT use StorefrontLayout at all, so
-// there is no code path by which any header/nav component can possibly
-// render on this page, regardless of any prop wiring.
-export default function Home({ categories, settings }: Props) {
-    const tiles = categories.slice(0, 2)
+// Every section below is now admin-controlled — visibility and title for
+// each come from Settings (Admin → Branding → Homepage Sections), read
+// with sensible defaults so nothing breaks if a setting is unset.
+export default function Home({ heroSlides, topCategories, newProducts, onSaleProducts, settings, auth }: Props) {
+    const whatsapp = settings?.whatsapp_number ?? ''
 
-    // Utility cards start expanded with labels (so a first-time visitor
-    // actually learns what they are), then collapse to icon-only circles
-    // after a few seconds — stays out of the way once the point's made.
-    // Clicking either one works identically in both states.
-    const [expanded, setExpanded] = useState(true)
-    useEffect(() => {
-        const t = setTimeout(() => setExpanded(false), 3000)
-        return () => clearTimeout(t)
-    }, [])
+    const showCategories  = settings?.home_show_categories !== '0'
+    const categoriesTitle = settings?.home_categories_title || 'Shop by Category'
+    const showAccessories = settings?.home_show_accessories !== '0'
+    const accessoriesTitle = settings?.home_accessories_title || 'Accessories'
+    const showNewIn  = settings?.home_show_new_in !== '0'
+    const newInTitle = settings?.home_new_in_title || 'New In'
+    const showSale  = settings?.home_show_sale !== '0'
+    const saleTitle = settings?.home_sale_title || 'Sale'
+
+    // Which category feeds the Accessories carousel — admin can set an
+    // exact slug (home_accessories_category); if left blank, falls back
+    // to searching for any subcategory with "accessories" in its name,
+    // same as before.
+    function findAccessoriesCategory(): CategoryLite | undefined {
+        const configuredSlug = settings?.home_accessories_category?.trim()
+        if (configuredSlug) {
+            for (const top of topCategories) {
+                const match = top.children?.find(c => c.slug === configuredSlug)
+                if (match) return match
+            }
+        }
+        // Was only ever checking topCategories[0] (Men specifically) —
+        // now checks every top-level category, so if you have both
+        // Men's and Women's Accessories, this won't just default to Men.
+        for (const top of topCategories) {
+            const match = top.children?.find(c => c.name.toLowerCase().includes('accessories'))
+            if (match) return match
+        }
+        return undefined
+    }
+    const accessoriesCat = showAccessories ? findAccessoriesCategory() : undefined
+    const accessoryItems = accessoriesCat?.children
 
     return (
-        <>
+        <StorefrontLayout auth={auth} settings={settings}>
             <Head title="Home" />
 
-            <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 20, left: 0, right: 0, textAlign: 'center', zIndex: 5 }}>
-                    <Link href="/" className="no-underline" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                        {settings?.logo_url && (
-                            <img src={settings.logo_url} alt={settings?.site_name ?? 'Logo'}
-                                style={{ height: 'clamp(30px,4vw,44px)', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
-                        )}
-                        <span style={{ color: '#fff', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 500, letterSpacing: '0.15em', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                            {settings?.site_name ?? 'MILLIONAIRE'}
-                        </span>
-                    </Link>
-                    {settings?.site_tagline && (
-                        <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(10px,1.3vw,13px)', letterSpacing: '0.2em', marginTop: 8, textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}>
-                            {settings.site_tagline.toUpperCase()}
-                        </div>
-                    )}
-                </div>
+            <HeroSlider slides={heroSlides} settings={settings} />
 
-                {/* Utility cards — Track Order + Support only. Replaces the
-                    old 3-item bottom footer-style row entirely; this is
-                    the only place these two links live now. */}
-                <div style={{ position: 'absolute', top: 20, right: 16, zIndex: 6, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <motion.a href="/track-order" className="no-underline" layout
-                        transition={{ duration: 0.35, ease: 'easeInOut' }}
-                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: expanded ? 10 : 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: expanded ? '8px 14px' : 0, width: expanded ? 'auto' : 34, height: expanded ? 'auto' : 34, overflow: 'hidden' }}>
-                        <IconTruck size={16} style={{ color: '#C9A84C', flexShrink: 0 }} />
-                        {expanded && <span style={{ color: '#fff', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>Track Order</span>}
-                    </motion.a>
-                    <motion.a href="/contact" className="no-underline" layout
-                        transition={{ duration: 0.35, ease: 'easeInOut' }}
-                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: expanded ? 10 : 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: expanded ? '8px 14px' : 0, width: expanded ? 'auto' : 34, height: expanded ? 'auto' : 34, overflow: 'hidden' }}>
-                        <IconHeadset size={16} style={{ color: '#C9A84C', flexShrink: 0 }} />
-                        {expanded && <span style={{ color: '#fff', fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>Support 24/7</span>}
-                    </motion.a>
-                </div>
+            {/* Shop by Category */}
+            {showCategories && topCategories.length > 0 && (
+                <section className="py-10 sm:py-14 px-4 sm:px-6 lg:px-10">
+                    <h2 className="text-center font-manrope font-black text-[22px] sm:text-[28px] tracking-tight text-gray-900 mb-6 sm:mb-8">
+                        {categoriesTitle}
+                    </h2>
+                    <div className={`grid gap-2 sm:gap-3 max-w-4xl mx-auto ${topCategories.length === 1 ? 'grid-cols-1 max-w-md' : topCategories.length === 2 ? 'grid-cols-2 max-w-2xl' : 'grid-cols-2 lg:grid-cols-3'}`}>
+                        {topCategories.slice(0, 8).map(cat => (
+                            <Link key={cat.id} href={`/shop?category=${cat.slug}`} className="block no-underline group">
+                                <div className="relative overflow-hidden" style={{ aspectRatio: '3/4' }}>
+                                    <img src={cat.image ?? cat.mobile_image ?? '/images/placeholder.jpg'} alt={cat.name}
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+                                </div>
+                                <div className="text-center pt-3">
+                                    <span className="font-bold text-[13px] sm:text-[14px] uppercase tracking-wide text-gray-900">{cat.name}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )}
 
-                <div className="flex flex-col sm:flex-row" style={{ height: '100dvh' }}>
-                    {tiles.map(cat => (
-                        <Link key={cat.id} href={`/category/${cat.slug}`}
-                            className="relative block no-underline overflow-hidden group flex-1"
-                            style={{ minHeight: '50dvh' }}>
-                            <picture>
-                                <source media="(min-width: 640px)" srcSet={cat.image ?? '/images/placeholder.jpg'} />
-                                <img src={cat.mobile_image ?? cat.image ?? '/images/placeholder.jpg'} alt={cat.name}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                    loading="lazy" />
-                            </picture>
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%)' }} />
-                            <div style={{ position: 'absolute', bottom: 28, left: 0, right: 0, textAlign: 'center' }}>
-                                <span style={{ display: 'block', color: '#fff', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 500, letterSpacing: '0.1em' }}>
-                                    {cat.name.toUpperCase()}
-                                </span>
-                                <span style={{ display: 'block', color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 6 }}>Shop the collection →</span>
-                            </div>
-                        </Link>
-                    ))}
+            {/* Accessories carousel */}
+            {showAccessories && accessoryItems && accessoryItems.length > 0 && (
+                <div className="flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 lg:px-10 py-8 border-t border-gray-100" style={{ background: '#faf8f5' }}>
+                    <div className="lg:w-[180px] lg:flex-shrink-0 mb-4 lg:mb-0 lg:pr-6">
+                        <h2 className="font-manrope font-black text-[20px] lg:text-[24px] uppercase">{accessoriesTitle}</h2>
+                    </div>
+                    <div className="flex-1 min-w-0 flex gap-6 sm:gap-8 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                        {accessoryItems.map(item => (
+                            <Link key={item.id} href={`/shop?category=${item.slug}`}
+                                className="flex flex-col items-center gap-2.5 no-underline flex-shrink-0 group">
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shadow-md transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg">
+                                    <img src={item.image ?? item.mobile_image ?? '/images/placeholder.jpg'} alt={item.name} className="w-full h-full object-cover" />
+                                </div>
+                                <span className="text-[10.5px] sm:text-[11.5px] font-bold uppercase tracking-wide text-gray-700 whitespace-nowrap">{item.name}</span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </>
+            )}
+
+            {showNewIn && newProducts.length > 0 && (
+                <div className="flex flex-col lg:flex-row lg:items-stretch px-4 sm:px-6 lg:px-10 py-4">
+                    <div className="lg:w-[180px] lg:flex-shrink-0 mb-4 lg:mb-0 lg:pr-6 lg:flex lg:flex-col lg:justify-center">
+                        <p className="text-[11px] font-extrabold uppercase tracking-wider mb-1" style={{ color: 'var(--color-primary)' }}>Just Landed</p>
+                        <h2 className="font-manrope font-black text-[22px] lg:text-[28px] underline decoration-2 underline-offset-4">{newInTitle}</h2>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <ProductScroller eyebrow="Just Landed" title={newInTitle} viewAllHref="/shop?sort=newest" products={newProducts} whatsapp={whatsapp} hideTitle noPad />
+                    </div>
+                </div>
+            )}
+
+            {showSale && onSaleProducts.length > 0 && (
+                <div className="flex flex-col lg:flex-row lg:items-stretch px-4 sm:px-6 lg:px-10 py-4">
+                    <div className="lg:w-[180px] lg:flex-shrink-0 mb-4 lg:mb-0 lg:pr-6 lg:flex lg:flex-col lg:justify-center">
+                        <p className="text-[11px] font-extrabold uppercase tracking-wider mb-1" style={{ color: 'var(--color-primary)' }}>Limited Time</p>
+                        <h2 className="font-manrope font-black text-[22px] lg:text-[28px] underline decoration-2 underline-offset-4">{saleTitle}</h2>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <ProductScroller eyebrow="Limited Time" title={saleTitle} viewAllHref="/shop?sort=discount" products={onSaleProducts} whatsapp={whatsapp} hideTitle noPad />
+                    </div>
+                </div>
+            )}
+        </StorefrontLayout>
     )
 }

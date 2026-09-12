@@ -2,7 +2,7 @@ import { jsxs, jsx, Fragment } from "react/jsx-runtime";
 import { u as usePage, a as useForm, H as Head_default, L as Link_default, r as router3 } from "../ssr.js";
 import { useState, useEffect, useRef } from "react";
 import { IconShoppingCart, IconBuildingBank, IconUpload, IconX, IconCheck, IconBrandWhatsapp, IconArrowLeft, IconAlertCircle, IconMinus, IconPlus, IconTrash, IconLoader2, IconTruck } from "@tabler/icons-react";
-import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
 import { AnimatePresence, motion } from "framer-motion";
 import "react-dom/server";
 import "@inertiajs/core";

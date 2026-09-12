@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react'
 import { useState } from 'react'
-import { IconHeart, IconEye } from '@tabler/icons-react'
+import { IconHeart, IconEye, IconShoppingBag } from '@tabler/icons-react'
+import QuickViewModal from './QuickViewModal'
 import type { Product } from '@/types'
 
 interface Props { product: Product; whatsapp?: string }
@@ -10,11 +11,17 @@ export default function ProductCard({ product, whatsapp }: Props) {
     const wishIds             = Array.isArray(props?.wishlistIds) ? props.wishlistIds : []
     const [wished, setWished] = useState(wishIds.includes(product.id))
     const [hover, setHover]   = useState(false)
+    const [adding, setAdding] = useState(false)
+    const [showQuickView, setShowQuickView] = useState(false)
 
-    const imgs   = Array.isArray(product.images) && product.images.length > 0
+    // All available photos, not just the first two — dot indicators let
+    // a shopper tap through every image on the card itself (mobile
+    // especially, where hover doesn't exist), matching the swipeable
+    // cards on the Limelight reference.
+    const imgs = Array.isArray(product.images) && product.images.length > 0
         ? product.images : [{ id: 0, url: '/images/placeholder.jpg', thumb: '/images/placeholder.jpg' }]
-    const img1   = imgs[0]?.url ?? '/images/placeholder.jpg'
-    const img2   = imgs[1]?.url ?? null
+    const [activeImg, setActiveImg] = useState(0)
+    const currentImg = imgs[activeImg]?.url ?? imgs[0]?.url ?? '/images/placeholder.jpg'
     const fmt    = (n: number) => `Rs ${Math.round(n).toLocaleString('en-PK')}`
 
     // Flash sale: read from shared settings
@@ -48,14 +55,34 @@ export default function ProductCard({ product, whatsapp }: Props) {
         })
     }
 
+    // Quick-add straight from the card — only works cleanly for products
+    // with no variants (color/size); those still need the product page
+    // so a real selection gets made, same reasoning as the wishlist
+    // quick-add fix from earlier this session.
+    function quickAdd(e: React.MouseEvent) {
+        e.preventDefault(); e.stopPropagation()
+        setShowQuickView(true)
+    }
+
+    function selectImage(e: React.MouseEvent, i: number) {
+        e.preventDefault(); e.stopPropagation()
+        setActiveImg(i)
+    }
+
     return (
+        <>
         <Link href={`/products/${product.slug}`}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
+            onMouseEnter={() => { setHover(true); if (imgs.length > 1) setActiveImg(1) }}
+            onMouseLeave={() => { setHover(false); setActiveImg(0) }}
             style={{
                 display: 'block', textDecoration: 'none', borderRadius: 16,
                 overflow: 'hidden', background: 'white',
                 boxShadow: hover ? '0 12px 40px rgba(0,0,0,0.12)' : '0 2px 12px rgba(0,0,0,0.06)',
+                // Blocks the "ghost click" mobile browsers sometimes fire
+                // ~300ms after a touch — without this, that delayed
+                // synthetic click can land on this still-present link
+                // underneath the modal and silently navigate away.
+                pointerEvents: showQuickView ? 'none' : 'auto',
                 transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
                 transform: hover ? 'translateY(-4px)' : 'translateY(0)',
             }}>
@@ -63,27 +90,20 @@ export default function ProductCard({ product, whatsapp }: Props) {
             {/* Image */}
             <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: '#F5F5F3' }}>
 
-                <img src={img1} alt={product.name} loading="lazy" style={{
+                <img src={currentImg} alt={product.name} loading="lazy" style={{
                     position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                    transition: 'opacity 0.4s, transform 0.6s',
-                    opacity: hover && img2 ? 0 : 1,
+                    transition: 'opacity 0.3s, transform 0.6s',
                     transform: hover ? 'scale(1.06)' : 'scale(1)',
                 }} />
 
-                {img2 && <img src={img2} alt={product.name} loading="lazy" style={{
-                    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                    transition: 'opacity 0.4s, transform 0.6s',
-                    opacity: hover ? 1 : 0,
-                    transform: hover ? 'scale(1.06)' : 'scale(1.03)',
-                }} />}
-
-                {/* Discount */}
+                {/* Discount badge — matches Limelight exactly: solid red
+                    square (not rounded pill), "X% OFF" wording, not "-X%" */}
                 {disc > 0 && (
                     <div style={{
                         position: 'absolute', top: 10, left: 10,
-                        background: 'var(--color-primary,#C9A84C)', color: 'var(--color-primary-text,#0a0a0a)',
-                        fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 100,
-                    }}>-{disc}%</div>
+                        background: '#E31E24', color: '#ffffff',
+                        fontSize: 11, fontWeight: 800, padding: '5px 9px', borderRadius: 3,
+                    }}>{disc}% OFF</div>
                 )}
 
                 {/* Wishlist button */}
@@ -100,25 +120,57 @@ export default function ProductCard({ product, whatsapp }: Props) {
                         color={wished ? 'var(--color-primary-text,#0a0a0a)' : '#374151'} />
                 </button>
 
-                {/* View Product — slides up on hover */}
+                {/* Quick-add bag button — bottom-right circle, matches the
+                    Limelight reference's always-visible add-to-bag icon. */}
+                <button onClick={quickAdd} disabled={adding} style={{
+                    position: 'absolute', bottom: 10, right: 10, width: 36, height: 36,
+                    borderRadius: '50%', background: 'rgba(255,255,255,0.95)',
+                    border: 'none', cursor: adding ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.15)', transition: 'transform 0.15s',
+                    opacity: adding ? 0.6 : 1,
+                }}>
+                    <IconShoppingBag size={16} color="#111" />
+                </button>
+
+                {/* Dot indicators — one per photo, tap any dot to jump to
+                    that image directly. Only shown when there's actually
+                    more than one photo. */}
+                {imgs.length > 1 && (
+                    <div style={{ position: 'absolute', bottom: 10, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 4 }}>
+                        {imgs.map((_, i) => (
+                            <button key={i} onClick={(e) => selectImage(e, i)}
+                                style={{
+                                    width: i === activeImg ? 14 : 5, height: 5, borderRadius: 3,
+                                    background: i === activeImg ? '#fff' : 'rgba(255,255,255,0.6)',
+                                    border: 'none', cursor: 'pointer', padding: 0,
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'width 0.2s',
+                                }} />
+                        ))}
+                    </div>
+                )}
+
+                {/* View Product — was full-width before, which covered
+                    the quick-add bag icon in the bottom-right corner.
+                    Now spans only the left half, leaving the icon's
+                    corner clear. */}
                 <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    position: 'absolute', bottom: 0, left: 0, right: '50%',
                     background: 'var(--color-dark-bg,#0a0a0a)', color: '#ffffff',
-                    fontSize: 12, fontWeight: 800, padding: '12px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                    fontSize: 11, fontWeight: 800, padding: '10px 6px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                     transition: 'transform 0.3s ease, opacity 0.3s ease',
                     transform: hover ? 'translateY(0)' : 'translateY(100%)',
                     opacity: hover ? 1 : 0,
+                    pointerEvents: 'none',
                 }}>
-                    <IconEye size={14} /> View Product
+                    <IconEye size={13} /> View
                 </div>
             </div>
 
-            {/* Info */}
+            {/* Info — no category eyebrow label here, matches the
+                reference exactly: just the product name and price. */}
             <div style={{ padding: '12px 12px 14px' }}>
-                <p style={{ fontSize: 9.5, fontWeight: 800, color: 'var(--color-primary,#C9A84C)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>
-                    {product.category?.name ?? ''}
-                </p>
                 <p style={{ fontSize: 13.5, fontWeight: 700, color: '#111', margin: '0 0 6px', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {product.name}
                 </p>
@@ -146,5 +198,7 @@ export default function ProductCard({ product, whatsapp }: Props) {
                 </div>
             </div>
         </Link>
+        {showQuickView && <QuickViewModal product={product} onClose={() => setShowQuickView(false)} />}
+        </>
     )
 }

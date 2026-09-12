@@ -133,7 +133,7 @@ curl http://localhost:13714
 - `/payment/paymob/*` — Paymob ✅
 
 ### Brand Fixed
-- App title: "Tijar" → "MILLIONAIRE" ✅
+
 
 ---
 

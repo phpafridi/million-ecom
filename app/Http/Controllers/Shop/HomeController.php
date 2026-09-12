@@ -2,8 +2,9 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Category, Setting};
+use App\Models\{Category, Product, HeroSlide, Setting};
 use App\Traits\SeoHelper;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -15,21 +16,33 @@ class HomeController extends Controller
         $baseUrl  = config('app.url');
         $settings = Setting::allKeyed();
 
-        // Landing page is now just the two top-level categories (Men,
-        // Women) as picture tiles — no hero slides, no product listings,
-        // no banners needed here anymore. Those queries were removed
-        // entirely rather than left unused, since running them on every
-        // load of the highest-traffic page for data nothing displays
-        // would be pure waste.
-        $allCategories = Category::active()
-            ->whereNull('parent_id')
-            ->orderBy('sort_order')
-            ->get();
+        $homeData = Cache::remember('home_data_v2', 900, function () {
+            $heroSlides = HeroSlide::where('is_active', true)->orderBy('sort_order')->get();
 
-        return Inertia::render('Home', [
-            'categories' => $allCategories,
-            'settings'   => $settings,
-            'seo'        => $this->homeSeo($settings, $baseUrl),
-        ]);
+            $topCategories = Category::active()
+                ->whereNull('parent_id')
+                ->with(['children' => fn($q) => $q->where('is_active', true)->orderBy('sort_order'), 'children.children' => fn($q) => $q->orderBy('sort_order')])
+                ->orderBy('nav_order')->orderBy('sort_order')
+                ->get();
+
+            $newProducts = Product::active()->where('is_new', true)
+                ->with('category', 'productImages', 'variantAttributes')
+                ->latest()->take(12)->get();
+
+            $onSaleProducts = Product::active()->onSale()
+                ->with('category', 'productImages', 'variantAttributes')
+                ->take(12)->get();
+
+            $featuredProducts = Product::active()->where('is_featured', true)
+                ->with('category', 'productImages', 'variantAttributes')
+                ->take(12)->get();
+
+            return compact('heroSlides', 'topCategories', 'newProducts', 'onSaleProducts', 'featuredProducts');
+        });
+
+        return Inertia::render('Home', array_merge($homeData, [
+            'settings' => $settings,
+            'seo'      => $this->homeSeo($settings, $baseUrl),
+        ]));
     }
 }

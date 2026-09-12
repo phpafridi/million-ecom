@@ -79,7 +79,7 @@
           <img src="{{ $logoUrl }}" alt="{{ $storeName }}" style="height:40px;width:auto;">
         @else
           <div class="logo-letter">{{ substr($storeName ?? 'T', 0, 1) }}</div>
-          <div class="store-name">{{ strtoupper($storeName ?? 'Tijar Store') }}</div>
+          <div class="store-name">{{ strtoupper($storeName ?? 'Millionaire Store') }}</div>
         @endif
       </div>
       <div style="font-size:48px;margin-bottom:12px;">✅</div>

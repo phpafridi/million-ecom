@@ -6,10 +6,11 @@ import { getFloatOffset } from '@/utils/floatingButtons'
 import {
     IconSearch, IconBrandWhatsapp, IconBrandFacebook, IconBrandInstagram, IconUser,
     IconMenu, IconX, IconChevronDown, IconPhone,
-    IconInfoCircle, IconMessageCircle, IconShoppingCart, IconSun, IconMoon, IconHeart
+    IconInfoCircle, IconMessageCircle, IconShoppingCart, IconSun, IconMoon, IconHeart,
+    IconTruck, IconMapPin
 } from '@tabler/icons-react'
 
-interface NavItem { label: string; href: string; children?: NavItem[] }
+interface NavItem { label: string; href: string; image?: string; children?: NavItem[]; items?: NavItem[] }
 interface Props { children: React.ReactNode; auth?: any; settings?: Record<string, string>; hideFloatingCart?: boolean; hideHeader?: boolean; hideFooter?: boolean }
 
 
@@ -125,7 +126,12 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
     function isActive(link: NavItem) {
         if (link.href === '/') return currentUrl === '/'
         const cat = link.href.split('category=')[1]
-        return cat ? currentUrl.includes(cat) : currentUrl.startsWith(link.href)
+        if (!cat) return currentUrl.startsWith(link.href)
+        // Was using .includes(cat), which matched "men" inside "women"
+        // too — extract the actual category value from the current URL
+        // and compare exactly instead of a loose substring check.
+        const currentCat = new URLSearchParams(currentUrl.split('?')[1] ?? '').get('category')
+        return currentCat === cat
     }
 
     function MobileNavItem({ item, depth = 0 }: { item: NavItem; depth?: number }) {
@@ -174,48 +180,13 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                 />
             )}
 
-            {/* ── TOPBAR — uses CSS vars so it changes with theme ── */}
+            {/* ── TOPBAR — removed per direct request ── */}
             {!hideHeader && (
             <>
-            <div className="hidden md:flex h-9 items-center justify-between px-6 lg:px-10 border-b"
-                style={{ background: 'var(--color-topbar-bg, var(--color-dark-bg, #0a0a0a))', borderColor: 'rgba(255,255,255,0.06)' }}>
-                <div className="flex items-center gap-5">
-                    {phone && showPhone && (
-                        <a href={`tel:${phone}`} className="flex items-center gap-1.5 text-[11.5px] no-underline transition-colors hover:opacity-80"
-                            style={{ color: 'rgba(255,255,255,0.65)' }}>
-                            <IconPhone size={12} /> {phone}
-                        </a>
-                    )}
-            {showWhatsapp && whatsapp && (
-                        <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-[11.5px] no-underline hover:opacity-80"
-                            style={{ color: '#25D366' }}>
-                            <IconBrandWhatsapp size={12} /> WhatsApp
-                        </a>
-                    )}
-                </div>
-                <div className="text-[11.5px] font-semibold hidden lg:block" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                    {settings?.topbar_message ?? ''}
-                </div>
-                <div className="flex items-center gap-4">
-                    {showFacebook && fbUrl && (
-                        <a href={fbUrl} target="_blank" rel="noopener noreferrer" className="no-underline hover:opacity-80" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                            <IconBrandFacebook size={15} />
-                        </a>
-                    )}
-                    {showInstagram && igUrl && (
-                        <a href={igUrl} target="_blank" rel="noopener noreferrer" className="no-underline hover:opacity-80" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                            <IconBrandInstagram size={15} />
-                        </a>
-                    )}
-                    <Link href="/about"   className="text-[11.5px] no-underline transition-colors hover:opacity-80" style={{ color: 'rgba(255,255,255,0.6)' }}>About</Link>
-                    <Link href="/contact" className="text-[11.5px] no-underline transition-colors hover:opacity-80" style={{ color: 'rgba(255,255,255,0.6)' }}>Contact</Link>
-                </div>
-            </div>
 
             {/* ── HEADER ── */}
             <header className={`sticky top-0 z-50 transition-shadow duration-200 overflow-hidden ${scrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.08)]' : 'border-b'}`}
-                style={{ background: 'var(--color-header-bg, #ffffff)', borderColor: 'var(--color-header-border, #e5e7eb)', color: 'var(--color-header-text, #0a0a0a)' }}>
+                style={{ background: 'var(--color-header-bg, #0a0a0a)', borderColor: 'var(--color-header-border, rgba(255,255,255,0.1))', color: 'var(--color-header-text, #ffffff)' }}>
                 <style>{`
                     @media (max-width: 1023px) {
                         .ml-header-row {
@@ -240,16 +211,18 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                         }
                     }
                 `}</style>
-                <div className="ml-header-row px-3 sm:px-6 lg:px-10 h-[58px] sm:h-[72px] flex items-center gap-2 sm:gap-3 overflow-hidden">
+                <div className="ml-header-row px-3 sm:px-6 lg:px-10 h-[58px] sm:h-[72px] flex items-center gap-2 sm:gap-3 overflow-hidden lg:relative">
 
                     {/* Mobile menu toggle */}
-                    <button className="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]"
+                    <button className="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer text-[var(--color-header-text,#ffffff)]"
                         onClick={() => { setMobileOpen(!mobileOpen); setSearchOpen(false) }}>
                         {mobileOpen ? <IconX size={22} /> : <IconMenu size={22} />}
                     </button>
 
                     {/* Logo — fixed height, natural width so it never gets squeezed into a square.
-                        Centered on mobile via the grid above; left-aligned as normal on desktop. */}
+                        Centered on mobile via the grid above. Desktop also centered now (absolute
+                        positioning, independent of the search bar's flex sizing) — matches the
+                        reference exactly, where the logo sits dead-center regardless of screen width. */}
                     <Link href="/" className="ml-header-logo flex items-center gap-1.5 sm:gap-2 flex-shrink-0 no-underline min-w-0">
                         <div className="h-[38px] sm:h-[50px] flex-shrink-0 flex items-center justify-center overflow-hidden" style={{ height: 38, maxHeight: 38 }}>
                             {logoUrl
@@ -269,7 +242,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                         style={{ borderColor: 'var(--color-primary)' }}>
                         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products, brands…"
                             className="flex-1 border-none outline-none px-4 text-[13.5px] placeholder:text-gray-400"
-                            style={{ color: settings?.search_text_color || 'var(--color-header-text, #1f2937)', background: 'var(--color-header-bg, #ffffff)' }} />
+                            style={{ color: settings?.search_text_color || 'var(--color-header-text, #ffffff)', background: 'var(--color-header-bg, #0a0a0a)' }} />
                         <button type="submit" className="px-5 font-black text-[13px] flex items-center gap-2 flex-shrink-0 border-none cursor-pointer"
                             style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
                             <IconSearch size={16} /> Search
@@ -277,7 +250,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     </form>
 
                     {/* Mobile search toggle */}
-                    <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]"
+                    <button className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#ffffff)]"
                         onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false) }}>
                         <IconSearch size={20} />
                     </button>
@@ -286,13 +259,13 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                         only reachable buried inside the hamburger dropdown
                         menu; this puts it directly in the header row like
                         the desktop version already has. */}
-                    <button onClick={toggleDark} className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#4b5563)]"
+                    <button onClick={toggleDark} className="lg:hidden w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer flex-shrink-0 text-[var(--color-header-text,#ffffff)]"
                         title={darkMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
                         {darkMode === 'dark' ? <IconSun size={19} /> : <IconMoon size={19} />}
                     </button>
 
                     {/* Wishlist — mobile already has this in the bottom nav bar */}
-                    <Link href="/wishlist" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]"
+                    <Link href="/wishlist" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#ffffff)]"
                         title="My Wishlist">
                         <IconHeart size={21}/>
                         {wishlistCount > 0 && (
@@ -304,7 +277,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     </Link>
 
                     {/* Cart — mobile already has this in the bottom nav bar */}
-                    <Link href="/cart" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#4b5563)]">
+                    <Link href="/cart" className="relative flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors no-underline text-[var(--color-header-text,#ffffff)]">
                         <IconShoppingCart size={21} />
                         {cartCount > 0 && (
                             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white px-1"
@@ -315,15 +288,15 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                     </Link>
 
                     {/* Dark mode toggle — desktop only, keeps mobile header compact */}
-                    <button onClick={toggleDark} className="flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-[var(--color-header-text,#4b5563)]"
+                    <button onClick={toggleDark} className="flex-shrink-0 w-10 h-10 hidden lg:flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer text-[var(--color-header-text,#ffffff)]"
                         title={darkMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
                         {darkMode === 'dark' ? <IconSun size={19} /> : <IconMoon size={19} />}
                     </button>
 
                     {/* Desktop right links */}
                     <div className="hidden lg:flex items-center gap-1 ml-1">
-                        <Link href="/about"   className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline"><IconInfoCircle size={16} /> About</Link>
-                        <Link href="/contact" className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline"><IconMessageCircle size={16} /> Contact</Link>
+                        <Link href="/about"   className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline"><IconInfoCircle size={16} /> About</Link>
+                        <Link href="/contact" className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline"><IconMessageCircle size={16} /> Contact</Link>
                         {auth?.user ? (
                             <Link href="/account"
                                 className="flex items-center gap-2 h-[38px] pl-2 pr-3 rounded-[10px] text-[13px] font-semibold hover:bg-gray-50 transition-all no-underline"
@@ -336,7 +309,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                             </Link>
                         ) : (
                             <Link href="/login"
-                                className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#4b5563)] hover:bg-gray-50 transition-all no-underline">
+                                className="flex items-center gap-1.5 h-[38px] px-3 rounded-[10px] text-[13px] font-semibold text-[var(--color-header-text,#ffffff)] hover:bg-gray-50 transition-all no-underline">
                                 <IconUser size={16} /> Login
                             </Link>
                         )}
@@ -349,7 +322,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                         <form onSubmit={doSearch} className="flex border-2 rounded-xl overflow-hidden h-10" style={{ borderColor: 'var(--color-primary)' }}>
                             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" autoFocus
                                 className="flex-1 px-4 text-[13.5px] outline-none border-none"
-                                style={{ color: settings?.search_text_color || 'var(--color-header-text, #1f2937)', background: 'var(--color-header-bg, #ffffff)' }} />
+                                style={{ color: settings?.search_text_color || 'var(--color-header-text, #ffffff)', background: 'var(--color-header-bg, #0a0a0a)' }} />
                             <button type="submit" className="px-4 border-none cursor-pointer" style={{ background: 'var(--color-primary)', color: 'var(--color-primary-text)' }}>
                                 <IconSearch size={17} />
                             </button>
@@ -362,9 +335,21 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
 
             {/* ── DESKTOP NAV ── */}
             <nav className="hidden lg:block bg-white border-b-2 border-gray-200 sticky top-[72px] z-40" ref={dropdownRef}>
-                <div className="px-6 lg:px-10 flex items-stretch h-[46px]">
+                <div className="px-6 lg:px-10 grid grid-cols-[1fr_auto_1fr] items-stretch h-[46px]">
+                    <div className="flex items-center">
+                        {/* Hamburger — left side, matches the reference
+                            exactly. Opens the same drawer as mobile. */}
+                        <button onClick={() => setMobileOpen(true)} aria-label="Menu"
+                            className="flex items-center justify-center w-[32px] h-[32px] border-none bg-transparent cursor-pointer text-gray-700 hover:opacity-70 transition-opacity">
+                            <IconMenu size={22} />
+                        </button>
+                    </div>
+                    <div className="flex items-stretch">
                     {navItems.map(link => {
-                        const hasChildren = (link.children?.length ?? 0) > 0
+                        // Dropdown/mega-menu removed per direct request —
+                        // nav is just plain Men/Women/Kids links now, no
+                        // hover subcategory panel at all.
+                        const hasChildren = false
                         const active = isActive(link)
                         return (
                             <div key={link.href} className="relative"
@@ -378,20 +363,42 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                                     {hasChildren && <IconChevronDown size={11} className={`transition-transform ${activeDropdown === link.href ? 'rotate-180' : ''}`} />}
                                 </Link>
                                 {hasChildren && activeDropdown === link.href && (
-                                    <div className="absolute top-full left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 min-w-[180px] z-50">
-                                        {link.children!.map(child => (
-                                            <Link key={child.href} href={child.href} onClick={() => setActiveDropdown(null)}
-                                                className="flex items-center gap-2 px-4 py-2.5 text-[12.5px] font-semibold text-gray-700 hover:bg-gray-50 no-underline transition-colors"
-                                                style={{ color: isActive(child) ? 'var(--color-primary)' : undefined }}>
-                                                {child.label}
-                                            </Link>
-                                        ))}
+                                    <div className="fixed left-0 right-0 bg-white border-t shadow-xl py-9 z-50"
+                                        style={{ borderColor: 'var(--color-primary)', top: 'var(--header-height, 96px)' }}>
+                                        {/* Multi-column mega-menu — each of this
+                                            category's subcategories (Clothing,
+                                            Optical, etc.) becomes its own column
+                                            header, with its 3rd-level items listed
+                                            below. Falls back to just the column
+                                            headers (no sub-list) for any column
+                                            whose items haven't been added yet. */}
+                                        <div className="max-w-[1400px] mx-auto px-10 grid gap-8" style={{ gridTemplateColumns: `repeat(${Math.min(link.children!.length, 6)}, 1fr)` }}>
+                                            {link.children!.map(col => (
+                                                <div key={col.href}>
+                                                    <Link href={col.href} onClick={() => setActiveDropdown(null)}
+                                                        className="block text-[12px] font-bold uppercase tracking-wider text-gray-900 no-underline pb-2 mb-3 border-b-2"
+                                                        style={{ borderColor: 'var(--color-primary)' }}>
+                                                        {col.label}
+                                                    </Link>
+                                                    <div className="flex flex-col gap-2.5">
+                                                        {(col.items ?? []).map(item => (
+                                                            <Link key={item.href} href={item.href} onClick={() => setActiveDropdown(null)}
+                                                                className="text-[13px] text-gray-600 no-underline hover:text-[var(--color-primary)] transition-colors"
+                                                                style={{ color: isActive(item) ? 'var(--color-primary)' : undefined, fontWeight: isActive(item) ? 700 : 400 }}>
+                                                                {item.label}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         )
                     })}
-                    <div className="ml-auto flex items-center py-1.5 flex-shrink-0">
+                    </div>
+                    <div className="flex items-center justify-end gap-3 py-1.5">
                         <Link href="/contact" className="flex items-center gap-2 h-[32px] px-4 border rounded-lg text-[12.5px] font-black hover:opacity-80 transition-all no-underline"
                             style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}>
                             <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-primary)' }} /> Expert Help
@@ -403,8 +410,8 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             {/* ── MOBILE DRAWER ── */}
             {mobileOpen && (
                 <>
-                    <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
-                    <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 lg:hidden overflow-y-auto shadow-2xl">
+                    <div className="fixed inset-0 bg-black/40 z-[60]" onClick={() => setMobileOpen(false)} />
+                    <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-[70] overflow-y-auto shadow-2xl">
                         <div className="flex items-center justify-between px-5 h-[60px] border-b border-gray-100">
                             <div className="font-manrope font-black text-[18px] tracking-[2px]" style={{ color: 'var(--color-body-text)' }}>{siteName}</div>
                             <button onClick={() => setMobileOpen(false)} className="text-gray-500 border-none bg-transparent cursor-pointer"><IconX size={22} /></button>
@@ -412,9 +419,26 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
                         <div className="py-1">
                             {navItems.map(item => <MobileNavItem key={item.href} item={item} />)}
                         </div>
+
+                        {/* Subscribe — matches the reference position exactly,
+                            right after categories, before the account links. */}
+                        <div className="px-5 py-4 border-t border-gray-100">
+                            <p className="text-[13px] font-bold text-gray-800 mb-2">Subscribe for updates</p>
+                            <form onSubmit={(e)=>{e.preventDefault(); const inp=e.currentTarget.querySelector('input') as HTMLInputElement; if(inp?.value){ fetch('/newsletter/subscribe',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name=csrf-token]') as HTMLInputElement)?.content||''},body:JSON.stringify({email:inp.value})}); inp.value=''; alert('Subscribed! Thank you.'); }}}
+                                className="flex gap-0 rounded-full overflow-hidden border border-gray-200">
+                                <input type="email" placeholder="Enter your email" required
+                                    className="flex-1 min-w-0 px-3.5 py-2.5 text-[12.5px] border-none outline-none" />
+                                <button type="submit" className="px-4 text-[11px] font-bold text-white border-none cursor-pointer"
+                                    style={{ background: 'var(--color-primary)' }}>Subscribe</button>
+                            </form>
+                        </div>
+
                         <div className="border-t border-gray-100 py-2">
-                            <Link href="/about"   onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconInfoCircle size={18} /> About Us</Link>
+                            <Link href={auth?.user ? '/account' : '/login'} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconUser size={18} /> {auth?.user ? 'My Account' : 'Login / Create Account'}</Link>
+                            <Link href="/track-order" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconTruck size={18} /> Track Your Order</Link>
                             <Link href="/contact" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconMessageCircle size={18} /> Contact Us</Link>
+                            <Link href="/contact" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconMapPin size={18} /> Store Locator</Link>
+                            <Link href="/about"   onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline"><IconInfoCircle size={18} /> About Us</Link>
                             <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-[14px] font-semibold text-gray-700 no-underline">
                                 <IconHeart size={18}/> Wishlist {wishlistCount > 0 && <span className="ml-auto text-[11px] font-black px-2 py-0.5 rounded-full text-white" style={{ background:'var(--color-accent,#e91e63)' }}>{wishlistCount}</span>}
                             </Link>
@@ -531,11 +555,11 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
             <nav className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9970, background: 'white', borderTop: '1.5px solid #E5E7EB', paddingBottom: 'env(safe-area-inset-bottom, 0px)', boxShadow: '0 -2px 16px rgba(0,0,0,0.07)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', height: 56 }}>
                     {([
-                        { href: '/',         label: 'Home',     d: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-                        { href: '/shop',     label: 'Shop',     d: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-                        { href: '/cart',     label: 'Cart',     d: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z', badge: cartCount },
-                        { href: '/wishlist', label: 'Wishlist', d: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
-                        { href: auth?.user ? '/account' : '/login', label: auth?.user ? 'Account' : 'Login', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+                        { href: '/',         label: 'Home',   d: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+                        { href: '/shop?category=men',   label: 'Men',   d: 'M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 110-8 4 4 0 010 8z' },
+                        { href: '/shop?category=women', label: 'Women', d: 'M12 10a4 4 0 110-8 4 4 0 010 8zm-3.5 2h7l-2 10h-3l-2-10z' },
+                        { href: '/shop?category=kids',   label: 'Kids',  d: 'M12 12a2 2 0 100-4 2 2 0 000 4zM3 5l7 5-7 5V5zm18 0v10l-7-5 7-5z' },
+                        { href: auth?.user ? '/account' : '/login', label: auth?.user ? 'Profile' : 'Login', d: 'M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a3 3 0 110 6 3 3 0 010-6zm0 12.2a6.2 6.2 0 01-5-2.53c.03-1.66 3.33-2.57 5-2.57s4.97.91 5 2.57A6.2 6.2 0 0112 18.2z' },
                     ] as Array<{href:string;label:string;d:string;badge?:number}>).map(item => {
                         const isActive = typeof window !== 'undefined' && (window.location.pathname === item.href || (item.href !== '/' && window.location.pathname.startsWith(item.href)))
                         return (

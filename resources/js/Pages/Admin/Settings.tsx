@@ -41,7 +41,7 @@ export default function Settings({ settings }: Props) {
     const ap = `/${_p.adminPath ?? 'ml-admin'}`
 
     const { data, setData, post, processing } = useForm<Record<string, any>>({
-        site_name:            settings.site_name            ?? 'Tijar',
+        site_name:            settings.site_name            ?? 'Millionaire',
         site_tagline:         settings.site_tagline         ?? 'Your Online Store',
         phone:                settings.phone                ?? '',
         email:                settings.email                ?? '',
@@ -224,7 +224,7 @@ export default function Settings({ settings }: Props) {
                         <Field label="Admin Path" hint={`Current: ${typeof window !== 'undefined' ? window.location.origin : ''}/${data.admin_path}`}>
                             <div className="flex items-center">
                                 <span className="h-11 px-3 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl text-[13px] text-gray-500 flex items-center flex-shrink-0 whitespace-nowrap">yourdomain.com/</span>
-                                <input className={inputCls + ' rounded-l-none'} value={data.admin_path} onChange={e => setData('admin_path', e.target.value.replace(/[^a-z0-9-]/g,'').toLowerCase())} placeholder="tijar-admin" />
+                                <input className={inputCls + ' rounded-l-none'} value={data.admin_path} onChange={e => setData('admin_path', e.target.value.replace(/[^a-z0-9-]/g,'').toLowerCase())} placeholder="million-admin" />
                             </div>
                         </Field>
                     </Section>

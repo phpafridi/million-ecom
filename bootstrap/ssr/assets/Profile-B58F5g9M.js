@@ -1,6 +1,6 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { u as usePage, a as useForm, H as Head_default } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-B20RMF_j.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
 import AccountSidebar from "./AccountSidebar-D8KVmMRb.js";
 import { IconCheck, IconUser, IconLock, IconMapPin, IconTrash, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";

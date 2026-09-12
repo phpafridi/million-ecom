@@ -14,13 +14,15 @@ class ProductController extends Controller
     {
         $baseUrl  = config('app.url');
         $settings = Setting::allKeyed();
-        $query    = Product::active()->with('category', 'productImages');
+        $query    = Product::active()->with('category', 'productImages', 'variantAttributes.values', 'variants.variantValues');
 
         $category = null;
         if ($request->category) {
-            $category = Category::where('slug', $request->category)->first();
+            $category = Category::where('slug', $request->category)
+                ->with(['children' => fn($q) => $q->where('is_active', true)->orderBy('sort_order')])
+                ->first();
             if ($category) {
-                $childIds = $category->children()->where('is_active', true)->pluck('id')->toArray();
+                $childIds = $category->children->pluck('id')->toArray();
                 $allIds   = array_merge([$category->id], $childIds);
                 $query->whereIn('category_id', $allIds);
             }
@@ -102,6 +104,11 @@ class ProductController extends Controller
             'filters'    => (object) $activeFilters,
             'settings'   => $settings,
             'seo'        => $this->categorySeo($category, $baseUrl),
+            // For the banner image + breadcrumb at the top of the page —
+            // null when browsing "All Products" or a search, which is
+            // handled gracefully on the frontend (falls back to the
+            // existing plain title bar).
+            'activeCategory' => $category,
         ]);
     }
 

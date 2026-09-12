@@ -14,7 +14,10 @@ class CategoryController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Categories/Index', [
-            'categories' => Category::with(['children.children'])
+            'categories' => Category::with([
+                    'children' => fn($q) => $q->withCount('products'),
+                    'children.children' => fn($q) => $q->withCount('products'),
+                ])
                 ->withCount('products')
                 ->whereNull('parent_id')
                 ->orderBy('nav_order')
@@ -60,7 +63,7 @@ class CategoryController extends Controller
         if (empty($data['parent_id'])) $data['parent_id'] = null;
 
         $cat = Category::create($data);
-        Cache::forget('nav_categories'); return back()->with('success', "Category \"{$cat->name}\" created.");
+        Cache::forget('nav_categories'); Cache::forget('home_data_v2'); return back()->with('success', "Category \"{$cat->name}\" created.");
     }
 
     public function update(Request $request, Category $category)
@@ -108,14 +111,14 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
-        Cache::forget('nav_categories'); return back()->with('success', "Category \"{$category->name}\" updated.");
+        Cache::forget('nav_categories'); Cache::forget('home_data_v2'); return back()->with('success', "Category \"{$category->name}\" updated.");
     }
 
     public function destroy(Category $category)
     {
         $category->children()->update(['parent_id' => $category->parent_id]);
         $category->delete();
-        Cache::forget('nav_categories'); return back()->with('success', "Category deleted.");
+        Cache::forget('nav_categories'); Cache::forget('home_data_v2'); return back()->with('success', "Category deleted.");
     }
 
     public function reorder(Request $request)

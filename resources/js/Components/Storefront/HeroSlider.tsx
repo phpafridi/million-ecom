@@ -75,7 +75,7 @@ export default function HeroSlider({ slides, settings }: Props) {
         exit:   (d: number) => ({ x: d > 0 ? '-6%' : '6%', opacity: 0 }),
     }
 
-    const H = 'clamp(300px, 52vw, 640px)'
+    const H = 'clamp(260px, 31.2vw, 421px)'
 
     return (
         <section

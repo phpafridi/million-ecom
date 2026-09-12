@@ -8,53 +8,92 @@ use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
-    // Men and Women are now the only two top-level categories — the
-    // landing page shows just these two as full-bleed picture tiles.
-    // Everything that used to be top-level (Clothing, Shoes, Watches,
-    // Optical, Accessories, Perfumes) is now a subcategory under each,
-    // so clicking Men/Women shows these as the next set of full-cover
-    // picture tiles, exactly like Optical's drill-down already worked.
+    // Men and Women are the only two top-level categories — confirmed
+    // correct and intentional, not stale data (matches the live sidebar
+    // filter structure). Each has 6 subcategories, and each of those now
+    // has a 3rd level too, enabling the deeper circular carousel pattern
+    // (matches the reference's "Accessories → Jewellery, Shawls,
+    // Scarves..." style sections).
     private const TREE = [
         'Men' => [
             'search' => 'mens fashion editorial',
             'subs' => [
-                "Men's Clothing"     => 'mens streetwear fashion',
-                "Men's Shoes"        => 'mens leather shoes',
-                "Men's Watches"      => 'mens luxury watch',
-                "Men's Optical"      => 'mens sunglasses eyewear',
-                "Men's Accessories"  => 'mens fashion accessories',
-                "Men's Perfumes"     => 'mens cologne bottle',
+                "Men's Clothing" => [
+                    'search' => 'mens streetwear fashion',
+                    'items'  => ['Shirts', 'T-Shirts', 'Jackets', 'Pants', 'Hoodies'],
+                ],
+                "Men's Shoes" => [
+                    'search' => 'mens leather shoes',
+                    'items'  => ['Sneakers', 'Loafers', 'Formal Shoes', 'Boots'],
+                ],
+                "Men's Watches" => [
+                    'search' => 'mens luxury watch',
+                    'items'  => ['Chronograph', 'Dress Watches', 'Sport Watches'],
+                ],
+                "Men's Optical" => [
+                    'search' => 'mens sunglasses eyewear',
+                    'items'  => ['Sunglasses', 'Prescription Frames', 'Blue-Light Glasses'],
+                ],
+                "Men's Accessories" => [
+                    'search' => 'mens fashion accessories',
+                    'items'  => ['Belts', 'Wallets', 'Caps', 'Bracelets'],
+                ],
+                "Men's Perfumes" => [
+                    'search' => 'mens cologne bottle',
+                    'items'  => ['Eau de Parfum', 'Eau de Toilette', 'Gift Sets'],
+                ],
             ],
         ],
         'Women' => [
             'search' => 'womens fashion editorial',
             'subs' => [
-                "Women's Clothing"    => 'womens fashion clothing',
-                "Women's Shoes"       => 'womens shoes fashion',
-                "Women's Watches"     => 'womens watch elegant',
-                "Women's Optical"     => 'womens sunglasses eyewear',
-                "Women's Accessories" => 'womens fashion accessories',
-                "Women's Perfumes"    => 'womens perfume bottle',
+                "Women's Clothing" => [
+                    'search' => 'womens fashion clothing',
+                    'items'  => ['Dresses', 'Tops', 'Blazers', 'Trousers', 'Skirts'],
+                ],
+                "Women's Shoes" => [
+                    'search' => 'womens shoes fashion',
+                    'items'  => ['Heels', 'Flats', 'Sandals', 'Boots'],
+                ],
+                "Women's Watches" => [
+                    'search' => 'womens watch elegant',
+                    'items'  => ['Dress Watches', 'Bracelet Watches', 'Smart Watches'],
+                ],
+                "Women's Optical" => [
+                    'search' => 'womens sunglasses eyewear',
+                    'items'  => ['Sunglasses', 'Cat-Eye Frames', 'Prescription Frames'],
+                ],
+                "Women's Accessories" => [
+                    'search' => 'womens fashion accessories',
+                    'items'  => ['Jewellery', 'Scarves', 'Handbags', 'Hair Accessories'],
+                ],
+                "Women's Perfumes" => [
+                    'search' => 'womens perfume bottle',
+                    'items'  => ['Eau de Parfum', 'Eau de Toilette', 'Gift Sets'],
+                ],
+            ],
+        ],
+        'Kids' => [
+            'search' => 'kids fashion clothing',
+            'subs' => [
+                "Kids Clothing" => [
+                    'search' => 'kids clothing fashion',
+                    'items'  => ['T-Shirts', 'Shorts', 'Dresses', 'Jackets'],
+                ],
+                "Kids Shoes" => [
+                    'search' => 'kids shoes sneakers',
+                    'items'  => ['Sneakers', 'Sandals', 'School Shoes'],
+                ],
+                "Kids Accessories" => [
+                    'search' => 'kids accessories toys',
+                    'items'  => ['Caps', 'Bags', 'Socks'],
+                ],
             ],
         ],
     ];
 
     public function run(): void
     {
-        // Deactivate the old flat 6-category structure — replaced by the
-        // Men/Women tree, not deleted (existing seeded products stay
-        // safely linked to their category_id, just hidden from nav).
-        Category::whereIn('slug', [
-            'millionaire-clothing', 'millionaire-shoes', 'millionaire-watches',
-            'millionaire-optical', 'millionaire-accessories', 'millionaire-perfumes',
-            'mens-clothing', 'womens-clothing', 'kids-clothing',
-            'mens-shoes', 'womens-shoes', 'sneakers',
-            'mens-watches', 'womens-watches', 'smart-watches',
-            'sunglasses', 'optical-frames', 'prescription-frames', 'premium-luxury-frames',
-            'belts', 'wallets', 'caps', 'jewelry',
-            'mens-perfumes', 'womens-perfumes', 'gift-sets',
-        ])->update(['is_active' => false, 'show_in_nav' => false]);
-
         $unsplash = new UnsplashService();
         $topOrder = 1;
 
@@ -71,15 +110,16 @@ class CategorySeeder extends Seeder
                     'show_in_nav'         => true,
                     'image'               => $photo,
                     'mobile_image'        => $photo,
+                    'banner_image'        => $photo,
                 ], fn($v) => $v !== null)
             );
             $topOrder++;
 
             $subOrder = 1;
-            foreach ($data['subs'] as $subName => $subQuery) {
-                $subPhoto = $unsplash->photoUrl($subQuery);
+            foreach ($data['subs'] as $subName => $subData) {
+                $subPhoto = $unsplash->photoUrl($subData['search']);
 
-                Category::updateOrCreate(
+                $sub = Category::updateOrCreate(
                     ['slug' => Str::slug($subName)],
                     array_filter([
                         'name'                => $subName,
@@ -90,9 +130,29 @@ class CategorySeeder extends Seeder
                         'show_in_nav'         => true,
                         'image'               => $subPhoto,
                         'mobile_image'        => $subPhoto,
+                        'banner_image'        => $subPhoto,
                     ], fn($v) => $v !== null)
                 );
                 $subOrder++;
+
+                // 3rd level — no Unsplash calls here at all (avoiding the
+                // rate-limit wall from earlier in this session). Images
+                // stay blank; upload real ones via admin whenever ready.
+                $itemOrder = 1;
+                foreach ($subData['items'] as $itemName) {
+                    Category::updateOrCreate(
+                        ['slug' => Str::slug($itemName . '-' . $subName)],
+                        [
+                            'name'        => $itemName,
+                            'parent_id'   => $sub->id,
+                            'sort_order'  => $itemOrder,
+                            'nav_order'   => $itemOrder,
+                            'is_active'   => true,
+                            'show_in_nav' => false, // too deep for the main mega-menu, only shown in the category-page carousel
+                        ]
+                    );
+                    $itemOrder++;
+                }
             }
         }
     }

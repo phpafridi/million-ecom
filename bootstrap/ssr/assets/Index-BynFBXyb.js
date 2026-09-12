@@ -94,6 +94,15 @@ function Branding({ settings }) {
     ticker_live_text: settings.ticker_live_text ?? "#0a0e1a",
     ticker_text_color: settings.ticker_text_color ?? "#6b7280",
     category_page_bg_color: settings.category_page_bg_color ?? "",
+    home_show_categories: settings.home_show_categories ?? "1",
+    home_categories_title: settings.home_categories_title ?? "Shop by Category",
+    home_show_accessories: settings.home_show_accessories ?? "1",
+    home_accessories_category: settings.home_accessories_category ?? "",
+    home_accessories_title: settings.home_accessories_title ?? "Accessories",
+    home_show_new_in: settings.home_show_new_in ?? "1",
+    home_new_in_title: settings.home_new_in_title ?? "New In",
+    home_show_sale: settings.home_show_sale ?? "1",
+    home_sale_title: settings.home_sale_title ?? "Sale",
     brands_show: settings.brands_show ?? "1",
     brands_title: settings.brands_title ?? "Top Brands",
     brands_subtitle: settings.brands_subtitle ?? "Official Partners",
@@ -335,6 +344,55 @@ function Branding({ settings }) {
                   placeholder: "Follows Theme"
                 }
               )
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs(Section, { title: "Homepage Sections", icon: "🏠", children: [
+          /* @__PURE__ */ jsx("p", { className: "text-[11.5px] text-gray-400 mb-4 -mt-2", children: "Turn each homepage section on/off and rename its title — no code changes needed for any of this." }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between p-3 border border-gray-100 rounded-xl", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-700 mb-1.5", children: "Shop by Category" }),
+                /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_categories_title, onChange: (e) => setData("home_categories_title", e.target.value), placeholder: "Shop by Category" })
+              ] }),
+              /* @__PURE__ */ jsxs("label", { className: "ml-3 relative inline-flex items-center cursor-pointer flex-shrink-0", children: [
+                /* @__PURE__ */ jsx("input", { type: "checkbox", checked: data.home_show_categories === "1", onChange: (e) => setData("home_show_categories", e.target.checked ? "1" : "0"), className: "sr-only peer" }),
+                /* @__PURE__ */ jsx("div", { className: "w-10 h-5.5 bg-gray-200 rounded-full peer peer-checked:bg-[var(--color-primary)] transition-colors relative", children: /* @__PURE__ */ jsx("div", { className: "absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full transition-transform peer-checked:translate-x-4.5" }) })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between p-3 border border-gray-100 rounded-xl", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex-1 space-y-2", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-700", children: "Accessories Carousel" }),
+                /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_accessories_title, onChange: (e) => setData("home_accessories_title", e.target.value), placeholder: "Accessories" }),
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx("p", { className: "text-[10.5px] text-gray-400 mb-1", children: `Which category's items to show — enter its exact slug (e.g. "mens-accessories"). Leave blank to auto-find any category with "accessories" in its name.` }),
+                  /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_accessories_category, onChange: (e) => setData("home_accessories_category", e.target.value), placeholder: "mens-accessories" })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs("label", { className: "ml-3 relative inline-flex items-center cursor-pointer flex-shrink-0", children: [
+                /* @__PURE__ */ jsx("input", { type: "checkbox", checked: data.home_show_accessories === "1", onChange: (e) => setData("home_show_accessories", e.target.checked ? "1" : "0"), className: "sr-only peer" }),
+                /* @__PURE__ */ jsx("div", { className: "w-10 h-5.5 bg-gray-200 rounded-full peer peer-checked:bg-[var(--color-primary)] transition-colors relative", children: /* @__PURE__ */ jsx("div", { className: "absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full transition-transform peer-checked:translate-x-4.5" }) })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between p-3 border border-gray-100 rounded-xl", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-700 mb-1.5", children: "New In" }),
+                /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_new_in_title, onChange: (e) => setData("home_new_in_title", e.target.value), placeholder: "New In" })
+              ] }),
+              /* @__PURE__ */ jsxs("label", { className: "ml-3 relative inline-flex items-center cursor-pointer flex-shrink-0", children: [
+                /* @__PURE__ */ jsx("input", { type: "checkbox", checked: data.home_show_new_in === "1", onChange: (e) => setData("home_show_new_in", e.target.checked ? "1" : "0"), className: "sr-only peer" }),
+                /* @__PURE__ */ jsx("div", { className: "w-10 h-5.5 bg-gray-200 rounded-full peer peer-checked:bg-[var(--color-primary)] transition-colors relative", children: /* @__PURE__ */ jsx("div", { className: "absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full transition-transform peer-checked:translate-x-4.5" }) })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between p-3 border border-gray-100 rounded-xl", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-bold text-gray-700 mb-1.5", children: "Sale" }),
+                /* @__PURE__ */ jsx("input", { className: inputCls, value: data.home_sale_title, onChange: (e) => setData("home_sale_title", e.target.value), placeholder: "Sale" })
+              ] }),
+              /* @__PURE__ */ jsxs("label", { className: "ml-3 relative inline-flex items-center cursor-pointer flex-shrink-0", children: [
+                /* @__PURE__ */ jsx("input", { type: "checkbox", checked: data.home_show_sale === "1", onChange: (e) => setData("home_show_sale", e.target.checked ? "1" : "0"), className: "sr-only peer" }),
+                /* @__PURE__ */ jsx("div", { className: "w-10 h-5.5 bg-gray-200 rounded-full peer peer-checked:bg-[var(--color-primary)] transition-colors relative", children: /* @__PURE__ */ jsx("div", { className: "absolute top-0.5 left-0.5 w-4.5 h-4.5 bg-white rounded-full transition-transform peer-checked:translate-x-4.5" }) })
+              ] })
             ] })
           ] })
         ] }),

@@ -31,7 +31,7 @@ function Settings({ settings }) {
   const { props: _p } = usePage();
   const ap = `/${_p.adminPath ?? "ml-admin"}`;
   const { data, setData, post, processing } = useForm({
-    site_name: settings.site_name ?? "Tijar",
+    site_name: settings.site_name ?? "Millionaire",
     site_tagline: settings.site_tagline ?? "Your Online Store",
     phone: settings.phone ?? "",
     email: settings.email ?? "",
@@ -148,7 +148,7 @@ function Settings({ settings }) {
           ] }),
           /* @__PURE__ */ jsx(Field, { label: "Admin Path", hint: `Current: ${typeof window !== "undefined" ? window.location.origin : ""}/${data.admin_path}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center", children: [
             /* @__PURE__ */ jsx("span", { className: "h-11 px-3 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl text-[13px] text-gray-500 flex items-center flex-shrink-0 whitespace-nowrap", children: "yourdomain.com/" }),
-            /* @__PURE__ */ jsx("input", { className: inputCls + " rounded-l-none", value: data.admin_path, onChange: (e) => setData("admin_path", e.target.value.replace(/[^a-z0-9-]/g, "").toLowerCase()), placeholder: "tijar-admin" })
+            /* @__PURE__ */ jsx("input", { className: inputCls + " rounded-l-none", value: data.admin_path, onChange: (e) => setData("admin_path", e.target.value.replace(/[^a-z0-9-]/g, "").toLowerCase()), placeholder: "million-admin" })
           ] }) })
         ] }),
         /* @__PURE__ */ jsx(Section, { title: "Social Media", icon: "🌐", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
