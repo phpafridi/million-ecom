@@ -1,7 +1,7 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { a as useForm, H as Head_default, L as Link_default, r as router3 } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
-import AccountSidebar from "./AccountSidebar-D8KVmMRb.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
+import AccountSidebar from "./AccountSidebar-DVJqFEyl.js";
 import { IconHeart, IconShoppingCart, IconTrash } from "@tabler/icons-react";
 import "react-dom/server";
 import "@inertiajs/core";

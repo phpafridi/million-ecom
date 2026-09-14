@@ -39,4 +39,8 @@ return [
         'key' => env('UNSPLASH_ACCESS_KEY'),
     ],
 
+    'pos' => [
+        'tailor_status_key' => env('POS_TAILOR_STATUS_KEY'),
+    ],
+
 ];

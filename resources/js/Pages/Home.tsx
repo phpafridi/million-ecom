@@ -39,25 +39,25 @@ export default function Home({ heroSlides, topCategories, newProducts, onSalePro
     // exact slug (home_accessories_category); if left blank, falls back
     // to searching for any subcategory with "accessories" in its name,
     // same as before.
-    function findAccessoriesCategory(): CategoryLite | undefined {
+    function findAllAccessoryItems(): CategoryLite[] {
         const configuredSlug = settings?.home_accessories_category?.trim()
         if (configuredSlug) {
             for (const top of topCategories) {
                 const match = top.children?.find(c => c.slug === configuredSlug)
-                if (match) return match
+                if (match?.children) return match.children
             }
         }
-        // Was only ever checking topCategories[0] (Men specifically) —
-        // now checks every top-level category, so if you have both
-        // Men's and Women's Accessories, this won't just default to Men.
+        // Combines items from EVERY "accessories" category found (Men's,
+        // Women's, Kids' — whichever exist), instead of stopping at the
+        // first match. Was only ever showing Men's specifically before.
+        const combined: CategoryLite[] = []
         for (const top of topCategories) {
             const match = top.children?.find(c => c.name.toLowerCase().includes('accessories'))
-            if (match) return match
+            if (match?.children) combined.push(...match.children)
         }
-        return undefined
+        return combined
     }
-    const accessoriesCat = showAccessories ? findAccessoriesCategory() : undefined
-    const accessoryItems = accessoriesCat?.children
+    const accessoryItems = showAccessories ? findAllAccessoryItems() : []
 
     return (
         <StorefrontLayout auth={auth} settings={settings}>
@@ -89,7 +89,7 @@ export default function Home({ heroSlides, topCategories, newProducts, onSalePro
 
             {/* Accessories carousel */}
             {showAccessories && accessoryItems && accessoryItems.length > 0 && (
-                <div className="flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 lg:px-10 py-8 border-t border-gray-100" style={{ background: '#faf8f5' }}>
+                <div className="flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 lg:px-10 py-8 border-t border-gray-100 bg-gray-50">
                     <div className="lg:w-[180px] lg:flex-shrink-0 mb-4 lg:mb-0 lg:pr-6">
                         <h2 className="font-manrope font-black text-[20px] lg:text-[24px] uppercase">{accessoriesTitle}</h2>
                     </div>

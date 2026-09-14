@@ -2,7 +2,7 @@ import { jsxs, jsx, Fragment } from "react/jsx-runtime";
 import { useState, useRef, useEffect } from "react";
 import { r as router3, H as Head_default, L as Link_default } from "../ssr.js";
 import { IconX, IconAdjustmentsHorizontal } from "@tabler/icons-react";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
 import { P as ProductCard } from "./ProductCard-Dl9N4E2E.js";
 import { P as ProductCardSkeleton } from "./Skeleton-Di_tqBU2.js";
 import { motion } from "framer-motion";

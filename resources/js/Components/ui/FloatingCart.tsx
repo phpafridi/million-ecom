@@ -105,7 +105,7 @@ export default function FloatingCart({ settings }: Props) {
                 @media (max-width: 1023px) {
                     .ml-cart-fab {
                         right: 16px !important;
-                        bottom: calc(56px + env(safe-area-inset-bottom,0px) + 66px) !important;
+                        bottom: calc(92px + env(safe-area-inset-bottom,0px) + 66px) !important;
                         width: 46px !important; height: 46px !important;
                     }
                     .ml-cart-panel {

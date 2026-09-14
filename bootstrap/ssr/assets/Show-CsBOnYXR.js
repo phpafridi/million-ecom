@@ -3,7 +3,7 @@ import { u as usePage, a as useForm, H as Head_default, L as Link_default, r as 
 import { useState, useRef } from "react";
 import { IconX, IconChevronLeft, IconChevronRight, IconTag, IconHeart, IconZoomIn, IconCheck, IconMinus, IconPlus, IconShoppingCart, IconBrandWhatsapp, IconBrandFacebookFilled, IconPhone, IconStarFilled, IconStar } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
 import { P as ProductCard } from "./ProductCard-Dl9N4E2E.js";
 import "react-dom/server";
 import "@inertiajs/core";

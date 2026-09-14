@@ -4,17 +4,24 @@ import { u as usePage, L as Link_default, r as router3 } from "../ssr.js";
 import { IconX, IconShoppingCart, IconArrowRight, IconCreditCard, IconMenu, IconSearch, IconSun, IconMoon, IconHeart, IconInfoCircle, IconMessageCircle, IconUser, IconTruck, IconMapPin, IconBrandWhatsapp, IconChevronDown } from "@tabler/icons-react";
 const SIZE_PX = {
   sm: { diameter: 48, gap: 12 },
-  md: { diameter: 56, gap: 16 },
-  lg: { diameter: 64, gap: 20 }
+  md: { diameter: 56, gap: 14 },
+  lg: { diameter: 64, gap: 16 }
 };
-const BASE_BOTTOM = 24;
-const DEFAULT_ORDER = ["chat", "cart", "whatsapp"];
+function getBaseBottom() {
+  if (typeof window === "undefined") return 24;
+  return window.innerWidth < 1024 ? 92 : 24;
+}
+const DEFAULT_ORDER = ["whatsapp", "cart"];
 function readFloatSettings(settings, key, defaultEnabled) {
   const s = settings ?? {};
+  const rawSize = s[`${key}_float_size`];
+  const validSize = rawSize === "sm" || rawSize === "md" || rawSize === "lg" ? rawSize : "md";
+  const rawCorner = s[`${key}_float_position`];
+  const validCorner = rawCorner === "left" || rawCorner === "right" ? rawCorner : "right";
   return {
     enabled: (s[`${key}_float_enabled`] ?? (defaultEnabled ? "1" : "0")) === "1",
-    corner: s[`${key}_float_position`] || "right",
-    size: s[`${key}_float_size`] || "md"
+    corner: validCorner,
+    size: validSize
   };
 }
 function getFloatOffset(settings, key, defaultEnabledMap = { chat: true, cart: true, whatsapp: false }) {
@@ -24,7 +31,7 @@ function getFloatOffset(settings, key, defaultEnabledMap = { chat: true, cart: t
     whatsapp: readFloatSettings(settings, "whatsapp", defaultEnabledMap.whatsapp)
   };
   const self = all[key];
-  let bottom = BASE_BOTTOM;
+  let bottom = getBaseBottom();
   for (const otherKey of DEFAULT_ORDER) {
     if (otherKey === key) break;
     const other = all[otherKey];
@@ -119,7 +126,7 @@ function FloatingCart({ settings }) {
                 @media (max-width: 1023px) {
                     .ml-cart-fab {
                         right: 16px !important;
-                        bottom: calc(56px + env(safe-area-inset-bottom,0px) + 66px) !important;
+                        bottom: calc(92px + env(safe-area-inset-bottom,0px) + 66px) !important;
                         width: 46px !important; height: 46px !important;
                     }
                     .ml-cart-panel {

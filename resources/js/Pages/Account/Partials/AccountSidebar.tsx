@@ -1,9 +1,10 @@
 import { Link, usePage } from '@inertiajs/react'
-import { IconLayoutDashboard, IconPackage, IconHeart, IconStar, IconUser, IconTruck, IconLogout } from '@tabler/icons-react'
+import { IconLayoutDashboard, IconPackage, IconHeart, IconStar, IconUser, IconTruck, IconLogout, IconScissors } from '@tabler/icons-react'
 
 const NAV = [
     { href: '/account',          label: 'Dashboard',  icon: IconLayoutDashboard },
     { href: '/account/orders',   label: 'Orders',     icon: IconPackage },
+    { href: '/account/tailor-orders', label: 'Tailor', icon: IconScissors },
     { href: '/account/wishlist', label: 'Wishlist',   icon: IconHeart },
     { href: '/account/loyalty',  label: 'Loyalty',    icon: IconStar },
     { href: '/account/profile',  label: 'Profile',    icon: IconUser },

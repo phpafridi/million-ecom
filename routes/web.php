@@ -198,6 +198,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/loyalty',           [Shop\AccountController::class, 'loyalty'])->name('account.loyalty');
     Route::get('/account/profile',           [Shop\AccountController::class, 'profile'])->name('account.profile');
     Route::post('/account/profile',          [Shop\AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::get('/account/tailor-orders',     [\App\Http\Controllers\TailorStatusController::class, 'index'])->name('account.tailor-orders');
+    Route::get('/api/tailor-status',         [\App\Http\Controllers\TailorStatusController::class, 'checkStatus'])->name('tailor-status.check');
     Route::post('/account/avatar',           [Shop\AccountController::class, 'uploadAvatar'])->name('account.avatar');
     Route::post('/account/addresses',        [Shop\AccountController::class, 'storeAddress'])->name('account.addresses.store');
     Route::delete('/account/addresses/{id}', [Shop\AccountController::class, 'destroyAddress'])->name('account.addresses.destroy');

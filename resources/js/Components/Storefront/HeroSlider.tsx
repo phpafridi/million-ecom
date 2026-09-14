@@ -153,7 +153,7 @@ export default function HeroSlider({ slides, settings }: Props) {
                                 style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0e1a)', fontWeight: 800, fontSize: 'clamp(11.5px,1.2vw,14px)', letterSpacing: '0.04em', borderRadius: 100, padding: 'clamp(11px,1.3vw,15px) clamp(20px,2.6vw,36px)', textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 {s.cta_text ?? 'Shop Now'}
                             </Link>
-                            {wa && (
+                            {wa && settings?.whatsapp_float_enabled !== '1' && (
                                 <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer"
                                     style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: '#fff', fontWeight: 700, fontSize: 'clamp(11px,1.1vw,13px)', border: '1.5px solid rgba(255,255,255,0.25)', borderRadius: 100, padding: 'clamp(10px,1.2vw,14px) clamp(16px,2vw,26px)', textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                     <IconBrandWhatsapp size={15} /> WhatsApp

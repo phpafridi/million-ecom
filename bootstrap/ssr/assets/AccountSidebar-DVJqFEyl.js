@@ -1,6 +1,6 @@
 import { jsxs, Fragment, jsx } from "react/jsx-runtime";
 import { u as usePage, L as Link_default } from "../ssr.js";
-import { IconLayoutDashboard, IconPackage, IconHeart, IconStar, IconUser, IconTruck, IconLogout } from "@tabler/icons-react";
+import { IconLayoutDashboard, IconPackage, IconScissors, IconHeart, IconStar, IconUser, IconTruck, IconLogout } from "@tabler/icons-react";
 import "react-dom/server";
 import "@inertiajs/core";
 import "react";
@@ -10,6 +10,7 @@ import "laravel-precognition";
 const NAV = [
   { href: "/account", label: "Dashboard", icon: IconLayoutDashboard },
   { href: "/account/orders", label: "Orders", icon: IconPackage },
+  { href: "/account/tailor-orders", label: "Tailor", icon: IconScissors },
   { href: "/account/wishlist", label: "Wishlist", icon: IconHeart },
   { href: "/account/loyalty", label: "Loyalty", icon: IconStar },
   { href: "/account/profile", label: "Profile", icon: IconUser },

@@ -1,7 +1,7 @@
 import { jsxs, jsx } from "react/jsx-runtime";
 import { H as Head_default, L as Link_default } from "../ssr.js";
 import { IconX, IconRefresh, IconBrandWhatsapp, IconPhone } from "@tabler/icons-react";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
 import "react-dom/server";
 import "@inertiajs/core";
 import "react";

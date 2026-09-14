@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\IpFirewall::class,
         ]);
         $middleware->web(append: [
+            \App\Http\Middleware\SanitizeInput::class,
+        ]);
+        $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
         $middleware->alias([

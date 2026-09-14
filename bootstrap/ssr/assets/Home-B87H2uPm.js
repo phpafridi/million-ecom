@@ -1,6 +1,6 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { L as Link_default, H as Head_default } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { IconBrandWhatsapp, IconVolumeOff, IconVolume2, IconArrowRight, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -151,7 +151,7 @@ function HeroSlider({ slides, settings }) {
                     children: s.cta_text ?? "Shop Now"
                   }
                 ),
-                wa && /* @__PURE__ */ jsxs(
+                wa && (settings == null ? void 0 : settings.whatsapp_float_enabled) !== "1" && /* @__PURE__ */ jsxs(
                   "a",
                   {
                     href: `https://wa.me/${wa}`,
@@ -400,23 +400,23 @@ function Home({ heroSlides, topCategories, newProducts, onSaleProducts, settings
   const newInTitle = (settings == null ? void 0 : settings.home_new_in_title) || "New In";
   const showSale = (settings == null ? void 0 : settings.home_show_sale) !== "0";
   const saleTitle = (settings == null ? void 0 : settings.home_sale_title) || "Sale";
-  function findAccessoriesCategory() {
+  function findAllAccessoryItems() {
     var _a, _b, _c;
     const configuredSlug = (_a = settings == null ? void 0 : settings.home_accessories_category) == null ? void 0 : _a.trim();
     if (configuredSlug) {
       for (const top of topCategories) {
         const match = (_b = top.children) == null ? void 0 : _b.find((c) => c.slug === configuredSlug);
-        if (match) return match;
+        if (match == null ? void 0 : match.children) return match.children;
       }
     }
+    const combined = [];
     for (const top of topCategories) {
       const match = (_c = top.children) == null ? void 0 : _c.find((c) => c.name.toLowerCase().includes("accessories"));
-      if (match) return match;
+      if (match == null ? void 0 : match.children) combined.push(...match.children);
     }
-    return void 0;
+    return combined;
   }
-  const accessoriesCat = showAccessories ? findAccessoriesCategory() : void 0;
-  const accessoryItems = accessoriesCat == null ? void 0 : accessoriesCat.children;
+  const accessoryItems = showAccessories ? findAllAccessoryItems() : [];
   return /* @__PURE__ */ jsxs(StorefrontLayout, { auth, settings, children: [
     /* @__PURE__ */ jsx(Head_default, { title: "Home" }),
     /* @__PURE__ */ jsx(HeroSlider, { slides: heroSlides, settings }),
@@ -434,7 +434,7 @@ function Home({ heroSlides, topCategories, newProducts, onSaleProducts, settings
         /* @__PURE__ */ jsx("div", { className: "text-center pt-3", children: /* @__PURE__ */ jsx("span", { className: "font-bold text-[13px] sm:text-[14px] uppercase tracking-wide text-gray-900", children: cat.name }) })
       ] }, cat.id)) })
     ] }),
-    showAccessories && accessoryItems && accessoryItems.length > 0 && /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 lg:px-10 py-8 border-t border-gray-100", style: { background: "#faf8f5" }, children: [
+    showAccessories && accessoryItems && accessoryItems.length > 0 && /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row lg:items-center px-4 sm:px-6 lg:px-10 py-8 border-t border-gray-100 bg-gray-50", children: [
       /* @__PURE__ */ jsx("div", { className: "lg:w-[180px] lg:flex-shrink-0 mb-4 lg:mb-0 lg:pr-6", children: /* @__PURE__ */ jsx("h2", { className: "font-manrope font-black text-[20px] lg:text-[24px] uppercase", children: accessoriesTitle }) }),
       /* @__PURE__ */ jsx("div", { className: "flex-1 min-w-0 flex gap-6 sm:gap-8 overflow-x-auto pb-1", style: { scrollbarWidth: "none" }, children: accessoryItems.map((item) => /* @__PURE__ */ jsxs(
         Link_default,

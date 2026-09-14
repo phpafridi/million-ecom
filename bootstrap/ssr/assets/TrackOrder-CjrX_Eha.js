@@ -1,6 +1,6 @@
 import { jsxs, jsx, Fragment } from "react/jsx-runtime";
 import { u as usePage, a as useForm, H as Head_default } from "../ssr.js";
-import { S as StorefrontLayout } from "./StorefrontLayout-DBtqBy6n.js";
+import { S as StorefrontLayout } from "./StorefrontLayout-Dwo0iPSU.js";
 import { IconTruck, IconSearch, IconX, IconPackage, IconClock, IconCheck, IconReceipt } from "@tabler/icons-react";
 import "react-dom/server";
 import "@inertiajs/core";
