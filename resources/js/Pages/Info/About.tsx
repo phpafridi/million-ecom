@@ -26,7 +26,7 @@ export default function About({ settings, content, auth }: Props) {
     ]
 
     const team = [
-        { name: 'Salman Afridi', role: 'Founder & CEO',          emoji: '👑' },
+        { name: 'Hashmat Afridi', role: 'Founder & CEO',          emoji: '👑' },
         { name: 'Operations',    role: 'Warehouse & Fulfillment', emoji: '📦' },
         { name: 'Customer Care', role: 'Support Team',           emoji: '🎧' },
     ]
@@ -150,7 +150,7 @@ export default function About({ settings, content, auth }: Props) {
             <div style={{ background: 'var(--color-dark-bg, #0a0a0a)', padding: 'clamp(48px,8vw,72px) clamp(20px,6vw,48px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at center, rgba(201,168,76,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px', position: 'relative' }}>Start Shopping</p>
-                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,4vw,40px)', color: 'white', margin: '0 0 16px', position: 'relative' }}>Ready to wear your status?</h2>
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,4vw,40px)', color: 'white', margin: '0 0 16px', position: 'relative' }}>LIVE YOUR LEGACY</h2>
                 <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', position: 'relative' }}>Join 50,000+ customers who trust MILLIONAIRE for premium lifestyle products.</p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
                     <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', fontWeight: 800, fontSize: 14, padding: '14px 28px', borderRadius: 100, textDecoration: 'none' }}>
