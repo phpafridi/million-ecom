@@ -607,9 +607,17 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                             )}
                         </div>
 
-                        {/* Trust badges */}
+                        {/* Trust badges — now pulled from Admin → Branding → Trust Bar
+                            settings (trust_1..trust_4), instead of being hardcoded here.
+                            Defaults below match what was previously hardcoded, so nothing
+                            changes visually until you actually edit them in admin. */}
                         <div className="grid grid-cols-2 gap-2.5">
-                            {[['🛡️','100% Genuine','Verified quality'],['🚚','Fast Delivery','Pakistan-wide'],['↩️','7-Day Returns','Hassle-free'],['✅','Warranty','Covered']].map(([icon,title,sub]) => (
+                            {[
+                                [settings?.trust_1_icon ?? '🛡️', settings?.trust_1_title ?? '100% Genuine', settings?.trust_1_sub ?? 'Verified quality'],
+                                [settings?.trust_2_icon ?? '🚚', settings?.trust_2_title ?? 'Fast Delivery', settings?.trust_2_sub ?? 'Pakistan-wide'],
+                                [settings?.trust_3_icon ?? '↩️', settings?.trust_3_title ?? '7-Day Returns', settings?.trust_3_sub ?? 'Hassle-free'],
+                                [settings?.trust_4_icon ?? '✅', settings?.trust_4_title ?? 'Warranty', settings?.trust_4_sub ?? 'Covered'],
+                            ].map(([icon,title,sub]) => (
                                 <div key={title} className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100">
                                     <span className="text-xl">{icon}</span>
                                     <div>
@@ -701,8 +709,8 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                         className="w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white" />
                                 </div>
                                 <div>
-                                    <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email *</label>
-                                    <input type="email" value={revData.email} onChange={e => setRevData('email', e.target.value)} required placeholder="ali@email.com"
+                                    <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email (optional)</label>
+                                    <input type="email" value={revData.email} onChange={e => setRevData('email', e.target.value)} placeholder="ali@email.com"
                                         className="w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white" />
                                 </div>
                             </div>
