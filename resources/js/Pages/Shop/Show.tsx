@@ -701,8 +701,8 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                         className="w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white" />
                                 </div>
                                 <div>
-                                    <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email (optional)</label>
-                                    <input type="email" value={revData.email} onChange={e => setRevData('email', e.target.value)} placeholder="ali@email.com"
+                                    <label className="block text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email *</label>
+                                    <input type="email" value={revData.email} onChange={e => setRevData('email', e.target.value)} required placeholder="ali@email.com"
                                         className="w-full h-11 px-4 border border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] bg-white" />
                                 </div>
                             </div>
