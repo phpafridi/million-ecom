@@ -60,7 +60,27 @@ function CatForm({ cat, allCategories, onClose }: {
         post(url, { onSuccess: onClose, forceFormData: true })
     }
 
-    const topLevel  = allCategories.filter(c => !c.parent_id && c.id !== cat?.id)
+    // All categories usable as a parent — every level, not just top-level —
+    // excluding the category being edited itself AND any of its own
+    // descendants (picking a descendant as parent would create a loop).
+    function getDescendantIds(id: number): Set<number> {
+        const ids = new Set<number>()
+        const walk = (pid: number) => {
+            allCategories.filter(c => c.parent_id === pid).forEach(c => { ids.add(c.id); walk(c.id) })
+        }
+        walk(id)
+        return ids
+    }
+    const excludedIds = cat ? getDescendantIds(cat.id) : new Set<number>()
+    function depthOf(c: typeof allCategories[number]): number {
+        let d = 0, p = c.parent_id
+        while (p) { d++; const parent = allCategories.find(x => x.id === p); p = parent?.parent_id ?? null }
+        return d
+    }
+    const selectableParents = allCategories
+        .filter(c => c.id !== cat?.id && !excludedIds.has(c.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(c => ({ ...c, depth: depthOf(c) }))
     const inputCls  = "w-full h-11 px-4 border-2 border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] transition-colors bg-white"
 
     return (
@@ -103,13 +123,15 @@ function CatForm({ cat, allCategories, onClose }: {
                         <label className="block text-[13px] font-bold text-blue-800 mb-1">Parent Category</label>
                         <p className="text-[12px] text-blue-600 mb-3">
                             Keep as <strong>Top Level</strong> for main menu items (Men, Women…).
-                            Pick a parent to make this a <strong>dropdown sub-item</strong> (e.g. "Shirts" under "Men").
+                            Pick any existing category as parent to nest under it — sub-categories can have their own sub-categories too (e.g. "Socks" under "Kids Accessories" under "Kids").
                         </p>
                         <select value={data.parent_id} onChange={e => setData('parent_id', e.target.value || '')}
                             className="w-full h-11 px-4 border-2 border-blue-300 rounded-xl text-[13.5px] outline-none focus:border-blue-500 bg-white font-semibold">
                             <option value="">⬛ Top Level — appears in main navigation</option>
-                            {topLevel.map(c => (
-                                <option key={c.id} value={c.id}>↳ Under "{c.name}" (sub-category)</option>
+                            {selectableParents.map(c => (
+                                <option key={c.id} value={c.id}>
+                                    {'　'.repeat(c.depth)}↳ Under "{c.name}"{c.depth > 0 ? ' (sub-category)' : ''}
+                                </option>
                             ))}
                         </select>
                     </div>
