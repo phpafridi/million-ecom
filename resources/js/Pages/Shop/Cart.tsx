@@ -661,9 +661,17 @@ export default function Cart({ items, subtotal, shipping, total, discount=0, poi
                                 </p>
                             )}
 
-                            {/* Trust signals */}
+                            {/* Trust signals — now pulled from the same Admin → Branding →
+                                Trust Bar settings (trust_1..trust_4) as the product page,
+                                so editing them in one place updates both. Falls back to
+                                the same defaults as Show.tsx when nothing's been customized. */}
                             <div className="mt-5 pt-4 border-t border-gray-100 space-y-2">
-                                {['🔒 Secure & encrypted checkout','📦 Fast delivery to your door','↩️ 7-day easy returns'].map(t => (
+                                {[
+                                    `${settings?.trust_1_icon ?? '🛡️'} ${settings?.trust_1_title ?? '100% Genuine'} — ${settings?.trust_1_sub ?? 'Verified quality'}`,
+                                    `${settings?.trust_2_icon ?? '🚚'} ${settings?.trust_2_title ?? 'Fast Delivery'} — ${settings?.trust_2_sub ?? 'Pakistan-wide'}`,
+                                    `${settings?.trust_3_icon ?? '↩️'} ${settings?.trust_3_title ?? '7-Day Returns'} — ${settings?.trust_3_sub ?? 'Hassle-free'}`,
+                                    `${settings?.trust_4_icon ?? '✅'} ${settings?.trust_4_title ?? 'Warranty'} — ${settings?.trust_4_sub ?? 'Covered'}`,
+                                ].map(t => (
                                     <div key={t} className="flex items-center gap-2 text-[12px] text-gray-500">
                                         <span>{t}</span>
                                     </div>

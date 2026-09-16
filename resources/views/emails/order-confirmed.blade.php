@@ -146,7 +146,7 @@
             @elseif($order->payment_method === 'cod')
               <span style="color:#f59e0b;font-size:12px;">Pay on delivery</span>
             @else
-              <span style="color:#f59e0b;font-size:12px;">Pending confirmation</span>
+              <span style="color:#f59e0b;font-size:12px;">Awaiting payment confirmation — we'll email you once it's confirmed</span>
             @endif
           </p>
         </div>
