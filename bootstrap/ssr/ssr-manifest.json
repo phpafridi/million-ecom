@@ -8,13 +8,13 @@
     "/build/assets/ImageUpload-zHhWKIfi.js"
   ],
   "resources/js/Components/Storefront/HeroSlider.tsx": [
-    "/build/assets/Home-B87H2uPm.js"
+    "/build/assets/Home-D5EIOpFp.js"
   ],
   "resources/js/Components/Storefront/ProductCard.tsx": [
     "/build/assets/ProductCard-Dl9N4E2E.js"
   ],
   "resources/js/Components/Storefront/ProductScroller.tsx": [
-    "/build/assets/Home-B87H2uPm.js"
+    "/build/assets/Home-D5EIOpFp.js"
   ],
   "resources/js/Components/Storefront/QuickViewModal.tsx": [
     "/build/assets/ProductCard-Dl9N4E2E.js"
@@ -23,7 +23,7 @@
     "/build/assets/Button-CI0-xv_v.js"
   ],
   "resources/js/Components/ui/FloatingCart.tsx": [
-    "/build/assets/StorefrontLayout-Dwo0iPSU.js"
+    "/build/assets/StorefrontLayout-BzEeKzY0.js"
   ],
   "resources/js/Components/ui/Input.tsx": [
     "/build/assets/Button-CI0-xv_v.js"
@@ -38,190 +38,193 @@
     "/build/assets/AdminLayout-MgAg6rU1.js"
   ],
   "resources/js/Layouts/StorefrontLayout.tsx": [
-    "/build/assets/StorefrontLayout-Dwo0iPSU.js"
+    "/build/assets/StorefrontLayout-BzEeKzY0.js"
   ],
   "resources/js/Pages/Account/Index.tsx": [
-    "/build/assets/Index-zWHThddC.js"
+    "/build/assets/Index-CcWZ6dR4.js"
   ],
   "resources/js/Pages/Account/Loyalty.tsx": [
-    "/build/assets/Loyalty-DCiFD3sx.js"
+    "/build/assets/Loyalty-CAfy6S_z.js"
   ],
   "resources/js/Pages/Account/OrderDetail.tsx": [
-    "/build/assets/OrderDetail-DOOtC5y0.js"
+    "/build/assets/OrderDetail-4lTGAusn.js"
   ],
   "resources/js/Pages/Account/Orders.tsx": [
-    "/build/assets/Orders-Tg9DzSzQ.js"
+    "/build/assets/Orders-Bes7X9E6.js"
   ],
   "resources/js/Pages/Account/Partials/AccountSidebar.tsx": [
-    "/build/assets/AccountSidebar-DVJqFEyl.js"
+    "/build/assets/AccountSidebar-BdWTWjTn.js"
   ],
   "resources/js/Pages/Account/Profile.tsx": [
-    "/build/assets/Profile-B5YP4vfL.js"
+    "/build/assets/Profile-CTdxyALs.js"
   ],
   "resources/js/Pages/Account/TailorOrders.tsx": [
-    "/build/assets/TailorOrders-2RD7ULRe.js"
+    "/build/assets/TailorOrders-DB8vT7Ke.js"
   ],
   "resources/js/Pages/Account/Wishlist.tsx": [
-    "/build/assets/Wishlist-C0ZYepx2.js"
+    "/build/assets/Wishlist-B2XUwBIa.js"
   ],
   "resources/js/Pages/Admin/Analytics/Index.tsx": [
-    "/build/assets/Index-GZdXWw38.js"
+    "/build/assets/Index-BTjqs0jI.js"
   ],
   "resources/js/Pages/Admin/Backup/Index.tsx": [
-    "/build/assets/Index-DdWQ7aRb.js"
+    "/build/assets/Index-sN69vHKD.js"
   ],
   "resources/js/Pages/Admin/Banners/Index.tsx": [
-    "/build/assets/Index-CiSZb9Lw.js"
+    "/build/assets/Index-gVwDFrom.js"
   ],
   "resources/js/Pages/Admin/BlockedIps/Index.tsx": [
-    "/build/assets/Index-D-OgFUYO.js"
+    "/build/assets/Index-L5qP7cgB.js"
   ],
   "resources/js/Pages/Admin/Branding/Index.tsx": [
-    "/build/assets/Index-BynFBXyb.js"
+    "/build/assets/Index-fKvgZLek.js"
   ],
   "resources/js/Pages/Admin/Categories/Index.tsx": [
-    "/build/assets/Index-D1a9JRp7.js"
+    "/build/assets/Index-DQoybFWs.js"
   ],
   "resources/js/Pages/Admin/Coupons/Index.tsx": [
-    "/build/assets/Index-BCkqoBgq.js"
+    "/build/assets/Index-6rSkQIpH.js"
   ],
   "resources/js/Pages/Admin/Customers/Index.tsx": [
-    "/build/assets/Index-DdFCJ2ye.js"
+    "/build/assets/Index-BUVtEKFx.js"
   ],
   "resources/js/Pages/Admin/Dashboard.tsx": [
-    "/build/assets/Dashboard-Ch8y8na3.js"
+    "/build/assets/Dashboard-CgubiSkd.js"
   ],
   "resources/js/Pages/Admin/EmailCampaigns/Index.tsx": [
-    "/build/assets/Index-Dy-7LIWL.js"
+    "/build/assets/Index-C0Ko75eX.js"
   ],
   "resources/js/Pages/Admin/Errors/NoPermission.tsx": [
-    "/build/assets/NoPermission-BY7eVp_r.js"
+    "/build/assets/NoPermission-DG3pbEtA.js"
   ],
   "resources/js/Pages/Admin/HeroSlides/Index.tsx": [
-    "/build/assets/Index-SpybvvaU.js"
+    "/build/assets/Index-Bag9jREz.js"
+  ],
+  "resources/js/Pages/Admin/Index.tsx": [
+    "/build/assets/Index-ym4ez1_6.js"
   ],
   "resources/js/Pages/Admin/Notifications/Index.tsx": [
-    "/build/assets/Index-Je6gt4Xs.js"
+    "/build/assets/Index-CpbvttKQ.js"
   ],
   "resources/js/Pages/Admin/Orders/Create.tsx": [
-    "/build/assets/Create-R4uUlv-v.js"
+    "/build/assets/Create-CdpTGXw3.js"
   ],
   "resources/js/Pages/Admin/Orders/Index.tsx": [
-    "/build/assets/Index-C3dDkzhW.js"
+    "/build/assets/Index-DMrvCA-J.js"
   ],
   "resources/js/Pages/Admin/Orders/Lookup.tsx": [
-    "/build/assets/Lookup-773ZG4xL.js"
+    "/build/assets/Lookup-BFjMGg35.js"
   ],
   "resources/js/Pages/Admin/Orders/Show.tsx": [
-    "/build/assets/Show-BZHau7pI.js"
+    "/build/assets/Show-BUMxCD8q.js"
   ],
   "resources/js/Pages/Admin/Pages/Index.tsx": [
-    "/build/assets/Index-pDDmG_-r.js"
+    "/build/assets/Index-B1Wov5-o.js"
   ],
   "resources/js/Pages/Admin/Payments/Index.tsx": [
-    "/build/assets/Index-DF5_q-eI.js"
+    "/build/assets/Index-DggH8frH.js"
   ],
   "resources/js/Pages/Admin/Products/Edit.tsx": [
-    "/build/assets/Edit-D5XUB2xI.js"
+    "/build/assets/Edit-PURDd_Rq.js"
   ],
   "resources/js/Pages/Admin/Products/Index.tsx": [
-    "/build/assets/Index-BdFfriDx.js"
+    "/build/assets/Index-C6-lsMOz.js"
   ],
   "resources/js/Pages/Admin/Profile.tsx": [
-    "/build/assets/Profile-8cYgygAt.js"
+    "/build/assets/Profile-CoOUPFGF.js"
   ],
   "resources/js/Pages/Admin/PromoVideo/Index.tsx": [
-    "/build/assets/Index-JTUCaKC7.js"
+    "/build/assets/Index-CgsfRPia.js"
   ],
   "resources/js/Pages/Admin/Reports/Index.tsx": [
-    "/build/assets/Index-ZBD0zv84.js"
+    "/build/assets/Index-2FpMqx-A.js"
   ],
   "resources/js/Pages/Admin/Returns/Index.tsx": [
-    "/build/assets/Index-Cs7BPvpB.js"
+    "/build/assets/Index-DvXavRCV.js"
   ],
   "resources/js/Pages/Admin/Reviews/Index.tsx": [
-    "/build/assets/Index-2t6n45Zp.js"
+    "/build/assets/Index-Dp__jKUf.js"
   ],
   "resources/js/Pages/Admin/Seo/Index.tsx": [
-    "/build/assets/Index-DwdC4sop.js"
+    "/build/assets/Index-lV7SIHlE.js"
   ],
   "resources/js/Pages/Admin/Settings.tsx": [
-    "/build/assets/Settings-BbFwCNWM.js"
+    "/build/assets/Settings-xNujExns.js"
   ],
   "resources/js/Pages/Admin/Staff/Index.tsx": [
-    "/build/assets/Index-CdFMkOiY.js"
+    "/build/assets/Index-CTBhcIgZ.js"
   ],
   "resources/js/Pages/Admin/Support/Index.tsx": [
-    "/build/assets/Index-Cc-x-nkQ.js"
+    "/build/assets/Index-CY82Ni7s.js"
   ],
   "resources/js/Pages/Admin/Support/Show.tsx": [
-    "/build/assets/Show-B5j0wblj.js"
+    "/build/assets/Show-BogB31M8.js"
   ],
   "resources/js/Pages/Admin/SystemLogs/Index.tsx": [
-    "/build/assets/Index-o8GCyMri.js"
+    "/build/assets/Index-CKOpcg-O.js"
   ],
   "resources/js/Pages/Admin/Theme/Index.tsx": [
-    "/build/assets/Index-D8Eg1wd8.js"
+    "/build/assets/Index-D1pdk0gp.js"
   ],
   "resources/js/Pages/Admin/WhatsApp/Index.tsx": [
-    "/build/assets/Index-nL8Oc_Wq.js"
+    "/build/assets/Index-aTMs2TY5.js"
   ],
   "resources/js/Pages/Auth/Login.tsx": [
-    "/build/assets/Login-03s1Oy-3.js"
+    "/build/assets/Login-BLgNYHxQ.js"
   ],
   "resources/js/Pages/Auth/Register.tsx": [
-    "/build/assets/Register-Ddkse3UX.js"
+    "/build/assets/Register-CzT_F7Q6.js"
   ],
   "resources/js/Pages/Home.tsx": [
-    "/build/assets/Home-B87H2uPm.js"
+    "/build/assets/Home-D5EIOpFp.js"
   ],
   "resources/js/Pages/Info/About.tsx": [
-    "/build/assets/About-Bjgyn0kf.js"
+    "/build/assets/About-D5DNQb11.js"
   ],
   "resources/js/Pages/Info/Contact.tsx": [
-    "/build/assets/Contact-C4tUhge-.js"
+    "/build/assets/Contact-BDga7Heo.js"
   ],
   "resources/js/Pages/Info/Policy.tsx": [
-    "/build/assets/Policy-CyRMMmqX.js"
+    "/build/assets/Policy-CIwCie6u.js"
   ],
   "resources/js/Pages/Shop/Cart.tsx": [
-    "/build/assets/Cart-b1DutDM_.js"
+    "/build/assets/Cart-DE1z6T0c.js"
   ],
   "resources/js/Pages/Shop/CategoryLanding.tsx": [
-    "/build/assets/CategoryLanding-DLQhvmft.js"
+    "/build/assets/CategoryLanding-zyZGbuSb.js"
   ],
   "resources/js/Pages/Shop/Index.tsx": [
-    "/build/assets/Index-ByRr30Ji.js"
+    "/build/assets/Index-0v88EmS9.js"
   ],
   "resources/js/Pages/Shop/OrderConfirmation.tsx": [
-    "/build/assets/OrderConfirmation-Bv-eKQ-D.js"
+    "/build/assets/OrderConfirmation-CLurca2a.js"
   ],
   "resources/js/Pages/Shop/OrderConfirmed.tsx": [
-    "/build/assets/OrderConfirmed-C70bRyLo.js"
+    "/build/assets/OrderConfirmed-V5FKHq2A.js"
   ],
   "resources/js/Pages/Shop/PayFastRedirect.tsx": [
-    "/build/assets/PayFastRedirect-CZGqgxsr.js"
+    "/build/assets/PayFastRedirect-D9pTVs3c.js"
   ],
   "resources/js/Pages/Shop/PaymentFailed.tsx": [
-    "/build/assets/PaymentFailed-Ba_NEWUZ.js"
+    "/build/assets/PaymentFailed-C-CLb2aJ.js"
   ],
   "resources/js/Pages/Shop/Show.tsx": [
-    "/build/assets/Show-CsBOnYXR.js"
+    "/build/assets/Show-JImKhAKM.js"
   ],
   "resources/js/Pages/Shop/Support.tsx": [
-    "/build/assets/Support-C819XoLA.js"
+    "/build/assets/Support-Hzo5JYK8.js"
   ],
   "resources/js/Pages/Shop/TrackOrder.tsx": [
-    "/build/assets/TrackOrder-CjrX_Eha.js"
+    "/build/assets/TrackOrder-6YIwz-Oh.js"
   ],
   "resources/js/Pages/Shop/Wishlist.tsx": [
-    "/build/assets/Wishlist-Bm0AvySE.js"
+    "/build/assets/Wishlist-DAOUyMXy.js"
   ],
   "resources/js/constants/imageSpecs.ts": [
-    "/build/assets/Index-CiSZb9Lw.js"
+    "/build/assets/Index-gVwDFrom.js"
   ],
   "resources/js/ssr.tsx": [],
   "resources/js/utils/floatingButtons.ts": [
-    "/build/assets/StorefrontLayout-Dwo0iPSU.js"
+    "/build/assets/StorefrontLayout-BzEeKzY0.js"
   ]
 }

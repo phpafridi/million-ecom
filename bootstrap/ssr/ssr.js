@@ -5,6 +5,7 @@ import React, { createContext, forwardRef, useRef, useMemo, useState, useEffect,
 import { flushSync } from "react-dom";
 import { cloneDeep, isEqual, set, has, get, escape } from "lodash-es";
 import { createValidator, toSimpleValidationErrors, resolveName } from "laravel-precognition";
+import createServer from "@inertiajs/core/server";
 var headContext = createContext(null);
 headContext.displayName = "InertiaHeadContext";
 var HeadContext_default = headContext;
@@ -106,7 +107,7 @@ async function createInertiaApp({
   title,
   progress: progress2 = {},
   page,
-  render: render2,
+  render,
   defaults = {}
 }) {
   config.replace(defaults);
@@ -144,7 +145,7 @@ async function createInertiaApp({
   if (!isServer && progress2) {
     setupProgress(progress2);
   }
-  if (isServer && render2) {
+  if (isServer && render) {
     const element = () => {
       if (!useScriptElementForInitialPage) {
         return createElement(
@@ -167,7 +168,7 @@ async function createInertiaApp({
         createElement("div", { id }, reactApp)
       );
     };
-    const body = await render2(element());
+    const body = await render(element());
     return { head, body };
   }
 }
@@ -1346,23 +1347,22 @@ async function resolvePageComponent(path, pages) {
   }
   throw new Error(`Page not found: ${path}`);
 }
-function render(page) {
-  return createInertiaApp({
+createServer(
+  (page) => createInertiaApp({
     page,
-    render: ReactDOMServer.renderToString,
     title: (title) => title ? `${title} — MILLIONAIRE` : "MILLIONAIRE — Wear Your Status",
+    render: ReactDOMServer.renderToString,
     resolve: (name) => resolvePageComponent(
       `./Pages/${name}.tsx`,
-      /* @__PURE__ */ Object.assign({ "./Pages/Account/Index.tsx": () => import("./assets/Index-zWHThddC.js"), "./Pages/Account/Loyalty.tsx": () => import("./assets/Loyalty-DCiFD3sx.js"), "./Pages/Account/OrderDetail.tsx": () => import("./assets/OrderDetail-DOOtC5y0.js"), "./Pages/Account/Orders.tsx": () => import("./assets/Orders-Tg9DzSzQ.js"), "./Pages/Account/Partials/AccountSidebar.tsx": () => import("./assets/AccountSidebar-DVJqFEyl.js"), "./Pages/Account/Profile.tsx": () => import("./assets/Profile-B5YP4vfL.js"), "./Pages/Account/TailorOrders.tsx": () => import("./assets/TailorOrders-2RD7ULRe.js"), "./Pages/Account/Wishlist.tsx": () => import("./assets/Wishlist-C0ZYepx2.js"), "./Pages/Admin/Analytics/Index.tsx": () => import("./assets/Index-GZdXWw38.js"), "./Pages/Admin/Backup/Index.tsx": () => import("./assets/Index-DdWQ7aRb.js"), "./Pages/Admin/Banners/Index.tsx": () => import("./assets/Index-CiSZb9Lw.js"), "./Pages/Admin/BlockedIps/Index.tsx": () => import("./assets/Index-D-OgFUYO.js"), "./Pages/Admin/Branding/Index.tsx": () => import("./assets/Index-BynFBXyb.js"), "./Pages/Admin/Categories/Index.tsx": () => import("./assets/Index-D1a9JRp7.js"), "./Pages/Admin/Coupons/Index.tsx": () => import("./assets/Index-BCkqoBgq.js"), "./Pages/Admin/Customers/Index.tsx": () => import("./assets/Index-DdFCJ2ye.js"), "./Pages/Admin/Dashboard.tsx": () => import("./assets/Dashboard-Ch8y8na3.js"), "./Pages/Admin/EmailCampaigns/Index.tsx": () => import("./assets/Index-Dy-7LIWL.js"), "./Pages/Admin/Errors/NoPermission.tsx": () => import("./assets/NoPermission-BY7eVp_r.js"), "./Pages/Admin/HeroSlides/Index.tsx": () => import("./assets/Index-SpybvvaU.js"), "./Pages/Admin/Notifications/Index.tsx": () => import("./assets/Index-Je6gt4Xs.js"), "./Pages/Admin/Orders/Create.tsx": () => import("./assets/Create-R4uUlv-v.js"), "./Pages/Admin/Orders/Index.tsx": () => import("./assets/Index-C3dDkzhW.js"), "./Pages/Admin/Orders/Lookup.tsx": () => import("./assets/Lookup-773ZG4xL.js"), "./Pages/Admin/Orders/Show.tsx": () => import("./assets/Show-BZHau7pI.js"), "./Pages/Admin/Pages/Index.tsx": () => import("./assets/Index-pDDmG_-r.js"), "./Pages/Admin/Payments/Index.tsx": () => import("./assets/Index-DF5_q-eI.js"), "./Pages/Admin/Products/Edit.tsx": () => import("./assets/Edit-D5XUB2xI.js"), "./Pages/Admin/Products/Index.tsx": () => import("./assets/Index-BdFfriDx.js"), "./Pages/Admin/Profile.tsx": () => import("./assets/Profile-8cYgygAt.js"), "./Pages/Admin/PromoVideo/Index.tsx": () => import("./assets/Index-JTUCaKC7.js"), "./Pages/Admin/Reports/Index.tsx": () => import("./assets/Index-ZBD0zv84.js"), "./Pages/Admin/Returns/Index.tsx": () => import("./assets/Index-Cs7BPvpB.js"), "./Pages/Admin/Reviews/Index.tsx": () => import("./assets/Index-2t6n45Zp.js"), "./Pages/Admin/Seo/Index.tsx": () => import("./assets/Index-DwdC4sop.js"), "./Pages/Admin/Settings.tsx": () => import("./assets/Settings-BbFwCNWM.js"), "./Pages/Admin/Staff/Index.tsx": () => import("./assets/Index-CdFMkOiY.js"), "./Pages/Admin/Support/Index.tsx": () => import("./assets/Index-Cc-x-nkQ.js"), "./Pages/Admin/Support/Show.tsx": () => import("./assets/Show-B5j0wblj.js"), "./Pages/Admin/SystemLogs/Index.tsx": () => import("./assets/Index-o8GCyMri.js"), "./Pages/Admin/Theme/Index.tsx": () => import("./assets/Index-D8Eg1wd8.js"), "./Pages/Admin/WhatsApp/Index.tsx": () => import("./assets/Index-nL8Oc_Wq.js"), "./Pages/Auth/Login.tsx": () => import("./assets/Login-03s1Oy-3.js"), "./Pages/Auth/Register.tsx": () => import("./assets/Register-Ddkse3UX.js"), "./Pages/Home.tsx": () => import("./assets/Home-B87H2uPm.js"), "./Pages/Info/About.tsx": () => import("./assets/About-Bjgyn0kf.js"), "./Pages/Info/Contact.tsx": () => import("./assets/Contact-C4tUhge-.js"), "./Pages/Info/Policy.tsx": () => import("./assets/Policy-CyRMMmqX.js"), "./Pages/Shop/Cart.tsx": () => import("./assets/Cart-b1DutDM_.js"), "./Pages/Shop/CategoryLanding.tsx": () => import("./assets/CategoryLanding-DLQhvmft.js"), "./Pages/Shop/Index.tsx": () => import("./assets/Index-ByRr30Ji.js"), "./Pages/Shop/OrderConfirmation.tsx": () => import("./assets/OrderConfirmation-Bv-eKQ-D.js"), "./Pages/Shop/OrderConfirmed.tsx": () => import("./assets/OrderConfirmed-C70bRyLo.js"), "./Pages/Shop/PayFastRedirect.tsx": () => import("./assets/PayFastRedirect-CZGqgxsr.js"), "./Pages/Shop/PaymentFailed.tsx": () => import("./assets/PaymentFailed-Ba_NEWUZ.js"), "./Pages/Shop/Show.tsx": () => import("./assets/Show-CsBOnYXR.js"), "./Pages/Shop/Support.tsx": () => import("./assets/Support-C819XoLA.js"), "./Pages/Shop/TrackOrder.tsx": () => import("./assets/TrackOrder-CjrX_Eha.js"), "./Pages/Shop/Wishlist.tsx": () => import("./assets/Wishlist-Bm0AvySE.js") })
+      /* @__PURE__ */ Object.assign({ "./Pages/Account/Index.tsx": () => import("./assets/Index-CcWZ6dR4.js"), "./Pages/Account/Loyalty.tsx": () => import("./assets/Loyalty-CAfy6S_z.js"), "./Pages/Account/OrderDetail.tsx": () => import("./assets/OrderDetail-4lTGAusn.js"), "./Pages/Account/Orders.tsx": () => import("./assets/Orders-Bes7X9E6.js"), "./Pages/Account/Partials/AccountSidebar.tsx": () => import("./assets/AccountSidebar-BdWTWjTn.js"), "./Pages/Account/Profile.tsx": () => import("./assets/Profile-CTdxyALs.js"), "./Pages/Account/TailorOrders.tsx": () => import("./assets/TailorOrders-DB8vT7Ke.js"), "./Pages/Account/Wishlist.tsx": () => import("./assets/Wishlist-B2XUwBIa.js"), "./Pages/Admin/Analytics/Index.tsx": () => import("./assets/Index-BTjqs0jI.js"), "./Pages/Admin/Backup/Index.tsx": () => import("./assets/Index-sN69vHKD.js"), "./Pages/Admin/Banners/Index.tsx": () => import("./assets/Index-gVwDFrom.js"), "./Pages/Admin/BlockedIps/Index.tsx": () => import("./assets/Index-L5qP7cgB.js"), "./Pages/Admin/Branding/Index.tsx": () => import("./assets/Index-fKvgZLek.js"), "./Pages/Admin/Categories/Index.tsx": () => import("./assets/Index-DQoybFWs.js"), "./Pages/Admin/Coupons/Index.tsx": () => import("./assets/Index-6rSkQIpH.js"), "./Pages/Admin/Customers/Index.tsx": () => import("./assets/Index-BUVtEKFx.js"), "./Pages/Admin/Dashboard.tsx": () => import("./assets/Dashboard-CgubiSkd.js"), "./Pages/Admin/EmailCampaigns/Index.tsx": () => import("./assets/Index-C0Ko75eX.js"), "./Pages/Admin/Errors/NoPermission.tsx": () => import("./assets/NoPermission-DG3pbEtA.js"), "./Pages/Admin/HeroSlides/Index.tsx": () => import("./assets/Index-Bag9jREz.js"), "./Pages/Admin/Index.tsx": () => import("./assets/Index-ym4ez1_6.js"), "./Pages/Admin/Notifications/Index.tsx": () => import("./assets/Index-CpbvttKQ.js"), "./Pages/Admin/Orders/Create.tsx": () => import("./assets/Create-CdpTGXw3.js"), "./Pages/Admin/Orders/Index.tsx": () => import("./assets/Index-DMrvCA-J.js"), "./Pages/Admin/Orders/Lookup.tsx": () => import("./assets/Lookup-BFjMGg35.js"), "./Pages/Admin/Orders/Show.tsx": () => import("./assets/Show-BUMxCD8q.js"), "./Pages/Admin/Pages/Index.tsx": () => import("./assets/Index-B1Wov5-o.js"), "./Pages/Admin/Payments/Index.tsx": () => import("./assets/Index-DggH8frH.js"), "./Pages/Admin/Products/Edit.tsx": () => import("./assets/Edit-PURDd_Rq.js"), "./Pages/Admin/Products/Index.tsx": () => import("./assets/Index-C6-lsMOz.js"), "./Pages/Admin/Profile.tsx": () => import("./assets/Profile-CoOUPFGF.js"), "./Pages/Admin/PromoVideo/Index.tsx": () => import("./assets/Index-CgsfRPia.js"), "./Pages/Admin/Reports/Index.tsx": () => import("./assets/Index-2FpMqx-A.js"), "./Pages/Admin/Returns/Index.tsx": () => import("./assets/Index-DvXavRCV.js"), "./Pages/Admin/Reviews/Index.tsx": () => import("./assets/Index-Dp__jKUf.js"), "./Pages/Admin/Seo/Index.tsx": () => import("./assets/Index-lV7SIHlE.js"), "./Pages/Admin/Settings.tsx": () => import("./assets/Settings-xNujExns.js"), "./Pages/Admin/Staff/Index.tsx": () => import("./assets/Index-CTBhcIgZ.js"), "./Pages/Admin/Support/Index.tsx": () => import("./assets/Index-CY82Ni7s.js"), "./Pages/Admin/Support/Show.tsx": () => import("./assets/Show-BogB31M8.js"), "./Pages/Admin/SystemLogs/Index.tsx": () => import("./assets/Index-CKOpcg-O.js"), "./Pages/Admin/Theme/Index.tsx": () => import("./assets/Index-D1pdk0gp.js"), "./Pages/Admin/WhatsApp/Index.tsx": () => import("./assets/Index-aTMs2TY5.js"), "./Pages/Auth/Login.tsx": () => import("./assets/Login-BLgNYHxQ.js"), "./Pages/Auth/Register.tsx": () => import("./assets/Register-CzT_F7Q6.js"), "./Pages/Home.tsx": () => import("./assets/Home-D5EIOpFp.js"), "./Pages/Info/About.tsx": () => import("./assets/About-D5DNQb11.js"), "./Pages/Info/Contact.tsx": () => import("./assets/Contact-BDga7Heo.js"), "./Pages/Info/Policy.tsx": () => import("./assets/Policy-CIwCie6u.js"), "./Pages/Shop/Cart.tsx": () => import("./assets/Cart-DE1z6T0c.js"), "./Pages/Shop/CategoryLanding.tsx": () => import("./assets/CategoryLanding-zyZGbuSb.js"), "./Pages/Shop/Index.tsx": () => import("./assets/Index-0v88EmS9.js"), "./Pages/Shop/OrderConfirmation.tsx": () => import("./assets/OrderConfirmation-CLurca2a.js"), "./Pages/Shop/OrderConfirmed.tsx": () => import("./assets/OrderConfirmed-V5FKHq2A.js"), "./Pages/Shop/PayFastRedirect.tsx": () => import("./assets/PayFastRedirect-D9pTVs3c.js"), "./Pages/Shop/PaymentFailed.tsx": () => import("./assets/PaymentFailed-C-CLb2aJ.js"), "./Pages/Shop/Show.tsx": () => import("./assets/Show-JImKhAKM.js"), "./Pages/Shop/Support.tsx": () => import("./assets/Support-Hzo5JYK8.js"), "./Pages/Shop/TrackOrder.tsx": () => import("./assets/TrackOrder-6YIwz-Oh.js"), "./Pages/Shop/Wishlist.tsx": () => import("./assets/Wishlist-DAOUyMXy.js") })
     ),
     setup: ({ App: App2, props }) => /* @__PURE__ */ jsx(App2, { ...props })
-  });
-}
+  })
+);
 export {
   Head_default as H,
   Link_default as L,
   useForm as a,
-  render as default,
   router3 as r,
   usePage as u
 };

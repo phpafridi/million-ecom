@@ -58,7 +58,7 @@ export default function StorefrontLayout({ children, auth, settings, hideFloatin
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    const siteName = settings?.site_name ?? 'Tijar'
+    const siteName = settings?.site_name ?? 'Millionaire'
     const phone    = settings?.phone     ?? ''
     // Only treat it as a real number if it actually looks like one — the
     // stored value was found to literally contain "Pakistan" (a country

@@ -1,34 +1,34 @@
 import { Head, Link } from '@inertiajs/react'
-import { IconShieldCheck, IconTruck, IconHeadset, IconStar, IconBrandWhatsapp, IconArrowRight } from '@tabler/icons-react'
+import { IconBrandWhatsapp, IconArrowRight } from '@tabler/icons-react'
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 
 interface Props { settings: Record<string, string>; content?: Record<string, string>; auth?: any }
 
-export default function About({ settings, content, auth }: Props) {
+export default function About({ settings, content = {}, auth }: Props) {
     const wa      = settings?.whatsapp_number ?? ''
     const siteName = settings?.site_name ?? 'MILLIONAIRE'
-    const phone   = settings?.phone ?? ''
+    const c = content
 
     const stats = [
-        { value: '50,000+', label: 'Happy Customers' },
-        { value: '1,000+',  label: 'Premium Products' },
-        { value: '7',       label: 'Product Categories' },
-        { value: '4.9★',    label: 'Average Rating' },
+        { value: c.about_stat1_value ?? '50,000+', label: c.about_stat1_label ?? 'Happy Customers' },
+        { value: c.about_stat2_value ?? '1,000+',  label: c.about_stat2_label ?? 'Premium Products' },
+        { value: c.about_stat3_value ?? '7',       label: c.about_stat3_label ?? 'Product Categories' },
+        { value: c.about_stat4_value ?? '4.9★',    label: c.about_stat4_label ?? 'Average Rating' },
     ]
 
     const values = [
-        { icon: '💎', title: 'Premium Quality',    desc: 'Every product is hand-selected and verified for authenticity. We never compromise on quality.' },
-        { icon: '🚚', title: 'Fast Delivery',       desc: 'Lahore, Karachi, Islamabad — 2 to 3 business days. All other cities within 5 days.' },
-        { icon: '🔒', title: 'Secure Payments',     desc: 'PayFast, JazzCash, Easypaisa, Bank Transfer, COD — all payments secured and verified.' },
-        { icon: '↩️', title: 'Easy Returns',        desc: '7-day hassle-free returns on clothing. 30 days on shoes. Your satisfaction is guaranteed.' },
-        { icon: '🎧', title: '24/7 Support',        desc: 'Our team is always available via WhatsApp, live chat, or email to assist you.' },
-        { icon: '✅', title: '100% Genuine',        desc: 'Every item is 100% authentic. No replicas, no fakes — ever.' },
+        { icon: c.about_value1_icon ?? '💎', title: c.about_value1_title ?? 'Premium Quality', desc: c.about_value1_desc ?? 'Every product is hand-selected and verified for authenticity. We never compromise on quality.' },
+        { icon: c.about_value2_icon ?? '🚚', title: c.about_value2_title ?? 'Fast Delivery',    desc: c.about_value2_desc ?? 'Lahore, Karachi, Islamabad — 2 to 3 business days. All other cities within 5 days.' },
+        { icon: c.about_value3_icon ?? '🔒', title: c.about_value3_title ?? 'Secure Payments',  desc: c.about_value3_desc ?? 'PayFast, JazzCash, Easypaisa, Bank Transfer, COD — all payments secured and verified.' },
+        { icon: c.about_value4_icon ?? '↩️', title: c.about_value4_title ?? 'Easy Returns',     desc: c.about_value4_desc ?? '7-day hassle-free returns on clothing. 30 days on shoes. Your satisfaction is guaranteed.' },
+        { icon: c.about_value5_icon ?? '🎧', title: c.about_value5_title ?? '24/7 Support',     desc: c.about_value5_desc ?? 'Our team is always available via WhatsApp, live chat, or email to assist you.' },
+        { icon: c.about_value6_icon ?? '✅', title: c.about_value6_title ?? '100% Genuine',     desc: c.about_value6_desc ?? 'Every item is 100% authentic. No replicas, no fakes — ever.' },
     ]
 
     const team = [
-        { name: 'Hashmat Afridi', role: 'Founder & CEO',          emoji: '👑' },
-        { name: 'Operations',    role: 'Warehouse & Fulfillment', emoji: '📦' },
-        { name: 'Customer Care', role: 'Support Team',           emoji: '🎧' },
+        { name: c.about_team1_name ?? 'Salman Afridi', role: c.about_team1_role ?? 'Founder & CEO',           emoji: c.about_team1_emoji ?? '👑' },
+        { name: c.about_team2_name ?? 'Operations',    role: c.about_team2_role ?? 'Warehouse & Fulfillment', emoji: c.about_team2_emoji ?? '📦' },
+        { name: c.about_team3_name ?? 'Customer Care', role: c.about_team3_role ?? 'Support Team',            emoji: c.about_team3_emoji ?? '🎧' },
     ]
 
     return (
@@ -45,10 +45,10 @@ export default function About({ settings, content, auth }: Props) {
                             <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Our Story</span>
                         </div>
                         <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(32px,6vw,60px)', color: 'white', margin: '0 0 16px', lineHeight: 1.05 }}>
-                            Wear Your<br /><span style={{ color: 'var(--color-primary)' }}>Status.</span>
+                            {c.about_hero_title1 ?? 'Wear Your'}<br /><span style={{ color: 'var(--color-primary)' }}>{c.about_hero_title2 ?? 'Status.'}</span>
                         </h1>
                         <p style={{ fontSize: 'clamp(14px,1.8vw,17px)', color: 'rgba(255,255,255,0.55)', maxWidth: 520, lineHeight: 1.7, margin: '0 0 32px' }}>
-                            {content?.about_tagline ?? `${siteName} is Pakistan's premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.`}
+                            {c.about_tagline ?? `${siteName} is Pakistan's premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.`}
                         </p>
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                             <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', fontWeight: 800, fontSize: 14, padding: '12px 24px', borderRadius: 100, textDecoration: 'none' }}>
@@ -87,26 +87,26 @@ export default function About({ settings, content, auth }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 48, alignItems: 'start' }}>
                     <div>
                         <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Our Mission</p>
-                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 20px', lineHeight: 1.15 }}>
-                            Premium lifestyle.<br />Honest prices.
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 20px', lineHeight: 1.15, whiteSpace: 'pre-line' }}>
+                            {c.about_mission_heading ?? 'Premium lifestyle.\nHonest prices.'}
                         </h2>
                         <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, margin: '0 0 16px' }}>
-                            {content?.about_mission ?? `${siteName} was founded with one goal — make premium quality fashion and lifestyle products accessible to every Pakistani who knows their worth.`}
+                            {c.about_mission ?? `${siteName} was founded with one goal — make premium quality fashion and lifestyle products accessible to every Pakistani who knows their worth.`}
                         </p>
                         <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
-                            {content?.about_mission2 ?? 'From signature clothing to luxury perfumes, premium watches to designer sunglasses — every product in our store is carefully selected to match the Millionaire standard.'}
+                            {c.about_mission2 ?? 'From signature clothing to luxury perfumes, premium watches to designer sunglasses — every product in our store is carefully selected to match the Millionaire standard.'}
                         </p>
                     </div>
                     <div>
                         <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Our Vision</p>
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 20px', lineHeight: 1.15 }}>
-                            Pakistan's most trusted premium store.
+                            {c.about_vision_heading ?? "Pakistan's most trusted premium store."}
                         </h2>
                         <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, margin: '0 0 16px' }}>
-                            {content?.about_vision ?? 'We are building a brand that Pakistanis trust for quality, speed and service. Every order we fulfill is a step toward that vision.'}
+                            {c.about_vision ?? 'We are building a brand that Pakistanis trust for quality, speed and service. Every order we fulfill is a step toward that vision.'}
                         </p>
                         <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
-                            {content?.about_vision2 ?? 'Whether you shop from Karachi, Lahore or a small city, MILLIONAIRE delivers the same premium experience to your doorstep.'}
+                            {c.about_vision2 ?? 'Whether you shop from Karachi, Lahore or a small city, MILLIONAIRE delivers the same premium experience to your doorstep.'}
                         </p>
                     </div>
                 </div>
@@ -116,8 +116,8 @@ export default function About({ settings, content, auth }: Props) {
             <div style={{ background: '#F9FAFB', padding: 'clamp(48px,8vw,80px) clamp(20px,6vw,64px)' }}>
                 <div style={{ maxWidth: 1200, margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                        <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>Why MILLIONAIRE</p>
-                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: 0 }}>The MILLIONAIRE Promise</h2>
+                        <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>{c.about_values_eyebrow ?? 'Why MILLIONAIRE'}</p>
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: 0 }}>{c.about_values_title ?? 'The MILLIONAIRE Promise'}</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
                         {values.map(v => (
@@ -133,8 +133,8 @@ export default function About({ settings, content, auth }: Props) {
 
             {/* ── TEAM ── */}
             <div style={{ padding: 'clamp(48px,8vw,80px) clamp(20px,6vw,64px)', maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
-                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>The Team</p>
-                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 40px' }}>People Behind MILLIONAIRE</h2>
+                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px' }}>{c.about_team_eyebrow ?? 'The Team'}</p>
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,3.5vw,36px)', color: '#111', margin: '0 0 40px' }}>{c.about_team_title ?? 'People Behind MILLIONAIRE'}</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, maxWidth: 700, margin: '0 auto' }}>
                     {team.map(t => (
                         <div key={t.name} style={{ background: '#F9FAFB', borderRadius: 20, padding: '28px 20px', border: '1px solid #F3F4F6' }}>
@@ -149,9 +149,9 @@ export default function About({ settings, content, auth }: Props) {
             {/* ── CTA ── */}
             <div style={{ background: 'var(--color-dark-bg, #0a0a0a)', padding: 'clamp(48px,8vw,72px) clamp(20px,6vw,48px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at center, rgba(201,168,76,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px', position: 'relative' }}>Start Shopping</p>
-                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,4vw,40px)', color: 'white', margin: '0 0 16px', position: 'relative' }}>LIVE YOUR LEGACY</h2>
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', position: 'relative' }}>Join 50,000+ customers who trust MILLIONAIRE for premium lifestyle products.</p>
+                <p style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 12px', position: 'relative' }}>{c.about_cta_eyebrow ?? 'Start Shopping'}</p>
+                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(24px,4vw,40px)', color: 'white', margin: '0 0 16px', position: 'relative' }}>{c.about_cta_title ?? 'Ready to wear your status?'}</h2>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', position: 'relative' }}>{c.about_cta_subtitle ?? 'Join 50,000+ customers who trust MILLIONAIRE for premium lifestyle products.'}</p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
                     <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--color-primary)', color: 'var(--color-primary-text, #0a0a0a)', fontWeight: 800, fontSize: 14, padding: '14px 28px', borderRadius: 100, textDecoration: 'none' }}>
                         Shop Now <IconArrowRight size={16} />

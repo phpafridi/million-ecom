@@ -4,9 +4,9 @@ import { IconPhone, IconMail, IconBrandWhatsapp, IconSend, IconCheck, IconMapPin
 import StorefrontLayout from '@/Layouts/StorefrontLayout'
 import { router } from '@inertiajs/react'
 
-interface Props { settings: Record<string, string>; auth?: any }
+interface Props { settings: Record<string, string>; content?: Record<string, string>; auth?: any }
 
-export default function Contact({ settings, auth }: Props) {
+export default function Contact({ settings, content = {}, auth }: Props) {
     const [sent, setSent]   = useState(false)
     const [loading, setLoading] = useState(false)
     const [form, setForm]   = useState({ name: '', email: '', phone: '', subject: '', message: '' })
@@ -15,6 +15,7 @@ export default function Contact({ settings, auth }: Props) {
     const email   = settings?.email ?? ''
     const address = settings?.address ?? 'Pakistan'
     const siteName = settings?.site_name ?? 'MILLIONAIRE'
+    const c = content
 
     function submit(e: React.FormEvent) {
         e.preventDefault()
@@ -33,6 +34,12 @@ export default function Contact({ settings, auth }: Props) {
         { icon: <IconMapPin size={22}/>, label: 'Location', value: address, href: '#', color: '#EF4444' },
     ]
 
+    const hours: [string, string][] = [
+        [c.contact_hours1_day ?? 'Monday – Saturday',    c.contact_hours1_time ?? '10:00 AM – 8:00 PM'],
+        [c.contact_hours2_day ?? 'Sunday',                c.contact_hours2_time ?? '12:00 PM – 6:00 PM'],
+        [c.contact_hours3_day ?? 'WhatsApp / Live Chat',  c.contact_hours3_time ?? '24 / 7'],
+    ]
+
     return (
         <StorefrontLayout auth={auth} settings={settings}>
             <Head title={`Contact Us — ${siteName}`} />
@@ -43,13 +50,13 @@ export default function Contact({ settings, auth }: Props) {
                 <div style={{ maxWidth: 700, position: 'relative' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 100, padding: '5px 14px', marginBottom: 20 }}>
                         <IconMessageCircle size={13} color="var(--color-primary)" />
-                        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Get in Touch</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>{c.contact_hero_eyebrow ?? 'Get in Touch'}</span>
                     </div>
                     <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 'clamp(28px,5.5vw,52px)', color: 'white', margin: '0 0 14px', lineHeight: 1.05 }}>
-                        We're here to help<br /><span style={{ color: 'var(--color-primary)' }}>anytime.</span>
+                        {c.contact_hero_title1 ?? "We're here to help"}<br /><span style={{ color: 'var(--color-primary)' }}>{c.contact_hero_title2 ?? 'anytime.'}</span>
                     </h1>
                     <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
-                        Questions about your order, products, or anything else? Our team responds within 1 hour during business hours.
+                        {c.contact_hero_subtitle ?? 'Questions about your order, products, or anything else? Our team responds within 1 hour during business hours.'}
                     </p>
                 </div>
             </div>
@@ -61,15 +68,15 @@ export default function Contact({ settings, auth }: Props) {
                     <div>
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: 22, color: '#111', margin: '0 0 20px' }}>Contact Information</h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-                            {contacts.map(c => (
-                                <a key={c.label} href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+                            {contacts.map(cn => (
+                                <a key={cn.label} href={cn.href} target={cn.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
                                     style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#F9FAFB', borderRadius: 16, padding: '16px 18px', textDecoration: 'none', border: '1px solid #F3F4F6', transition: 'border-color 0.2s' }}>
-                                    <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: c.color + '15', color: c.color }}>
-                                        {c.icon}
+                                    <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: cn.color + '15', color: cn.color }}>
+                                        {cn.icon}
                                     </div>
                                     <div>
-                                        <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 2px' }}>{c.label}</p>
-                                        <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0 }}>{c.value}</p>
+                                        <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 2px' }}>{cn.label}</p>
+                                        <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0 }}>{cn.value}</p>
                                     </div>
                                 </a>
                             ))}
@@ -81,7 +88,7 @@ export default function Contact({ settings, auth }: Props) {
                                 <IconClock size={18} color="var(--color-primary)" />
                                 <p style={{ fontWeight: 800, fontSize: 14, color: 'white', margin: 0 }}>Business Hours</p>
                             </div>
-                            {[['Monday – Saturday', '10:00 AM – 8:00 PM'],['Sunday', '12:00 PM – 6:00 PM'],['WhatsApp / Live Chat', '24 / 7']].map(([d,t]) => (
+                            {hours.map(([d, t]) => (
                                 <div key={d} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{d}</span>
                                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>{t}</span>
@@ -138,7 +145,7 @@ export default function Contact({ settings, auth }: Props) {
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--color-dark-bg, #0a0a0a)', color: 'white', border: 'none', borderRadius: 14, padding: '15px 24px', fontWeight: 800, fontSize: 14, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
                                     <IconSend size={17} /> {loading ? 'Sending...' : 'Send Message'}
                                 </button>
-                                <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', margin: 0 }}>We respond within 1 hour · Mon–Sat 10AM–8PM</p>
+                                <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', margin: 0 }}>{c.contact_response_note ?? 'We respond within 1 hour · Mon–Sat 10AM–8PM'}</p>
                             </form>
                         )}
                     </div>

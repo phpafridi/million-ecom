@@ -1,219 +1,23 @@
 <?php
-namespace App\Http\Controllers\Admin;
+namespace Database\Seeders;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Database\Seeder;
 use App\Models\Setting;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 
-class PageController extends Controller
+/**
+ * Restores About / Contact / Privacy / Terms / Return / Shipping / Payment
+ * page content back to the original default text. Safe to run anytime —
+ * it OVERWRITES whatever is currently saved for these specific keys with
+ * the known-good original content. It does not touch any other settings
+ * (theme, shipping fee, site name, etc).
+ *
+ * Run with:  php artisan db:seed --class=PageContentSeeder
+ */
+class PageContentSeeder extends Seeder
 {
-    private array $pages = [
-        'about' => [
-            'title'  => 'About Page',
-            'icon'   => '🏆',
-            'fields' => [
-                ['key'=>'about_hero_title1', 'label'=>'Hero Heading (line 1)', 'type'=>'text'],
-                ['key'=>'about_hero_title2', 'label'=>'Hero Heading (line 2, highlighted)', 'type'=>'text'],
-                ['key'=>'about_tagline',  'label'=>'Hero Tagline',  'type'=>'textarea'],
-
-                ['key'=>'about_stat1_value', 'label'=>'Stat 1 — Value', 'type'=>'text'],
-                ['key'=>'about_stat1_label', 'label'=>'Stat 1 — Label', 'type'=>'text'],
-                ['key'=>'about_stat2_value', 'label'=>'Stat 2 — Value', 'type'=>'text'],
-                ['key'=>'about_stat2_label', 'label'=>'Stat 2 — Label', 'type'=>'text'],
-                ['key'=>'about_stat3_value', 'label'=>'Stat 3 — Value', 'type'=>'text'],
-                ['key'=>'about_stat3_label', 'label'=>'Stat 3 — Label', 'type'=>'text'],
-                ['key'=>'about_stat4_value', 'label'=>'Stat 4 — Value', 'type'=>'text'],
-                ['key'=>'about_stat4_label', 'label'=>'Stat 4 — Label', 'type'=>'text'],
-
-                ['key'=>'about_mission_heading', 'label'=>'Mission Section Heading', 'type'=>'text'],
-                ['key'=>'about_mission',  'label'=>'Our Mission (paragraph 1)', 'type'=>'textarea'],
-                ['key'=>'about_mission2', 'label'=>'Our Mission (paragraph 2)', 'type'=>'textarea'],
-                ['key'=>'about_vision_heading', 'label'=>'Vision Section Heading', 'type'=>'text'],
-                ['key'=>'about_vision',   'label'=>'Our Vision (paragraph 1)',  'type'=>'textarea'],
-                ['key'=>'about_vision2',  'label'=>'Our Vision (paragraph 2)',  'type'=>'textarea'],
-
-                ['key'=>'about_values_eyebrow', 'label'=>'Values Section — Eyebrow Label', 'type'=>'text'],
-                ['key'=>'about_values_title',   'label'=>'Values Section — Heading', 'type'=>'text'],
-                ['key'=>'about_value1_icon', 'label'=>'Value 1 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value1_title','label'=>'Value 1 — Title', 'type'=>'text'],
-                ['key'=>'about_value1_desc', 'label'=>'Value 1 — Description', 'type'=>'textarea'],
-                ['key'=>'about_value2_icon', 'label'=>'Value 2 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value2_title','label'=>'Value 2 — Title', 'type'=>'text'],
-                ['key'=>'about_value2_desc', 'label'=>'Value 2 — Description', 'type'=>'textarea'],
-                ['key'=>'about_value3_icon', 'label'=>'Value 3 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value3_title','label'=>'Value 3 — Title', 'type'=>'text'],
-                ['key'=>'about_value3_desc', 'label'=>'Value 3 — Description', 'type'=>'textarea'],
-                ['key'=>'about_value4_icon', 'label'=>'Value 4 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value4_title','label'=>'Value 4 — Title', 'type'=>'text'],
-                ['key'=>'about_value4_desc', 'label'=>'Value 4 — Description', 'type'=>'textarea'],
-                ['key'=>'about_value5_icon', 'label'=>'Value 5 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value5_title','label'=>'Value 5 — Title', 'type'=>'text'],
-                ['key'=>'about_value5_desc', 'label'=>'Value 5 — Description', 'type'=>'textarea'],
-                ['key'=>'about_value6_icon', 'label'=>'Value 6 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_value6_title','label'=>'Value 6 — Title', 'type'=>'text'],
-                ['key'=>'about_value6_desc', 'label'=>'Value 6 — Description', 'type'=>'textarea'],
-
-                ['key'=>'about_team_eyebrow', 'label'=>'Team Section — Eyebrow Label', 'type'=>'text'],
-                ['key'=>'about_team_title',   'label'=>'Team Section — Heading', 'type'=>'text'],
-                ['key'=>'about_team1_emoji', 'label'=>'Team Member 1 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_team1_name',  'label'=>'Team Member 1 — Name', 'type'=>'text'],
-                ['key'=>'about_team1_role',  'label'=>'Team Member 1 — Role', 'type'=>'text'],
-                ['key'=>'about_team2_emoji', 'label'=>'Team Member 2 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_team2_name',  'label'=>'Team Member 2 — Name', 'type'=>'text'],
-                ['key'=>'about_team2_role',  'label'=>'Team Member 2 — Role', 'type'=>'text'],
-                ['key'=>'about_team3_emoji', 'label'=>'Team Member 3 — Icon (emoji)', 'type'=>'text'],
-                ['key'=>'about_team3_name',  'label'=>'Team Member 3 — Name', 'type'=>'text'],
-                ['key'=>'about_team3_role',  'label'=>'Team Member 3 — Role', 'type'=>'text'],
-
-                ['key'=>'about_cta_eyebrow',  'label'=>'CTA Section — Eyebrow Label', 'type'=>'text'],
-                ['key'=>'about_cta_title',    'label'=>'CTA Section — Heading', 'type'=>'text'],
-                ['key'=>'about_cta_subtitle', 'label'=>'CTA Section — Subtitle', 'type'=>'textarea'],
-            ],
-        ],
-        'return-policy' => [
-            'title'  => 'Return & Exchange Policy',
-            'icon'   => '↩️',
-            'fields' => [
-                ['key'=>'policy_return_title',    'label'=>'Page Title',    'type'=>'text'],
-                ['key'=>'policy_return_subtitle', 'label'=>'Subtitle',      'type'=>'text'],
-                ['key'=>'policy_return_s1_title', 'label'=>'Section 1 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s1',       'label'=>'Section 1 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s2_title', 'label'=>'Section 2 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s2',       'label'=>'Section 2 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s3_title', 'label'=>'Section 3 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s3',       'label'=>'Section 3 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s4_title', 'label'=>'Section 4 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s4',       'label'=>'Section 4 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s5_title', 'label'=>'Section 5 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s5',       'label'=>'Section 5 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s6_title', 'label'=>'Section 6 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s6',       'label'=>'Section 6 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s7_title', 'label'=>'Section 7 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s7',       'label'=>'Section 7 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_return_s8_title', 'label'=>'Section 8 — Title',   'type'=>'text'],
-                ['key'=>'policy_return_s8',       'label'=>'Section 8 — Content', 'type'=>'textarea'],
-            ],
-        ],
-        'privacy-policy' => [
-            'title'  => 'Privacy Policy',
-            'icon'   => '🔒',
-            'fields' => [
-                ['key'=>'policy_privacy_title',    'label'=>'Page Title', 'type'=>'text'],
-                ['key'=>'policy_privacy_subtitle', 'label'=>'Subtitle',   'type'=>'text'],
-                ['key'=>'policy_privacy_s1_title', 'label'=>'Section 1 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s1',       'label'=>'Section 1 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_privacy_s2_title', 'label'=>'Section 2 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s2',       'label'=>'Section 2 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_privacy_s3_title', 'label'=>'Section 3 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s3',       'label'=>'Section 3 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_privacy_s4_title', 'label'=>'Section 4 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s4',       'label'=>'Section 4 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_privacy_s5_title', 'label'=>'Section 5 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s5',       'label'=>'Section 5 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_privacy_s6_title', 'label'=>'Section 6 — Title',   'type'=>'text'],
-                ['key'=>'policy_privacy_s6',       'label'=>'Section 6 — Content', 'type'=>'textarea'],
-            ],
-        ],
-        'terms' => [
-            'title'  => 'Terms of Service',
-            'icon'   => '📋',
-            'fields' => [
-                ['key'=>'policy_terms_title',    'label'=>'Page Title', 'type'=>'text'],
-                ['key'=>'policy_terms_subtitle', 'label'=>'Subtitle',   'type'=>'text'],
-                ['key'=>'policy_terms_s1_title', 'label'=>'Section 1 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s1',       'label'=>'Section 1 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s2_title', 'label'=>'Section 2 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s2',       'label'=>'Section 2 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s3_title', 'label'=>'Section 3 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s3',       'label'=>'Section 3 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s4_title', 'label'=>'Section 4 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s4',       'label'=>'Section 4 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s5_title', 'label'=>'Section 5 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s5',       'label'=>'Section 5 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s6_title', 'label'=>'Section 6 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s6',       'label'=>'Section 6 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s7_title', 'label'=>'Section 7 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s7',       'label'=>'Section 7 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_terms_s8_title', 'label'=>'Section 8 — Title',   'type'=>'text'],
-                ['key'=>'policy_terms_s8',       'label'=>'Section 8 — Content', 'type'=>'textarea'],
-            ],
-        ],
-        'shipping-policy' => [
-            'title'  => 'Shipping Policy',
-            'icon'   => '🚚',
-            'fields' => [
-                ['key'=>'policy_shipping_title',    'label'=>'Page Title', 'type'=>'text'],
-                ['key'=>'policy_shipping_subtitle', 'label'=>'Subtitle',   'type'=>'text'],
-                ['key'=>'policy_shipping_s1_title', 'label'=>'Section 1 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s1',       'label'=>'Section 1 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_shipping_s2_title', 'label'=>'Section 2 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s2',       'label'=>'Section 2 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_shipping_s3_title', 'label'=>'Section 3 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s3',       'label'=>'Section 3 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_shipping_s4_title', 'label'=>'Section 4 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s4',       'label'=>'Section 4 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_shipping_s5_title', 'label'=>'Section 5 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s5',       'label'=>'Section 5 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_shipping_s6_title', 'label'=>'Section 6 — Title',   'type'=>'text'],
-                ['key'=>'policy_shipping_s6',       'label'=>'Section 6 — Content', 'type'=>'textarea'],
-            ],
-        ],
-        'payment-policy' => [
-            'title'  => 'Payment Policy',
-            'icon'   => '💳',
-            'fields' => [
-                ['key'=>'policy_payment_title',    'label'=>'Page Title', 'type'=>'text'],
-                ['key'=>'policy_payment_subtitle', 'label'=>'Subtitle',   'type'=>'text'],
-                ['key'=>'policy_payment_s1_title', 'label'=>'Section 1 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s1',       'label'=>'Section 1 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_payment_s2_title', 'label'=>'Section 2 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s2',       'label'=>'Section 2 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_payment_s3_title', 'label'=>'Section 3 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s3',       'label'=>'Section 3 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_payment_s4_title', 'label'=>'Section 4 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s4',       'label'=>'Section 4 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_payment_s5_title', 'label'=>'Section 5 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s5',       'label'=>'Section 5 — Content', 'type'=>'textarea'],
-                ['key'=>'policy_payment_s6_title', 'label'=>'Section 6 — Title',   'type'=>'text'],
-                ['key'=>'policy_payment_s6',       'label'=>'Section 6 — Content', 'type'=>'textarea'],
-            ],
-        ],
-        'contact' => [
-            'title'  => 'Contact Page',
-            'icon'   => '📞',
-            'fields' => [
-                ['key'=>'contact_hero_eyebrow',  'label'=>'Hero — Eyebrow Label', 'type'=>'text'],
-                ['key'=>'contact_hero_title1',   'label'=>'Hero Heading (line 1)', 'type'=>'text'],
-                ['key'=>'contact_hero_title2',   'label'=>'Hero Heading (line 2, highlighted)', 'type'=>'text'],
-                ['key'=>'contact_hero_subtitle', 'label'=>'Hero Subtitle', 'type'=>'textarea'],
-
-                ['key'=>'contact_hours1_day',  'label'=>'Business Hours — Row 1 (day)', 'type'=>'text'],
-                ['key'=>'contact_hours1_time', 'label'=>'Business Hours — Row 1 (time)', 'type'=>'text'],
-                ['key'=>'contact_hours2_day',  'label'=>'Business Hours — Row 2 (day)', 'type'=>'text'],
-                ['key'=>'contact_hours2_time', 'label'=>'Business Hours — Row 2 (time)', 'type'=>'text'],
-                ['key'=>'contact_hours3_day',  'label'=>'Business Hours — Row 3 (day)', 'type'=>'text'],
-                ['key'=>'contact_hours3_time', 'label'=>'Business Hours — Row 3 (time)', 'type'=>'text'],
-
-                ['key'=>'contact_response_note', 'label'=>'Form Footer Note', 'type'=>'text'],
-            ],
-        ],
-    ];
-
-    // Policy pages that can be shown/hidden on the live site without deleting their content.
-    private array $togglePages = [
-        'return-policy'   => 'policy_return_enabled',
-        'privacy-policy'  => 'policy_privacy_enabled',
-        'terms'           => 'policy_terms_enabled',
-        'shipping-policy' => 'policy_shipping_enabled',
-        'payment-policy'  => 'policy_payment_enabled',
-    ];
-
-    // Same defaults the public site falls back to when a setting hasn't been
-    // saved yet — used to pre-fill the admin form so it never looks empty.
-    private function fieldDefaults(): array
+    public function run(): void
     {
-        return [
+        $defaults = [
         'about_hero_title1' => 'Wear Your',
         'about_hero_title2' => 'Status.',
         'about_tagline' => 'Pakistan\'s premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.',
@@ -522,42 +326,23 @@ Orders paid by bank transfer will not be dispatched until payment is confirmed.'
 
 Refund timelines may vary depending on your bank or payment provider.',
         ];
-    }
 
-    public function index()
-    {
-        $allKeys = collect($this->pages)
-            ->flatMap(fn($p) => collect($p['fields'])->pluck('key'))
-            ->unique()->values()->toArray();
-
-        // Merge: saved DB value wins if present, otherwise fall back to the
-        // same default the live site uses, so the form is never blank for
-        // content that's already showing on the site.
-        $settings = array_replace($this->fieldDefaults(), Setting::allKeyed());
-
-        return Inertia::render('Admin/Pages/Index', [
-            'pages'       => $this->pages,
-            'settings'    => $settings,
-            'togglePages' => $this->togglePages,
-        ]);
-    }
-
-    public function update(Request $request, string $key)
-    {
-        if (!isset($this->pages[$key])) abort(404);
-
-        foreach ($request->except('_token', '_method', 'visible') as $k => $v) {
-            Setting::set($k, (string) $v);
+        foreach ($defaults as $key => $value) {
+            Setting::set($key, $value);
         }
 
-        // Only touch the visibility toggle if the request actually included
-        // it. If "visible" is missing from the payload for any reason, we
-        // leave the current show/hide state untouched instead of silently
-        // disabling the page.
-        if (isset($this->togglePages[$key]) && $request->has('visible')) {
-            Setting::set($this->togglePages[$key], $request->boolean('visible') ? '1' : '0');
+        // Make sure all policy pages are visible again in case any got
+        // accidentally hidden.
+        foreach ([
+            'policy_return_enabled',
+            'policy_privacy_enabled',
+            'policy_terms_enabled',
+            'policy_shipping_enabled',
+            'policy_payment_enabled',
+        ] as $toggle) {
+            Setting::set($toggle, '1');
         }
 
-        return back()->with('success', ($this->pages[$key]['title'] ?? $key) . ' updated successfully.');
+        $this->command?->info('Restored ' . count($defaults) . ' page-content fields and re-enabled all policy pages.');
     }
 }

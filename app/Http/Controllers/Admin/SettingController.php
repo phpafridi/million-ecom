@@ -283,7 +283,7 @@ class SettingController extends Controller
             'logo'                   => 'nullable|image|max:2048',
         ]);
 
-        $oldAdminPath     = Setting::get('admin_path', 'tijar-admin');
+        $oldAdminPath     = Setting::get('admin_path', 'ml-admin');
         $newAdminPath     = $data['admin_path'] ?? $oldAdminPath;
         $adminPathChanged = $newAdminPath !== $oldAdminPath;
 

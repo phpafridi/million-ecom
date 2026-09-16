@@ -17,18 +17,61 @@ class PageController extends Controller
         return Inertia::render('Info/About', [
             'settings' => Setting::allKeyed(),
             'content'  => [
+                'about_hero_title1' => $this->s('about_hero_title1', 'Wear Your'),
+                'about_hero_title2' => $this->s('about_hero_title2', 'Status.'),
                 'about_tagline'  => $this->s('about_tagline',  'Pakistan\'s premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.'),
+
+                'about_stat1_value' => $this->s('about_stat1_value', '50,000+'), 'about_stat1_label' => $this->s('about_stat1_label', 'Happy Customers'),
+                'about_stat2_value' => $this->s('about_stat2_value', '1,000+'),  'about_stat2_label' => $this->s('about_stat2_label', 'Premium Products'),
+                'about_stat3_value' => $this->s('about_stat3_value', '7'),       'about_stat3_label' => $this->s('about_stat3_label', 'Product Categories'),
+                'about_stat4_value' => $this->s('about_stat4_value', '4.9★'),    'about_stat4_label' => $this->s('about_stat4_label', 'Average Rating'),
+
+                'about_mission_heading' => $this->s('about_mission_heading', 'Premium lifestyle. Honest prices.'),
                 'about_mission'  => $this->s('about_mission',  'MILLIONAIRE was founded with one goal — make premium quality fashion and lifestyle products accessible to every Pakistani who knows their worth.'),
                 'about_mission2' => $this->s('about_mission2', 'From signature clothing to luxury perfumes, premium watches to designer sunglasses — every product is carefully selected to match the MILLIONAIRE standard.'),
+                'about_vision_heading' => $this->s('about_vision_heading', 'Pakistan\'s most trusted premium store.'),
                 'about_vision'   => $this->s('about_vision',   'We are building a brand that Pakistanis trust for quality, speed and service. Every order we fulfill is a step toward that vision.'),
                 'about_vision2'  => $this->s('about_vision2',  'Whether you shop from Karachi, Lahore or a small city, MILLIONAIRE delivers the same premium experience to your doorstep.'),
+
+                'about_values_eyebrow' => $this->s('about_values_eyebrow', 'Why MILLIONAIRE'),
+                'about_values_title'   => $this->s('about_values_title', 'The MILLIONAIRE Promise'),
+                'about_value1_icon' => $this->s('about_value1_icon', '💎'), 'about_value1_title' => $this->s('about_value1_title', 'Premium Quality'), 'about_value1_desc' => $this->s('about_value1_desc', 'Every product is hand-selected and verified for authenticity. We never compromise on quality.'),
+                'about_value2_icon' => $this->s('about_value2_icon', '🚚'), 'about_value2_title' => $this->s('about_value2_title', 'Fast Delivery'), 'about_value2_desc' => $this->s('about_value2_desc', 'Lahore, Karachi, Islamabad — 2 to 3 business days. All other cities within 5 days.'),
+                'about_value3_icon' => $this->s('about_value3_icon', '🔒'), 'about_value3_title' => $this->s('about_value3_title', 'Secure Payments'), 'about_value3_desc' => $this->s('about_value3_desc', 'PayFast, JazzCash, Easypaisa, Bank Transfer, COD — all payments secured and verified.'),
+                'about_value4_icon' => $this->s('about_value4_icon', '↩️'), 'about_value4_title' => $this->s('about_value4_title', 'Easy Returns'), 'about_value4_desc' => $this->s('about_value4_desc', '7-day hassle-free returns on clothing. 30 days on shoes. Your satisfaction is guaranteed.'),
+                'about_value5_icon' => $this->s('about_value5_icon', '🎧'), 'about_value5_title' => $this->s('about_value5_title', '24/7 Support'), 'about_value5_desc' => $this->s('about_value5_desc', 'Our team is always available via WhatsApp, live chat, or email to assist you.'),
+                'about_value6_icon' => $this->s('about_value6_icon', '✅'), 'about_value6_title' => $this->s('about_value6_title', '100% Genuine'), 'about_value6_desc' => $this->s('about_value6_desc', 'Every item is 100% authentic. No replicas, no fakes — ever.'),
+
+                'about_team_eyebrow' => $this->s('about_team_eyebrow', 'The Team'),
+                'about_team_title'   => $this->s('about_team_title', 'People Behind MILLIONAIRE'),
+                'about_team1_emoji' => $this->s('about_team1_emoji', '👑'), 'about_team1_name' => $this->s('about_team1_name', 'Salman Afridi'), 'about_team1_role' => $this->s('about_team1_role', 'Founder & CEO'),
+                'about_team2_emoji' => $this->s('about_team2_emoji', '📦'), 'about_team2_name' => $this->s('about_team2_name', 'Operations'), 'about_team2_role' => $this->s('about_team2_role', 'Warehouse & Fulfillment'),
+                'about_team3_emoji' => $this->s('about_team3_emoji', '🎧'), 'about_team3_name' => $this->s('about_team3_name', 'Customer Care'), 'about_team3_role' => $this->s('about_team3_role', 'Support Team'),
+
+                'about_cta_eyebrow'  => $this->s('about_cta_eyebrow', 'Start Shopping'),
+                'about_cta_title'    => $this->s('about_cta_title', 'Ready to wear your status?'),
+                'about_cta_subtitle' => $this->s('about_cta_subtitle', 'Join 50,000+ customers who trust MILLIONAIRE for premium lifestyle products.'),
             ],
         ]);
     }
 
     public function contact()
     {
-        return Inertia::render('Info/Contact', ['settings' => Setting::allKeyed()]);
+        return Inertia::render('Info/Contact', [
+            'settings' => Setting::allKeyed(),
+            'content'  => [
+                'contact_hero_eyebrow'  => $this->s('contact_hero_eyebrow', 'Get in Touch'),
+                'contact_hero_title1'   => $this->s('contact_hero_title1', "We're here to help"),
+                'contact_hero_title2'   => $this->s('contact_hero_title2', 'anytime.'),
+                'contact_hero_subtitle' => $this->s('contact_hero_subtitle', 'Questions about your order, products, or anything else? Our team responds within 1 hour during business hours.'),
+
+                'contact_hours1_day' => $this->s('contact_hours1_day', 'Monday – Saturday'), 'contact_hours1_time' => $this->s('contact_hours1_time', '10:00 AM – 8:00 PM'),
+                'contact_hours2_day' => $this->s('contact_hours2_day', 'Sunday'),             'contact_hours2_time' => $this->s('contact_hours2_time', '12:00 PM – 6:00 PM'),
+                'contact_hours3_day' => $this->s('contact_hours3_day', 'WhatsApp / Live Chat'), 'contact_hours3_time' => $this->s('contact_hours3_time', '24 / 7'),
+
+                'contact_response_note' => $this->s('contact_response_note', 'We respond within 1 hour · Mon–Sat 10AM–8PM'),
+            ],
+        ]);
     }
 
     private function policy(array $page)
@@ -38,6 +81,7 @@ class PageController extends Controller
 
     public function returnPolicy()
     {
+        abort_unless(Setting::get('policy_return_enabled', '1') !== '0', 404);
         $s = Setting::get('site_name', 'MILLIONAIRE');
         return $this->policy([
             'title'    => $this->s('policy_return_title',    'Return & Exchange Policy'),
@@ -67,6 +111,7 @@ class PageController extends Controller
 
     public function privacyPolicy()
     {
+        abort_unless(Setting::get('policy_privacy_enabled', '1') !== '0', 404);
         $s = Setting::get('site_name', 'MILLIONAIRE');
         $e = Setting::get('email', 'support@millionaire.pk');
         return $this->policy([
@@ -93,6 +138,7 @@ class PageController extends Controller
 
     public function termsOfService()
     {
+        abort_unless(Setting::get('policy_terms_enabled', '1') !== '0', 404);
         $s = Setting::get('site_name', 'MILLIONAIRE');
         return $this->policy([
             'title'    => $this->s('policy_terms_title',    'Terms of Service'),
@@ -122,6 +168,7 @@ class PageController extends Controller
 
     public function shippingPolicy()
     {
+        abort_unless(Setting::get('policy_shipping_enabled', '1') !== '0', 404);
         $s = Setting::get('site_name', 'MILLIONAIRE');
         return $this->policy([
             'title'    => $this->s('policy_shipping_title',    'Shipping Policy'),
@@ -147,6 +194,7 @@ class PageController extends Controller
 
     public function paymentPolicy()
     {
+        abort_unless(Setting::get('policy_payment_enabled', '1') !== '0', 404);
         $s = Setting::get('site_name', 'MILLIONAIRE');
         return $this->policy([
             'title'    => $this->s('policy_payment_title',    'Payment Policy'),

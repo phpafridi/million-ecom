@@ -28,10 +28,10 @@
 
     $seo       = $page['props']['seo'] ?? [];
     $siteName  = $s['site_name'] ?? 'MILLIONAIRE';
-    $metaTitle = $seo['title']       ?? $s['seo_title']       ?? $siteName;
-    $metaDesc  = $seo['description'] ?? $s['seo_description'] ?? '';
-    $metaKeys  = $seo['keywords']    ?? $s['seo_keywords']    ?? '';
-    $ogImage   = $seo['image']       ?? $s['seo_image']       ?? null;
+    $metaTitle = $seo['title']       ?? $s['meta_title']       ?? $siteName;
+    $metaDesc  = $seo['description'] ?? $s['meta_description'] ?? '';
+    $metaKeys  = $seo['keywords']    ?? $s['meta_keywords']    ?? '';
+    $ogImage   = $seo['image']       ?? $s['og_image_url']     ?? null;
     $canonical = $seo['url']         ?? url()->current();
     $ogType    = $seo['type']        ?? 'website';
     $favicon   = $s['favicon_url']   ?? null;

@@ -30,6 +30,7 @@ Route::post("/{$adminLoginPath}/login", [LoginController::class, 'storeAdmin'])-
 
 // ── SEO
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/feed/facebook-products.xml', [\App\Http\Controllers\ProductFeedController::class, 'facebook'])->name('feed.facebook');
 Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('seo.robots');
 
 // ── STOREFRONT

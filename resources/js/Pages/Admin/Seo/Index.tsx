@@ -172,6 +172,34 @@ export default function SeoIndex({ seo }: Props) {
                         </Field>
                     </Section>
 
+                    <Section title="Product Feed — Meta & Google Ads" icon="🛍️">
+                        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg text-[12px] text-blue-800 leading-relaxed">
+                            <IconInfoCircle size={14} className="flex-shrink-0 mt-0.5" />
+                            <span>
+                                Paste this URL into <strong>Meta Commerce Manager → Catalog → Add Items → Data Feed</strong> (or Google Merchant Center),
+                                set it to refresh daily, and your product prices, stock, and new items sync to your ads automatically — no manual re-uploads.
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input readOnly value={`${data.site_url || window.location.origin}/feed/facebook-products.xml`}
+                                onClick={e => (e.target as HTMLInputElement).select()}
+                                className="flex-1 px-3 py-2.5 border-2 border-gray-200 rounded-xl text-[12.5px] font-mono text-gray-600 bg-gray-50 outline-none cursor-text" />
+                            <button type="button"
+                                onClick={() => navigator.clipboard.writeText(`${data.site_url || window.location.origin}/feed/facebook-products.xml`)}
+                                className="px-3.5 py-2.5 border-2 border-gray-200 rounded-xl text-[12px] font-semibold text-gray-600 hover:border-[var(--color-primary,#00c8ff)] hover:text-[var(--color-primary,#00c8ff)] transition-colors whitespace-nowrap">
+                                Copy
+                            </button>
+                        </div>
+                        <a href="/feed/facebook-products.xml" target="_blank" rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3.5 border border-gray-200 rounded-xl hover:border-[var(--color-primary,#00c8ff)] transition-all no-underline group">
+                            <div>
+                                <div className="text-[13px] font-semibold text-gray-800">Preview Feed</div>
+                                <div className="text-[11.5px] text-gray-400">Opens the live XML — only in-stock, active products are included</div>
+                            </div>
+                            <IconExternalLink size={16} className="text-gray-400 group-hover:text-[var(--color-primary,#00c8ff)]" />
+                        </a>
+                    </Section>
+
                     <a href={`${ap}/analytics`} className="block bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 text-white no-underline hover:opacity-90 transition-opacity">
                         <div className="text-[13px] font-bold flex items-center gap-2">📊 Looking for Google Analytics, GTM, or Pixel IDs?</div>
                         <div className="text-[12px] text-gray-300 mt-1">Those live on the dedicated Analytics page →</div>
