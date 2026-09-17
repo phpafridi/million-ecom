@@ -735,7 +735,12 @@ function Cart({ items, subtotal, shipping, total, discount = 0, points_discount 
             fmt(parseFloat(settings.delivery_threshold) - subtotal),
             " more for free shipping"
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "mt-5 pt-4 border-t border-gray-100 space-y-2", children: ["🔒 Secure & encrypted checkout", "📦 Fast delivery to your door", "↩️ 7-day easy returns"].map((t) => /* @__PURE__ */ jsx("div", { className: "flex items-center gap-2 text-[12px] text-gray-500", children: /* @__PURE__ */ jsx("span", { children: t }) }, t)) })
+          /* @__PURE__ */ jsx("div", { className: "mt-5 pt-4 border-t border-gray-100 space-y-2", children: [
+            `${(settings == null ? void 0 : settings.trust_1_icon) ?? "🛡️"} ${(settings == null ? void 0 : settings.trust_1_title) ?? "100% Genuine"} — ${(settings == null ? void 0 : settings.trust_1_sub) ?? "Verified quality"}`,
+            `${(settings == null ? void 0 : settings.trust_2_icon) ?? "🚚"} ${(settings == null ? void 0 : settings.trust_2_title) ?? "Fast Delivery"} — ${(settings == null ? void 0 : settings.trust_2_sub) ?? "Pakistan-wide"}`,
+            `${(settings == null ? void 0 : settings.trust_3_icon) ?? "↩️"} ${(settings == null ? void 0 : settings.trust_3_title) ?? "7-Day Returns"} — ${(settings == null ? void 0 : settings.trust_3_sub) ?? "Hassle-free"}`,
+            `${(settings == null ? void 0 : settings.trust_4_icon) ?? "✅"} ${(settings == null ? void 0 : settings.trust_4_title) ?? "Warranty"} — ${(settings == null ? void 0 : settings.trust_4_sub) ?? "Covered"}`
+          ].map((t) => /* @__PURE__ */ jsx("div", { className: "flex items-center gap-2 text-[12px] text-gray-500", children: /* @__PURE__ */ jsx("span", { children: t }) }, t)) })
         ] }) })
       ] })
     ] })

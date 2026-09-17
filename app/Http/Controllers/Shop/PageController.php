@@ -14,8 +14,14 @@ class PageController extends Controller
 
     public function about()
     {
+        $siteName = Setting::get('site_name', 'MILLIONAIRE');
+        $tagline  = $this->s('about_tagline', 'Pakistan\'s premium lifestyle store — founded on the belief that luxury should be accessible to everyone who values quality.');
         return Inertia::render('Info/About', [
             'settings' => Setting::allKeyed(),
+            'seo'      => [
+                'title'       => 'About Us | ' . $siteName,
+                'description' => substr(strip_tags($tagline), 0, 160),
+            ],
             'content'  => [
                 'about_hero_title1' => $this->s('about_hero_title1', 'Wear Your'),
                 'about_hero_title2' => $this->s('about_hero_title2', 'Status.'),
@@ -57,8 +63,14 @@ class PageController extends Controller
 
     public function contact()
     {
+        $siteName = Setting::get('site_name', 'MILLIONAIRE');
+        $subtitle = $this->s('contact_hero_subtitle', 'Questions about your order, products, or anything else? Our team responds within 1 hour during business hours.');
         return Inertia::render('Info/Contact', [
             'settings' => Setting::allKeyed(),
+            'seo'      => [
+                'title'       => 'Contact Us | ' . $siteName,
+                'description' => substr(strip_tags($subtitle), 0, 160),
+            ],
             'content'  => [
                 'contact_hero_eyebrow'  => $this->s('contact_hero_eyebrow', 'Get in Touch'),
                 'contact_hero_title1'   => $this->s('contact_hero_title1', "We're here to help"),
@@ -76,7 +88,15 @@ class PageController extends Controller
 
     private function policy(array $page)
     {
-        return Inertia::render('Info/Policy', ['settings' => Setting::allKeyed(), 'page' => $page]);
+        $siteName = Setting::get('site_name', 'MILLIONAIRE');
+        return Inertia::render('Info/Policy', [
+            'settings' => Setting::allKeyed(),
+            'page'     => $page,
+            'seo'      => [
+                'title'       => $page['title'] . ' | ' . $siteName,
+                'description' => substr(strip_tags($page['subtitle'] ?? ''), 0, 160),
+            ],
+        ]);
     }
 
     public function returnPolicy()

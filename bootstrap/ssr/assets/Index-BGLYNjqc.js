@@ -43,7 +43,28 @@ function CatForm({ cat, allCategories, onClose }) {
     const url = cat ? `${ap}/categories/${cat.id}` : `${ap}/categories`;
     post(url, { onSuccess: onClose, forceFormData: true });
   }
-  const topLevel = allCategories.filter((c) => !c.parent_id && c.id !== (cat == null ? void 0 : cat.id));
+  function getDescendantIds(id) {
+    const ids = /* @__PURE__ */ new Set();
+    const walk = (pid) => {
+      allCategories.filter((c) => c.parent_id === pid).forEach((c) => {
+        ids.add(c.id);
+        walk(c.id);
+      });
+    };
+    walk(id);
+    return ids;
+  }
+  const excludedIds = cat ? getDescendantIds(cat.id) : /* @__PURE__ */ new Set();
+  function depthOf(c) {
+    let d = 0, p = c.parent_id;
+    while (p) {
+      d++;
+      const parent = allCategories.find((x) => x.id === p);
+      p = (parent == null ? void 0 : parent.parent_id) ?? null;
+    }
+    return d;
+  }
+  const selectableParents = allCategories.filter((c) => c.id !== (cat == null ? void 0 : cat.id) && !excludedIds.has(c.id)).sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ ...c, depth: depthOf(c) }));
   const inputCls = "w-full h-11 px-4 border-2 border-gray-200 rounded-xl text-[13.5px] outline-none focus:border-[var(--color-primary)] transition-colors bg-white";
   return /* @__PURE__ */ jsx("div", { className: "fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto", children: /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-2xl w-full max-w-2xl shadow-2xl my-8", children: [
     /* @__PURE__ */ jsxs("div", { className: "sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-gray-100 rounded-t-2xl", children: [
@@ -92,9 +113,7 @@ function CatForm({ cat, allCategories, onClose }) {
         /* @__PURE__ */ jsxs("p", { className: "text-[12px] text-blue-600 mb-3", children: [
           "Keep as ",
           /* @__PURE__ */ jsx("strong", { children: "Top Level" }),
-          " for main menu items (Men, Women…). Pick a parent to make this a ",
-          /* @__PURE__ */ jsx("strong", { children: "dropdown sub-item" }),
-          ' (e.g. "Shirts" under "Men").'
+          ' for main menu items (Men, Women…). Pick any existing category as parent to nest under it — sub-categories can have their own sub-categories too (e.g. "Socks" under "Kids Accessories" under "Kids").'
         ] }),
         /* @__PURE__ */ jsxs(
           "select",
@@ -104,10 +123,12 @@ function CatForm({ cat, allCategories, onClose }) {
             className: "w-full h-11 px-4 border-2 border-blue-300 rounded-xl text-[13.5px] outline-none focus:border-blue-500 bg-white font-semibold",
             children: [
               /* @__PURE__ */ jsx("option", { value: "", children: "⬛ Top Level — appears in main navigation" }),
-              topLevel.map((c) => /* @__PURE__ */ jsxs("option", { value: c.id, children: [
+              selectableParents.map((c) => /* @__PURE__ */ jsxs("option", { value: c.id, children: [
+                "　".repeat(c.depth),
                 '↳ Under "',
                 c.name,
-                '" (sub-category)'
+                '"',
+                c.depth > 0 ? " (sub-category)" : ""
               ] }, c.id))
             ]
           }

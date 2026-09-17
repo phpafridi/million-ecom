@@ -341,7 +341,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                             borderColor: i === activeImg ? 'var(--color-primary)' : 'transparent',
                                             opacity: i === activeImg ? 1 : 0.55,
                                         }}>
-                                        <img src={img.thumb ?? img.url} alt="" className="w-full h-full object-contain p-1" />
+                                        <img src={img.thumb ?? img.url} alt={product.name + ' thumbnail'} className="w-full h-full object-contain p-1" />
                                     </button>
                                 ))}
                             </div>
@@ -419,7 +419,7 @@ export default function ProductShow({ product, related, wishlisted: initWishlist
                                                 borderColor: i === activeImg ? 'var(--color-primary)' : 'transparent',
                                                 opacity: i === activeImg ? 1 : 0.5,
                                             }}>
-                                            <img src={img.thumb ?? img.url} alt="" className="w-full h-full object-contain p-1" />
+                                            <img src={img.thumb ?? img.url} alt={product.name + ' thumbnail'} className="w-full h-full object-contain p-1" />
                                         </button>
                                     ))}
                                 </div>

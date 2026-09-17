@@ -313,7 +313,7 @@ function ProductShow({ product, related, wishlisted: initWishlisted, settings, a
                 borderColor: i === activeImg ? "var(--color-primary)" : "transparent",
                 opacity: i === activeImg ? 1 : 0.55
               },
-              children: /* @__PURE__ */ jsx("img", { src: img.thumb ?? img.url, alt: "", className: "w-full h-full object-contain p-1" })
+              children: /* @__PURE__ */ jsx("img", { src: img.thumb ?? img.url, alt: product.name + " thumbnail", className: "w-full h-full object-contain p-1" })
             },
             img.id
           )) }),
@@ -413,7 +413,7 @@ function ProductShow({ product, related, wishlisted: initWishlisted, settings, a
                   borderColor: i === activeImg ? "var(--color-primary)" : "transparent",
                   opacity: i === activeImg ? 1 : 0.5
                 },
-                children: /* @__PURE__ */ jsx("img", { src: img.thumb ?? img.url, alt: "", className: "w-full h-full object-contain p-1" })
+                children: /* @__PURE__ */ jsx("img", { src: img.thumb ?? img.url, alt: product.name + " thumbnail", className: "w-full h-full object-contain p-1" })
               },
               img.id
             )) })
@@ -631,7 +631,12 @@ function ProductShow({ product, related, wishlisted: initWishlisted, settings, a
               }
             )
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-2.5", children: [["🛡️", "100% Genuine", "Verified quality"], ["🚚", "Fast Delivery", "Pakistan-wide"], ["↩️", "7-Day Returns", "Hassle-free"], ["✅", "Warranty", "Covered"]].map(([icon, title, sub]) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100", children: [
+          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-2.5", children: [
+            [(settings == null ? void 0 : settings.trust_1_icon) ?? "🛡️", (settings == null ? void 0 : settings.trust_1_title) ?? "100% Genuine", (settings == null ? void 0 : settings.trust_1_sub) ?? "Verified quality"],
+            [(settings == null ? void 0 : settings.trust_2_icon) ?? "🚚", (settings == null ? void 0 : settings.trust_2_title) ?? "Fast Delivery", (settings == null ? void 0 : settings.trust_2_sub) ?? "Pakistan-wide"],
+            [(settings == null ? void 0 : settings.trust_3_icon) ?? "↩️", (settings == null ? void 0 : settings.trust_3_title) ?? "7-Day Returns", (settings == null ? void 0 : settings.trust_3_sub) ?? "Hassle-free"],
+            [(settings == null ? void 0 : settings.trust_4_icon) ?? "✅", (settings == null ? void 0 : settings.trust_4_title) ?? "Warranty", (settings == null ? void 0 : settings.trust_4_sub) ?? "Covered"]
+          ].map(([icon, title, sub]) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100", children: [
             /* @__PURE__ */ jsx("span", { className: "text-xl", children: icon }),
             /* @__PURE__ */ jsxs("div", { children: [
               /* @__PURE__ */ jsx("p", { className: "text-[12px] font-bold text-gray-800 leading-none", children: title }),
